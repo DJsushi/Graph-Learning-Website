@@ -41,45 +41,39 @@ Companion documents:
 
 ## 2. Repository layout
 
-pnpm workspace monorepo:
+Single npm package (no workspace build step); the graph packages are source folders imported via Vite aliases
+`@core`, `@gv`, `@content`:
 
 ```
 graph-learning-website/
-  PLAN.md  GRAPH_DSL.md  CONTENT_CONVENTIONS.md  CLAUDE.md
-  resources/                     lecture PDFs (input material, not published)
-  content/                       course Markdown (source of truth)
-    theory/  algorithms/
+  PLAN.md  GRAPH_DSL.md  CONTENT_CONVENTIONS.md  CLAUDE.md  README.md
+  resources/                     lecture PDFs (gitignored, not published)
+  content/theory/*.md            course lessons (source of truth)
+  content/algorithms/*.md
   packages/
-    graph-core/                  pure TypeScript, no DOM, no Vue
-      src/model/                 graph data model, element refs, commands (undo/redo)
-      src/dsl/                   tokenizer, parser, serializer, generators, transforms
-      src/layout/                layout algorithms (wrapping d3-force, elkjs, own simple ones)
-      src/algorithms/            algorithm generators + registry
-      src/properties/            live property registry
-      src/predicates/            exercise predicate registry
-      src/io/                    JSON, TikZ, adjacency matrix/list, share-URL codec
-      test/
-    graph-vue/                   Vue 3 components and composables
-      src/render/                GraphView.vue and its layers
-      src/interaction/           interaction modes, pointer handling, selection, shortcuts
-      src/widgets/               GraphFigure, AlgoPlayer, GraphSandbox, GraphExercise, GraphStepper, GraphBlock
-      src/theme/                 CSS variables, class palette
-  site/                          VitePress project
-    .vitepress/config.ts         srcDir → ../content plus site pages; markdown plugins
-    .vitepress/theme/            custom layouts, global components, KaTeX macros
-    .vitepress/plugins/          markdown-it plugins: graph blocks, containers, [[refs]], quiz, pseudo
-    .vitepress/data/             build-time data loaders (reference index, exercise index)
-    pages/                       index, practice, exam, playground, reference (generated)
-  scripts/
-    validate-content.ts          parses all content, checks ids/refs/predicates/algos
+    graph-core/src/              pure TypeScript, no DOM
+      model.ts                   graph data model, GraphIndex, element refs
+      dsl/parser.ts, generators.ts
+      layout.ts                  deterministic synchronous layouts (d3-force for force layout)
+      analysis.ts                components, bipartition, girth, matching, chromatic number, …
+      algorithms/                step-recording algorithms + registry (index.ts)
+      properties.ts, predicates.ts, io.ts, random.ts
+    graph-core/test/             vitest: DSL + every number claimed in the lessons
+    graph-vue/src/               GraphView.vue (SVG renderer), EditableGraph.vue, GraphBlock.vue,
+                                 QuizBlock.vue, widgets/ (Figure, Stepper, Player, Sandbox, Exercise),
+                                 geometry.ts, texsvg.ts, rich.ts, progress.ts
+    content/index.ts             scans content/: containers, numbering, figures, refs (shared)
+    content/pages.ts             generates reference / practice / flashcard Markdown
+  .vitepress/
+    config.mts                   site config (srcDir = repo root, rewrites content/ and site/)
+    markdown.ts                  markdown-it plugins: math, containers, graph/pseudo fences, [[refs]], quizzes
+    data/*.data.ts               build-time loaders (site summary, pseudocode)
+    theme/                       layout slot (lesson header), components, custom.css
+  site/                          non-lesson pages; reference/, practice/, exam/ use dynamic routes
+  public/                        favicon
+  scripts/validate-content.ts    content validator (run before every build)
+  .github/workflows/deploy.yml   GitHub Pages deployment
 ```
-
-Tooling: Vite, Vitest, ESLint + Prettier, `vue-tsc` in CI. Dependencies to expect: `katex`,
-`markdown-it-container`, `d3-force`, `elkjs`, `lz-string` (share URLs), `@codemirror/*` (DSL
-editor in the playground), `html-to-image` or equivalent (PNG export). Add nothing else without
-a reason.
-
----
 
 ## 3. `graph-core`: the graph model
 
@@ -336,8 +330,8 @@ Feedback must be specific and never reveal the full answer.
 | `/theory/…` | VitePress docs (sidebar per course) | lessons from `content/theory/` |
 | `/algorithms/…` | VitePress docs | lessons from `content/algorithms/` |
 | `/reference/` | docs | **generated**: definitions, theorems/lemmas/corollaries, algorithms; searchable; filter by course/lesson; each entry links back to its lesson and shows statement + proof toggle |
-| `/practice/` | custom | all exercises and quizzes grouped by lesson; generated random practice (seeded generators + predicates, e.g. "find an MST of this random graph") |
-| `/exam/` | custom | flashcards generated from definitions/theorems (front: number + title, back: statement); mixed quizzes; "which lemmas do I not know yet" tracking |
+| `/practice/` | docs | progress overview with export/import; `/practice/<slug>` per lesson; `/practice/drills` random generated exercises |
+| `/exam/` | docs | overview; `/exam/flashcards` (Leitner-style deck of all definitions/theorems); `/exam/self-test` (10 random quick checks) |
 | `/playground/` | full-screen custom layout | the graph app (§10) |
 
 Progress (seen lessons, solved exercises, flashcard ratings) lives in `localStorage` under a

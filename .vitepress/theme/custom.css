@@ -9,7 +9,7 @@
 
   --gv-ink: #23262d;
   --gv-paper: var(--vp-c-bg);
-  --gv-faint: #9aa0aa;
+  --gv-faint: #848a94;
   --gv-label-bg: var(--vp-c-bg);
   --gv-accent: #b9510f;
   --gv-accent-soft: #fbe3d1;
@@ -194,7 +194,7 @@
 .gv-edge.highlight .gv-arrow, .gv-edge.current .gv-arrow { fill: var(--gv-accent); }
 .gv-edge.tree .gv-line, .gv-edge.matched .gv-line { stroke: var(--gv-tree); stroke-width: 3.6; }
 .gv-edge.tree .gv-arrow, .gv-edge.matched .gv-arrow { fill: var(--gv-tree); }
-.gv-edge.path .gv-line { stroke: var(--gv-path); stroke-width: 3.6; }
+.gv-edge.path .gv-line { stroke: var(--gv-path); stroke-width: 3.6; stroke-dasharray: 12 4; }
 .gv-edge.path .gv-arrow { fill: var(--gv-path); }
 .gv-edge.cycle .gv-line { stroke: var(--gv-cycle); stroke-width: 3.4; }
 .gv-edge.cycle .gv-arrow { fill: var(--gv-cycle); }

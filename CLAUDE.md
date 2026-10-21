@@ -20,3 +20,7 @@ Rules:
   `content/`.
 - `resources/` holds the original lecture PDFs (graph-theory notes are handwritten scans). Not
   published.
+
+Commands: `npm run dev`, `npm test`, `npm run validate`, `npm run typecheck`, `npm run build`.
+In the Claude Code sandbox: run scripts with `node --import tsx` (plain `tsx` needs an IPC socket), and start
+dev/preview servers outside the sandbox so a browser can reach them.
