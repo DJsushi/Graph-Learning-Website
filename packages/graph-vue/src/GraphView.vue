@@ -129,8 +129,10 @@ const outerFaceLabels = computed(() => props.graph.faces.filter(fc => fc.outer &
 
 // ---- viewBox ----
 const bbox = computed(() => {
-  const pts = [...pos.value.values()]
-  if (!pts.length) return { x: -100, y: -60, w: 200, h: 120 }
+  // vertices, curve apexes (edge label points) and group labels all have to fit
+  const pts = [...pos.value.values(), ...[...geoms.value.values()].filter(g => !g.loop).map(g => g.label)]
+  for (const gr of groupShapes.value) if (gr.label) pts.push({ x: gr.labelAt.x - 40, y: gr.labelAt.y - 6 }, { x: gr.labelAt.x + 40, y: gr.labelAt.y - 6 })
+  if (!pos.value.size) return { x: -100, y: -60, w: 200, h: 120 }
   let x0 = Math.min(...pts.map(p => p.x)), x1 = Math.max(...pts.map(p => p.x))
   let y0 = Math.min(...pts.map(p => p.y)), y1 = Math.max(...pts.map(p => p.y))
   const hasLoops = props.graph.edges.some(e => !e.hyper && e.tail[0] === e.head[0])
@@ -151,7 +153,11 @@ const box = computed<Box>(() => {
   const x0 = Math.min(f.x, b.x), y0 = Math.min(f.y, b.y)
   return { x: x0, y: y0, w: Math.max(f.x + f.w, b.x + b.w) - x0, h: Math.max(f.y + f.h, b.y + b.h) - y0 }
 })
-watch(box, b => { if (props.editable && !props.fill) frozen.value = b })
+watch(box, b => {
+  // only store real growth; writing an equal copy would retrigger this watcher forever
+  const f = frozen.value
+  if (props.editable && !props.fill && (!f || f.x !== b.x || f.y !== b.y || f.w !== b.w || f.h !== b.h)) frozen.value = b
+})
 const viewBox = computed(() => `${box.value.x} ${box.value.y} ${box.value.w} ${box.value.h}`)
 
 // ---- zoom / pan ----
@@ -297,7 +303,7 @@ const describe = computed(() => {
     :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none' }"
     :viewBox="viewBox"
     :style="fill ? undefined : { maxHeight: `${maxHeight}px` }"
-    role="img"
+    :role="selectable !== 'none' || editable ? 'group' : 'img'"
     :aria-label="ariaLabel ?? 'Graph'"
     @wheel="onWheel"
     @pointermove="onPointerMove"

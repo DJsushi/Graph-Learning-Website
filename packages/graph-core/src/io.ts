@@ -1,7 +1,7 @@
 // Import / export: DSL, JSON, TikZ, adjacency matrix and list, share URLs (PLAN.md §10).
 import LZString from 'lz-string'
 import { emptyGraph, ends, type AttrValue, type GraphData, type Id } from './model'
-import { parseGraph } from './dsl/parser'
+import { parseGraph, KNOWN_DIRECTIVES } from './dsl/parser'
 
 const IDENT = /^[A-Za-z0-9_][A-Za-z0-9_']*$/
 
@@ -196,11 +196,11 @@ export function decodeShare(code: string): string | null {
 export function importAny(text: string): GraphData {
   const t = text.trim()
   if (t.startsWith('{')) return fromJSON(t)
-  if (/^[\d\s,;.-]+$/.test(t)) return fromAdjacencyMatrix(t)
+  if (!/--|->/.test(t) && /^[\d\s,;.-]+$/.test(t)) return fromAdjacencyMatrix(t)
+  // adjacency list: every line is "v: neighbours", and no key is a DSL directive
+  const lines = t.split('\n').filter(l => l.trim())
+  if (lines.every(l => /^\s*[^:\s]+\s*:/.test(l) && !KNOWN_DIRECTIVES.has(l.split(':')[0].trim()))) return fromAdjacencyList(t)
   const doc = parseGraph(t)
-  if (doc.errors.length) {
-    if (/^[^:\n]+:[^\n]*$/m.test(t) && t.split('\n').every(l => /^\s*[^:\s]+\s*:/.test(l) || !l.trim())) return fromAdjacencyList(t)
-    throw new Error(doc.errors.map(e => `line ${e.line}: ${e.message}`).join('\n'))
-  }
+  if (doc.errors.length) throw new Error(doc.errors.map(e => `line ${e.line}: ${e.message}`).join('\n'))
   return doc.panels[0].graph
 }

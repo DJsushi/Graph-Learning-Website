@@ -461,3 +461,5 @@
   .ga-pg-center { order: -1; height: 70vh; height: 70dvh; }
   .ga-pg-left, .ga-pg-right { border: 0; border-top: 1px solid var(--vp-c-divider); }
 }
+.ga-lesson-credit { margin: 0.5rem 0 0; font-size: 0.82rem; color: var(--vp-c-text-3); }
+.ga-site-credit { margin-top: 2.5rem; }

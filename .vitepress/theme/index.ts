@@ -5,6 +5,7 @@ import './custom.css'
 import GraphBlock from '@gv/GraphBlock.vue'
 import QuizBlock from '@gv/QuizBlock.vue'
 import LessonHeader from './LessonHeader.vue'
+import SiteCredit from './SiteCredit.vue'
 import { h } from 'vue'
 import HomePage from './components/HomePage.vue'
 import CourseIndex from './components/CourseIndex.vue'
@@ -17,7 +18,7 @@ import Playground from './components/Playground.vue'
 
 export default {
   extends: DefaultTheme,
-  Layout: () => h(DefaultTheme.Layout, null, { 'doc-before': () => h(LessonHeader) }),
+  Layout: () => h(DefaultTheme.Layout, null, { 'doc-before': () => h(LessonHeader), 'doc-footer-before': () => h(SiteCredit) }),
   enhanceApp({ app }) {
     app.component('GraphBlock', GraphBlock)
     app.component('QuizBlock', QuizBlock)

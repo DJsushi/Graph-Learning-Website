@@ -10,6 +10,7 @@ import {
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { KATEX_MACROS } from '../packages/graph-vue/src/katexMacros'
+import { BASE } from './base'
 
 export const ROOT = path.resolve(__dirname, '..')
 
@@ -19,7 +20,7 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 
 export function renderTex(content: string, displayMode: boolean, where = ''): string {
   try {
-    const html = katex.renderToString(content, { displayMode, macros: { ...KATEX_MACROS }, throwOnError: true, strict: 'ignore', output: 'html' })
+    const html = katex.renderToString(content, { displayMode, macros: { ...KATEX_MACROS }, throwOnError: true, strict: 'ignore', output: 'htmlAndMathml' })
     return displayMode ? `<div class="ga-math-block" v-pre>${html}</div>` : `<span v-pre>${html}</span>`
   } catch (e) {
     throw new Error(`KaTeX error${where ? ` in ${where}` : ''}: ${(e as Error).message} in "${content}"`)
@@ -209,7 +210,7 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
     default: {
       const kindClass = STATEMENT_TYPES.has(type) && type !== 'claim' ? ' ga-statement' : ''
       const diff = attrs.difficulty ? ` <span class="ga-difficulty" title="difficulty ${attrs.difficulty} of 3">${'●'.repeat(Number(attrs.difficulty))}${'○'.repeat(3 - Number(attrs.difficulty))}</span>` : ''
-      const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="/${c.lesson.path}#${anchorId(id!)}">in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}</a>` : ''
+      const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="${BASE}${c.lesson.path}#${anchorId(id!)}">in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}</a>` : ''
       const dataId = id ? ` data-ref="${escapeHtml(id)}"` : ''
       return `<div class="ga-box ga-${type}${kindClass}${attrs.extra === 'true' ? ' ga-extra' : ''}"${anchor}${dataId}><div class="ga-box-head"><span class="ga-box-kind">${name}${num}</span>${title}${diff}${extra}${back}</div><div class="ga-box-body">\n`
     }

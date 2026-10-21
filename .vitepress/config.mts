@@ -3,7 +3,9 @@ import path from 'node:path'
 import { loadContent, COURSE_NAMES, type Course } from '../packages/content/index'
 import { setupMarkdown, ROOT } from './markdown'
 
-const base = process.env.BASE ?? '/graph-learning-website/'
+import { BASE } from './base'
+
+const base = BASE
 const index = loadContent(ROOT)
 
 function courseSidebar(course: Course): DefaultTheme.SidebarItem[] {
