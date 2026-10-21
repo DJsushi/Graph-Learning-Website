@@ -108,7 +108,7 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
         const ang = typeof side === 'number' ? side : ({ top: 90, bottom: 270, left: 180, right: 0 } as Record<string, number>)[String(side)] ?? 90
         d = { x: Math.cos((ang * Math.PI) / 180), y: -Math.sin((ang * Math.PI) / 180) }
       }
-      const size = 34 + i * 12
+      const size = 40 + i * 12
       const spread = 0.55
       const c1 = add(P, mul(add(d, mul(perp(d), spread)), size))
       const c2 = add(P, mul(sub(d, mul(perp(d), spread)), size))

@@ -337,7 +337,7 @@ const describe = computed(() => {
           <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="classesOf('edge', e)"
             :x="geoms.get(e.id)!.label.x" :y="geoms.get(e.id)!.label.y" text-anchor="middle" dominant-baseline="central">
             <template v-if="spans(edgeLabel(e)!)">
-              <tspan v-for="(s, i) in tspans(spans(edgeLabel(e)!)!)" :key="i" :font-style="s.italic ? 'italic' : undefined"
+              <tspan v-for="(s, i) in tspans(spans(edgeLabel(e)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
                 :font-size="s.small ? '75%' : undefined" :dy="s.dy || undefined">{{ s.text }}</tspan>
             </template>
             <template v-else>{{ edgeLabel(e)!.replace(/\$/g, '') }}</template>
@@ -361,7 +361,7 @@ const describe = computed(() => {
           <template v-if="vertexLabels.get(v.id)">
             <text v-if="spans(vertexLabels.get(v.id)!)" class="gv-vertex-label" :class="{ 'gv-outside': !labelsInside }"
               :x="labelsInside ? 0 : 9" :y="labelsInside ? 0.5 : -11" :text-anchor="labelsInside ? 'middle' : 'start'" dominant-baseline="central">
-              <tspan v-for="(s, i) in tspans(spans(vertexLabels.get(v.id)!)!)" :key="i" :font-style="s.italic ? 'italic' : undefined"
+              <tspan v-for="(s, i) in tspans(spans(vertexLabels.get(v.id)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
                 :font-size="s.small ? '72%' : undefined" :dy="s.dy || undefined">{{ s.text }}</tspan>
             </text>
             <foreignObject v-else class="gv-fo" :x="labelsInside ? -40 : 8" :y="labelsInside ? -12 : -26" width="80" height="24">
@@ -371,7 +371,7 @@ const describe = computed(() => {
           <g v-if="overlay?.vertexBadges[v.id] !== undefined" class="gv-badge" :transform="`translate(${radius + 3},${-radius - 4})`">
             <text class="gv-badge-text" x="0" y="0" text-anchor="start" dominant-baseline="central">
               <template v-if="spans(`$${overlay.vertexBadges[v.id]}$`)">
-                <tspan v-for="(s, i) in tspans(spans(`$${overlay.vertexBadges[v.id]}$`)!)" :key="i" :font-style="s.italic ? 'italic' : undefined"
+                <tspan v-for="(s, i) in tspans(spans(`$${overlay.vertexBadges[v.id]}$`)!)" :key="i" :class="{ 'gv-it': s.italic }"
                   :font-size="s.small ? '75%' : undefined" :dy="s.dy || undefined">{{ s.text }}</tspan>
               </template>
               <template v-else>{{ overlay.vertexBadges[v.id] }}</template>

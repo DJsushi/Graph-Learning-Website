@@ -49,6 +49,8 @@ const codeHtml = computed(() => {
   const line = cur.value?.line
   return line ? props.pseudocode.replace(`<span class="ga-line" data-label="${line}">`, `<span class="ga-line ga-active" data-label="${line}">`) : props.pseudocode
 })
+// split TeX lists at ',\ ' so long queues and edge lists wrap
+const mathList = (v: string) => v.split(/,\\ /).map(x => `$${x}$`).join(', ')
 const stateEntries = computed(() => (show.value.includes('state') ? Object.entries(cur.value?.state ?? {}) : []))
 </script>
 
@@ -72,7 +74,7 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
           <dl v-if="stateEntries.length" class="ga-state">
             <template v-for="[k, v] in stateEntries" :key="k">
               <dt>{{ k }}</dt>
-              <dd><RichText :text="`$${v}$`" /></dd>
+              <dd><RichText :text="mathList(v)" /></dd>
             </template>
           </dl>
         </div>

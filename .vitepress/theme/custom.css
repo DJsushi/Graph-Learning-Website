@@ -267,14 +267,17 @@
 /* player */
 .ga-player-head { display: flex; align-items: baseline; gap: 0.8em; margin-bottom: 0.3em; }
 .ga-player-name { font-weight: 600; font-size: 0.92em; color: var(--ga-alg); }
-.ga-player-body.ga-has-side { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 0.8em; align-items: start; }
-@media (max-width: 760px) { .ga-player-body.ga-has-side { grid-template-columns: 1fr; } }
+.ga-player { container-type: inline-size; }
+.ga-player-body.ga-has-side { display: grid; grid-template-columns: 1fr; gap: 0.6em; align-items: start; }
+@container (min-width: 900px) { .ga-player-body.ga-has-side { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+.ga-player-side { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0.8em; align-items: start; }
+@container (max-width: 560px) { .ga-player-side { grid-template-columns: 1fr; } }
 .ga-player-main { min-width: 0; }
 .ga-side-graph { margin-top: 0.5em; border-top: 1px dashed var(--vp-c-divider); padding-top: 0.4em; }
 .ga-player-code .ga-pseudo { margin: 0; font-size: 0.8em; }
-.ga-state { margin: 0.6em 0 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25em 0.8em; font-size: 0.88em; }
+.ga-state { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25em 0.8em; font-size: 0.88em; }
 .ga-state dt { color: var(--vp-c-text-2); }
-.ga-state dd { margin: 0; overflow-x: auto; }
+.ga-state dd { margin: 0; line-height: 1.7; }
 
 /* editor */
 .ga-toolbar { display: flex; flex-wrap: wrap; gap: 0.4em 0.8em; justify-content: space-between; margin-bottom: 0.4em; }
@@ -334,3 +337,4 @@
 .ga-lesson-title { margin: 0; font-size: 2.1rem; line-height: 1.2; font-weight: 700; letter-spacing: -0.01em; color: var(--vp-c-text-1); }
 .ga-lesson-summary { margin: 0.7rem 0 0; color: var(--vp-c-text-2); font-size: 1.02rem; line-height: 1.6; }
 @media (max-width: 640px) { .ga-lesson-title { font-size: 1.7rem; } }
+.gv-root .gv-it { font-family: KaTeX_Math, 'Latin Modern Math', 'Times New Roman', serif; font-style: italic; }
