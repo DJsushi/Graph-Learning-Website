@@ -116,7 +116,7 @@ $e_x$, and since the paths are edge-disjoint, **at most one of them visits $x$**
 each $e_x$ back to $x$ (and each copy of an arc back to the arc) turns every path into a directed $s$–$t$ path of $G$ (it visits every
 vertex at most once), and the resulting $k$ paths share no inner vertex. Two of them could only coincide if both were the single arc
 $(s, t)$, which does not exist by assumption. So $G$ has $k$ internally disjoint $s$–$t$ paths.
-:::::
+:::
 
 ```graph id=t05-vertex-splitting widget=figure
 caption: Splitting a vertex $x$ into $x^- \to x^+$: all arcs into $x$ enter $x^-$, all arcs out of $x$ leave $x^+$. A path through $x$ must use the arc $e_x$, so edge-disjoint paths in the new graph visit $x$ at most once in total.
