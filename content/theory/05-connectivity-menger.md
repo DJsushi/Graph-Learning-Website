@@ -98,7 +98,7 @@ pairwise different.
 
 ### Step 1: B implies A
 
-::: proof {title="Proof that B implies A"}
+::: proof {title="Proof that B implies A" for=thm:menger-directed}
 Assume B holds for all directed multigraphs, and let $G, s, t$ satisfy the assumptions of A, with no directed $s$–$t$ cut of size
 $\le k - 1$. Make a new digraph $G'$ from $G$ by the following construction (applied to every vertex $x \ne s, t$):
 
@@ -174,7 +174,7 @@ So it suffices to prove: **if $G$ has no directed $s$–$t$ edge cut of size $\l
 stops here; we complete the argument with the **augmenting path** method (which is exactly the Ford–Fulkerson algorithm with unit
 capacities, see [[algorithms/02-maximum-flow]]).
 
-:::: proof {title="Proof of B (completed beyond the lecture)"}
+:::: proof {title="Proof of B (completed beyond the lecture)" for=thm:menger-directed}
 Let $F$ be an $s$–$t$ d-flow of maximum size $\ell$ (the empty set is a d-flow, so one exists). We show that there is an $s$–$t$ edge cut of size
 $\ell$; by assumption then $\ell \ge k$, and $F$ contains $k$ edge-disjoint paths by [[claim:d-flow-paths]].
 
@@ -218,7 +218,7 @@ s -> a [c=1]; s -> b [c=1]; s -> c [c=1]; a -> d [c=1]; b -> d [c=1]; c -> e [c=
 
 ### Step 3: back to undirected graphs
 
-::: proof {title="Proof of Menger's theorem (undirected)"}
+::: proof {title="Proof of Menger's theorem (undirected)" for=thm:menger}
 Replace every undirected edge $uv$ of $G$ by the two arcs $(u, v)$ and $(v, u)$, obtaining a digraph $D$. Directed $s$–$t$ paths of $D$ correspond to
 $s$–$t$ paths of $G$; a set of at most $k - 1$ arcs (vertices) whose removal destroys all directed $s$–$t$ paths of $D$ gives a set of at most $k - 1$
 edges (the same vertices) whose removal destroys all $s$–$t$ paths of $G$.

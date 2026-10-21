@@ -122,8 +122,10 @@ A **graph** is a pair $G = (V, E)$ where ...
 
 ### 4.3 Proofs
 
-- A `::: proof` container immediately follows the statement it proves. It ends with the
-  container end; the renderer adds the ∎.
+- A `::: proof` container belongs to the nearest preceding numbered statement container
+  (theorem, lemma, proposition, corollary, observation, claim), even if text, figures or
+  `intuition`/`remark` blocks come in between. If it proves a different statement, give it
+  `for=<id>`: `::: proof {title="Proof of the theorem" for=thm:dirac-ore}`. The renderer adds the ∎.
 - Proofs are complete and rigorous. Steps the lecture skips are filled in. If a proof has
   sub-claims, nest `claim` containers inside the proof; the outer container then needs four
   colons:

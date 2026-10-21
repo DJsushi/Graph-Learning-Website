@@ -189,7 +189,7 @@ $f(u, v) = 0$, since otherwise $(v, u) \in E_f$ and $u$ would be reachable. By [
 **3 ⇒ 1:** by [[lem:flow-across-cut]], every flow $g$ satisfies $\abs{g} \le \mathrm{cap}(S, T) = \abs{f}$.
 :::
 
-::: proof {title="Proof of the max-flow min-cut theorem"}
+::: proof {title="Proof of the max-flow min-cut theorem" for=thm:maxflow-mincut}
 A maximum flow exists: the set of flows is a compact subset of $\R^E$ (closed and bounded, defined by finitely many non-strict linear inequalities and equalities),
 and $\abs{f}$ is a continuous function on it. For a maximum flow $f$, [[thm:maxflow-characterisation]] gives a cut with $\mathrm{cap}(S, T) = \abs{f}$, and by
 [[lem:flow-across-cut]] no cut has smaller capacity. So the maximum flow value equals the minimum cut capacity.
@@ -216,7 +216,7 @@ FORD-FULKERSON(G, s, t, c):
 min-cut theorem); so if the algorithm terminates, it returns a maximum flow.
 
 ```graph id=a02-ford-fulkerson-player widget=player
-caption: Ford–Fulkerson on the lecture network. The residual network is shown next to the flow; at the end, the reachable set gives a minimum cut.
+caption: Ford–Fulkerson on the lecture network. The residual network is shown next to the flow; at the end, the reachable set gives a minimum cut. (The player finds paths by depth-first search, so its sequence of augmentations may differ from the demo below; the final value 19 is the same.)
 intent: Algorithm player; path choice by DFS (any augmenting path); show residual panel.
 type: directed
 algo: ford-fulkerson

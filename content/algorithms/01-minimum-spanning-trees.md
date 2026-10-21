@@ -78,13 +78,13 @@ If $e$ is the heaviest edge on some cycle of $G$, then $e \notin M$ for every mi
 
 Here "the lightest" and "the heaviest" mean strictly lighter (heavier) than all other edges in question.
 
-::: proof {title="Proof of the cut property"}
+::: proof {title="Proof of the cut property" for=thm:cut-property}
 Let $e = uv$ be the strictly lightest edge across the cut $(S, V \setminus S)$ and suppose $e \notin M$. Then $M + e$ contains a cycle $C$
 through $e$. Since $C$ crosses the cut at $e$, it crosses it at least once more, at an edge $f \ne e$, $f \in E(M)$. As $e$ is the lightest
 crossing edge, $w(f) > w(e)$. Then $M + e - f$ is a spanning tree of weight $w(M) + w(e) - w(f) < w(M)$, a contradiction.
 :::
 
-::: proof {title="Proof of the cycle property"}
+::: proof {title="Proof of the cycle property" for=thm:cycle-property}
 Let $e$ be the strictly heaviest edge on a cycle $C$ and suppose $e \in M$. The two components of $M - e$ form a cut, and $e$ is the only edge
 of $M$ across it. The path $C - e$ joins the two ends of $e$, so it crosses this cut at some edge $f \ne e$; then $f \notin E(M)$. As $e$ is the
 heaviest edge of $C$, $w(f) < w(e)$, and $M - e + f$ is a spanning tree of smaller weight, a contradiction.
@@ -516,7 +516,7 @@ heaviest edge, so $e \notin M$ by the cycle property ([[thm:cycle-property]]).
 ```graph id=a01-f-heavy widget=exercise
 task: select-edges
 prompt: The highlighted edges form a forest $F$. Select all $F$-heavy edges.
-check: f-heavy-edges forest=class:tree
+check: f-heavy-edges forest="class:tree"
 solution: $bd$ ($9 > 8$), $ce$ ($7 > 5$) and $bc$ ($11 > 8$) are $F$-heavy: each is heavier than every edge on the $F$-path between its ends. $eg$ and $gh$ join different components of $F$, so $w_F = \infty$ and they are $F$-light.
 layout: fixed
 a @(0, 0.5); b @(1, 1.6); c @(1, -0.6); d @(2.6, 1.6); e @(2.6, 0.3); f @(2.1, -1.1); g @(4.1, 1.3); h @(3.7, -1.1)
@@ -652,11 +652,11 @@ We assume that $D$ has an arborescence rooted at $r$ (this can be checked by BFS
 arborescence uses them).
 
 **Unlike in undirected graphs, a min-cost arborescence may not include the lightest edge across some cut, and it may include the heaviest edge on some cycle.** In the example
-below, the optimal arborescence (weight $22$) does not use the arc $(c, a)$ of weight $1$, the lightest arc across the cut $(\set{r, c}, \text{rest})$, but it uses the arc
+below, an optimal arborescence (weight $22$; there are two optimal ones) does not use the arc $(c, a)$ of weight $1$, the lightest arc across the cut $(\set{r, c}, \text{rest})$, but it uses the arc
 $(d, c)$ of weight $4$, the heaviest arc of the directed cycle $a \to d \to c \to a$.
 
 ```graph id=a01-arborescence-example widget=figure
-caption: A min-cost arborescence rooted at $r$ (highlighted, weight $2+6+3+4+7 = 22$). The greedy cut and cycle properties fail for arborescences.
+caption: A min-cost arborescence rooted at $r$ (highlighted, weight $2+6+3+4+7 = 22$). Another optimal one is $rc, ca, ad, ab, de$ (also 22). The greedy cut and cycle properties fail for arborescences.
 intent: Transcription of the lecture example; vertices named a..e (unnamed on the slides).
 type: directed
 layout: fixed
@@ -742,7 +742,7 @@ When a cycle $C$ is contracted to a vertex $v_C$, an arc $(x, y)$ with $x \notin
 inside $C$ disappear. When expanding, if $T'$ enters $v_C$ by the arc coming from $(x, y)$, we add $(x, y)$ and all arcs of $C$ except the one entering $y$.
 
 ```graph id=a01-edmonds-player widget=player
-caption: Edmonds' algorithm on the example: the cheapest incoming arcs form a cycle, which is contracted; the recursive solution is expanded back.
+caption: Edmonds' algorithm on the example: the cheapest incoming arcs form a cycle, which is contracted; the recursive solution is expanded back. (Either of the two optimal arborescences of cost 22 may come out.)
 intent: Algorithm player with contraction (structure changes between steps).
 type: directed
 algo: edmonds-branching
