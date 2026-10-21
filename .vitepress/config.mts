@@ -45,6 +45,8 @@ export default defineConfig({
     ['meta', { name: 'theme-color', content: '#2f5d8a' }],
   ],
   markdown: {
+    // container attributes {#id title=…} are parsed by our own plugin, not markdown-it-attrs
+    attrs: { disable: true },
     config: md => setupMarkdown(md),
     headers: { level: [2, 3] },
   },

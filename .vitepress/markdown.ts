@@ -9,18 +9,11 @@ import {
   type Course,
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
+import { KATEX_MACROS } from '../packages/graph-vue/src/katexMacros'
 
 export const ROOT = path.resolve(__dirname, '..')
 
-export const KATEX_MACROS: Record<string, string> = {
-  '\\N': '\\mathbb{N}',
-  '\\Z': '\\mathbb{Z}',
-  '\\R': '\\mathbb{R}',
-  '\\abs': '\\left\\lvert #1 \\right\\rvert',
-  '\\set': '\\left\\{ #1 \\right\\}',
-  '\\ol': '\\overline{#1}',
-  '\\O': '\\mathcal{O}',
-}
+export { KATEX_MACROS }
 
 const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
