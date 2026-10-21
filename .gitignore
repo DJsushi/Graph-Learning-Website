@@ -1,0 +1,18 @@
+# sandbox/editor artefacts
+.bash_profile
+.bashrc
+.gitconfig
+.gitmodules
+.idea
+.mcp.json
+.profile
+.ripgreprc
+.vscode
+.zprofile
+.zshrc
+.claude/
+# build output
+node_modules/
+dist/
+.vitepress/cache/
+.vitepress/dist/
