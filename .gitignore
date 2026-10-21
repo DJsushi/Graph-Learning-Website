@@ -18,3 +18,5 @@ dist/
 .vitepress/dist/
 # lecture material (not redistributed)
 resources/
+.vitepress/cache/
+.vitepress/dist/
