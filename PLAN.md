@@ -31,6 +31,11 @@ Companion documents:
 | Course structure | Two courses (`/theory/`, `/algorithms/`) + one shared generated `/reference/`. |
 | Content depth | Full rigorous proofs + intuition, lecture notation, English. |
 | Visual style | Clean textbook look, KaTeX labels, colour-blind-safe semantic palette, light + dark. |
+| Name | **Graph Atlas**. |
+| Deployment | GitHub Pages project site, repo `graph-learning-website`, base path `/graph-learning-website/` (overridable by env var `BASE`), GitHub Actions workflow in `.github/workflows/`. |
+| Attribution | Footer + course landing pages: unofficial student resource based on the lectures *Graph Theory* (P. Hliněný) and *MA015 Graph Algorithms* (Jan Obdržálek), Faculty of Informatics, Masaryk University. |
+| Scope of v1 | All of: courses + reference, algorithm players + exercises, playground, exam prep. |
+| Lecture PDFs | Not committed (`resources/` is gitignored). |
 
 ---
 
