@@ -53,7 +53,7 @@ function linkRefs(text: string, course?: Course): string {
 
 const KEYWORDS = /\b(foreach|for|while|if|then|else|return|do|repeat|until|break|times|and|or|not|in)\b/g
 
-function renderPseudo(code: string): string {
+export function renderPseudo(code: string): string {
   const lines = code.replace(/\s+$/, '').split('\n').map(line => {
     let label = ''
     const m = /^(.*?)(\/\/.*?)?@([\w-]+)\s*$/.exec(line)

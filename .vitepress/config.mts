@@ -57,7 +57,7 @@ export default defineConfig({
       { text: 'Algorithms', link: '/algorithms/', activeMatch: '^/algorithms/' },
       { text: 'Reference', link: '/reference/', activeMatch: '^/reference/' },
       { text: 'Practice', link: '/practice/', activeMatch: '^/practice/' },
-      { text: 'Exam prep', link: '/exam', activeMatch: '^/exam' },
+      { text: 'Exam prep', link: '/exam/', activeMatch: '^/exam/' },
       { text: 'Playground', link: '/playground', activeMatch: '^/playground' },
     ],
     sidebar: {
@@ -73,6 +73,9 @@ export default defineConfig({
             { text: 'Algorithms', link: '/reference/algorithms' },
           ],
         },
+      ],
+      '/exam/': [
+        { text: 'Exam prep', items: [{ text: 'Overview', link: '/exam/' }, { text: 'Flashcards', link: '/exam/flashcards' }, { text: 'Mixed self-test', link: '/exam/self-test' }] },
       ],
       '/practice/': [
         { text: 'Practice', items: [{ text: 'Overview', link: '/practice/' }, { text: 'Random drills', link: '/practice/drills' }] },

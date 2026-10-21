@@ -29,11 +29,12 @@ export interface Container {
   lesson: Lesson
   line: number
   body: string          // raw markdown between the fences
+  raw: string           // full source including the fences
   parentId?: string
   forId?: string        // for proofs: the statement proved
 }
 
-export interface Figure { id: string; info: Record<string, string>; source: string; lesson: Lesson; line: number }
+export interface Figure { id: string; info: Record<string, string>; source: string; raw: string; lesson: Lesson; line: number; parentId?: string }
 export interface Ref { target: string; lesson: Lesson; line: number }
 
 export interface ContentIndex {
@@ -131,7 +132,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
         if (/^graph(\s|$)/.test(info)) {
           const kv = parseKV(info.slice(5))
           const id = kv.id
-          const fig: Figure = { id: id ?? '', info: kv, source: fence.lines.join('\n'), lesson, line: fence.start }
+          const fig: Figure = { id: id ?? '', info: kv, source: fence.lines.join('\n'), raw: lines.slice(fence.start - 1, i + 1).join('\n'), lesson, line: fence.start, parentId: stack.at(-1)?.c.id }
           if (!id) index.problems.push({ lesson, line: fence.start, message: 'graph block without id' })
           else if (index.figureById.has(id)) index.problems.push({ lesson, line: fence.start, message: `duplicate figure id ${id}` })
           else index.figureById.set(id, fig)
@@ -152,7 +153,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
       const [, colons, type, rest] = open
       const { id, attrs } = parseContainerInfo(rest)
       const c: Container = {
-        type, id, attrs, title: attrs.title, lesson, line: lineNo, body: '',
+        type, id, attrs, title: attrs.title, lesson, line: lineNo, body: '', raw: '',
         parentId: stack.at(-1)?.c.id,
       }
       const counter = COUNTER[type]
@@ -177,6 +178,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
     if (close && stack.length && stack[stack.length - 1].colons <= close[1].length) {
       const top = stack.pop()!
       top.c.body = lines.slice(top.start, i).join('\n')
+      top.c.raw = lines.slice(top.start - 1, i + 1).join('\n')
       if (top.c.type === 'algorithm') currentAlg = undefined
       continue
     }

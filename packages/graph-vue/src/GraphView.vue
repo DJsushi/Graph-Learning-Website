@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The single SVG graph renderer. Pure view + pointer/keyboard event translation; editing logic lives in the widgets.
-import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
@@ -140,14 +140,31 @@ const bbox = computed(() => {
   const w = Math.max(x1 - x0, 140), h = Math.max(y1 - y0, 90)
   return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h }
 })
-const viewBox = computed(() => `${bbox.value.x} ${bbox.value.y} ${bbox.value.w} ${bbox.value.h}`)
+// while editing, the box only grows (fill mode: fixed until "fit"), so the drawing does not rescale under the cursor
+type Box = { x: number; y: number; w: number; h: number }
+const frozen = ref<Box | null>(null)
+const box = computed<Box>(() => {
+  const b = bbox.value
+  if (props.fill) return frozen.value ?? b
+  if (!props.editable || !frozen.value) return b
+  const f = frozen.value
+  const x0 = Math.min(f.x, b.x), y0 = Math.min(f.y, b.y)
+  return { x: x0, y: y0, w: Math.max(f.x + f.w, b.x + b.w) - x0, h: Math.max(f.y + f.h, b.y + b.h) - y0 }
+})
+watch(box, b => { if (props.editable && !props.fill) frozen.value = b })
+const viewBox = computed(() => `${box.value.x} ${box.value.y} ${box.value.w} ${box.value.h}`)
 
 // ---- zoom / pan ----
 const view = ref({ tx: 0, ty: 0, k: 1 })
 const transform = computed(() => (props.zoomable ? `translate(${view.value.tx},${view.value.ty}) scale(${view.value.k})` : undefined))
-function resetView() { view.value = { tx: 0, ty: 0, k: 1 } }
+function resetView() {
+  view.value = { tx: 0, ty: 0, k: 1 }
+  const b = bbox.value
+  frozen.value = props.fill ? { x: b.x - b.w * 0.15, y: b.y - b.h * 0.15, w: b.w * 1.3, h: b.h * 1.3 } : null
+}
 defineExpose({ resetView, svg })
-watch(() => props.graph, () => { if (!props.zoomable) resetView() })
+watch(() => props.graph.vertices.length === 0, () => { if (props.fill) resetView() })
+onMounted(() => { if (props.fill) resetView() })
 
 function toModel(ev: { clientX: number; clientY: number }): Pt {
   const g = root.value
@@ -288,7 +305,7 @@ const describe = computed(() => {
     @pointercancel="onPointerUp"
   >
     <desc>{{ describe }}</desc>
-    <rect class="gv-bg" :x="bbox.x - 4000" :y="bbox.y - 4000" :width="bbox.w + 8000" :height="bbox.h + 8000"
+    <rect class="gv-bg" :x="box.x - 4000" :y="box.y - 4000" :width="box.w + 8000" :height="box.h + 8000"
       @pointerdown="onPointerDown($event, 'bg')" @dblclick="emit('background-dblclick', toModel($event))" />
     <g ref="root" :transform="transform">
       <!-- faces -->

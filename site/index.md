@@ -1,5 +1,7 @@
 ---
+layout: page
 title: Graph Atlas
+sidebar: false
 ---
 
-# Graph Atlas
+<HomePage />
