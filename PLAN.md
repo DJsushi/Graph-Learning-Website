@@ -276,6 +276,7 @@ interface AlgorithmDef<P, R> {
 | Id | Course / lesson | Notes |
 |----|-----------------|-------|
 | `bfs`, `dfs` | prerequisites | trees, discovery order, layers |
+| `havel-hakimi` | theory 01 | input `params: seq="…"`, empty graph body; state panel shows the current sequence; builds the realising graph backwards (or reports "not graphic") |
 | `kruskal` | algorithms 01 | union-find state panel |
 | `jarnik` | algorithms 01 | Jarník / Prim, heap state panel |
 | `boruvka` | algorithms 01 | per phase: cheapest edge per component, contraction |

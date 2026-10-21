@@ -402,10 +402,10 @@ modified with normal statements (add edges, attributes, `remove`, classes).
 | Generator | Vertex ids | Default layout |
 |-----------|-----------|----------------|
 | `K(n)` complete graph | `1..n` | `circle` |
-| `K(m,n)` complete bipartite | `a1..am`, `b1..bn` | `bipartite` |
+| `K(m,n)` complete bipartite | `1..m`, `1'..n'` (lecture convention) | `bipartite` |
 | `K(n1,n2,...,nk)` complete multipartite | `p1_1..`, `p2_1..` … | `circle` |
 | `C(n)` cycle | `1..n` | `circle` |
-| `P(n)` path on `n` vertices | `1..n` | `line` |
+| `P(n)` path **of length `n`** (lecture convention: $n$ edges, $n+1$ vertices) | `0..n` | `line` |
 | `E(n)` empty graph | `1..n` | `circle` |
 | `Star(n)` star $K_{1,n}$ | centre `0`, leaves `1..n` | `star` |
 | `Wheel(n)` wheel, rim of `n` | hub `0`, rim `1..n` | `wheel` |
@@ -417,6 +417,9 @@ modified with normal statements (add edges, attributes, `remove`, classes).
 | `Gnm(n,m,seed=s)` | `1..n` | `force` |
 | `RandomTree(n,seed=s)` | `1..n` | `tree` |
 | `RandomWeights(lo,hi,seed=s)` | — (transform: assigns `w` to all edges of the graph so far) | — |
+
+An algorithm player whose algorithm constructs the graph itself (e.g. `algo: havel-hakimi` with
+`params: seq="4,4,3,3,1,1,0"`) may have an empty graph body.
 
 Transforms take a graph expression and return a new graph:
 
