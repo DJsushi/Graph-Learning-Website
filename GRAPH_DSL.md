@@ -122,7 +122,7 @@ a                                // declare vertex a
 a b c d                          // declare several vertices
 v1 [label="$v_1$" class=source]  // attributes
 x @(0, 1)                        // pinned position
-x [label="$x$"] @(2, -1.5)       // both, in this order
+x [label="$x$"] @(2, -1.5)       // both (either order is accepted)
 ```
 
 - Vertices are created implicitly by edges, so declaring them is only needed for isolated
@@ -473,7 +473,7 @@ directive   = keyword ":" rest-of-statement ;      (* keyword ∈ known directiv
 step        = "step" ":" text ;
 panel       = "panel" ":" text ;
 
-vertex-stmt = ident { ident } [ attrs ] [ position ] ;
+vertex-stmt = ident { ident } ( [ attrs ] [ position ] | position attrs ) ;
 position    = "@(" number "," number ")" ;
 
 edge-stmt   = ident op ident { op ident } [ attrs ] ;
