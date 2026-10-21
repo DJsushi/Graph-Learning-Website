@@ -3,7 +3,7 @@ import path from 'node:path'
 import katex from 'katex'
 import container from 'markdown-it-container'
 import { tex } from '@mdit/plugin-tex'
-import type MarkdownIt from 'markdown-it'
+import type { MarkdownRenderer as MarkdownIt } from 'vitepress'
 import {
   loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES,
   type Course,
@@ -73,7 +73,7 @@ export function renderPseudo(code: string): string {
 
 export function setupMarkdown(md: MarkdownIt) {
   // ---- math ----
-  md.use(tex, {
+  md.use(tex as any, {
     delimiters: 'dollars',
     render: (content: string, displayMode: boolean, env: any) => renderTex(content, displayMode, env?.relativePath),
   })
@@ -127,7 +127,8 @@ export function setupMarkdown(md: MarkdownIt) {
   // ---- containers ----
   const opened: { type: string }[] = []
   for (const type of CONTAINER_TYPES) {
-    md.use(container, type, {
+    // markdown-it-container's types target a different markdown-it version than VitePress bundles
+    md.use(container as any, type, {
       validate: (params: string) => params.trim().split(/[\s{]/)[0] === type,
       render: (tokens: any[], idx: number, _o: any, env: any) => {
         const tok = tokens[idx]
