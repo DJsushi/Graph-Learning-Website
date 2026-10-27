@@ -106,7 +106,7 @@ there is no topic layer, and there are no dependency links.
     `defines`, then the text.
   - Filters: chips for kind and course.
   - Interaction: results show the rendered statement. ↑/↓/Enter move through them, and `/` focuses the box.
-- [ ] I6 Check in Chrome, with the dev server running outside the sandbox:
+- [x] I6 Check in Chrome, with the dev server running outside the sandbox:
   - the search finds "Menger", "T5.2" and "cut vertex";
   - Ctrl-K "Menger" lands on the entry;
   - the topic pages render;

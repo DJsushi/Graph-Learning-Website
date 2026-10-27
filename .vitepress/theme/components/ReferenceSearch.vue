@@ -56,6 +56,7 @@ function onSlash(ev: KeyboardEvent) {
   const t = ev.target as HTMLElement
   if (t.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return
   ev.preventDefault()
+  ev.stopPropagation()   // VitePress local search also opens on '/' (window listener); here '/' means this box
   box.value?.focus()
 }
 
