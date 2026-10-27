@@ -8,7 +8,8 @@ import RichText from '../RichText.vue'
 import StepControls from './StepControls.vue'
 import { positioned, positionsOf } from '../positions'
 
-const props = defineProps<{ doc: GraphDoc; height: number; pseudocode?: string; graph?: GraphData; params?: Record<string, string>; algo?: string }>()
+// bare: the host shows the algorithm name itself (playground)
+const props = defineProps<{ doc: GraphDoc; height: number; pseudocode?: string; graph?: GraphData; params?: Record<string, string>; algo?: string; bare?: boolean }>()
 
 const algoId = computed(() => props.algo ?? props.doc.directives.algo?.[0] ?? '')
 const def = computed(() => ALGORITHMS[algoId.value])
@@ -58,18 +59,18 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
   <div class="ga-player">
     <div v-if="run.error" class="ga-graph-error" role="alert">{{ run.error }}</div>
     <template v-else-if="cur">
-      <div class="ga-player-head">
+      <div v-if="!bare" class="ga-player-head">
         <span class="ga-player-name">{{ def?.name }}</span>
       </div>
       <!-- with side panels (residual network) the graphs take the full width, side by side; code and state go below -->
       <div class="ga-player-body" :class="{ 'ga-has-side': (codeHtml || stateEntries.length) && !panels.length }">
         <div class="ga-player-main" :class="{ 'ga-player-graphs': panels.length }">
           <div class="ga-side-graph">
-            <div v-if="panels.length" class="ga-panel-title"><RichText text="network $G$" /></div>
+            <div v-if="panels.length" class="ga-pane-caption"><RichText text="network $G$" /></div>
             <GraphView :graph="shownGraph" :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
           </div>
           <div v-for="(p, i) in panels" :key="i" class="ga-side-graph">
-            <div class="ga-panel-title"><RichText :text="p.title" /></div>
+            <div class="ga-pane-caption"><RichText :text="p.title" /></div>
             <GraphView :graph="p.graph" :overlay="p.overlay" :max-height="height" :aria-label="p.title.replace(/\$/g, '')" />
           </div>
         </div>

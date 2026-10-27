@@ -230,10 +230,13 @@ const TOOL_INFO: Record<Tool, { label: string; hint: string; icon: string }> = {
         <slot name="toolbar" />
       </div>
     </div>
+    <div class="ga-editor-stage">
     <GraphView ref="view" :graph="g" :overlay="overlay" :selection="selection" editable :fill="fill" :zoomable="fill" :background-pan="fill"
       :max-height="height" :preview="preview" aria-label="Editable graph"
       @vertex-down="onVertexDown" @move="onMove" @up="onUp" @background-down="onBackgroundDown" @edge-down="onEdgeDown"
       @background-dblclick="(p) => can('vertex') && tool === 'move' && addVertex(p)" @key="onKey" />
+    <slot name="side" />
+    </div>
     <div class="ga-sr-only" aria-live="polite">{{ status }}</div>
   </div>
 </template>

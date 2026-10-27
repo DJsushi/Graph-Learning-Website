@@ -16,6 +16,7 @@ import GraphView from '@gv/GraphView.vue'
 import PlayerWidget from '@gv/widgets/PlayerWidget.vue'
 import RichText from '@gv/RichText.vue'
 import { positioned } from '@gv/positions'
+import Splitter from './Splitter.vue'
 
 const STORE = 'graph-atlas-playground-v1'
 const START = `// Edit the graph on the canvas or here.\nuse: Petersen\n`
@@ -31,6 +32,31 @@ const residualView = ref<InstanceType<typeof GraphView>>()
 const residual = computed(() => new FlowState(graph.value).residualGraph())
 function fit() { editor.value?.resetView(); residualView.value?.resetView() }
 watch(showResidual, () => nextTick(fit))
+
+// ---------- pane sizes (persisted) ----------
+const LAYOUT_STORE = 'graph-atlas-playground-layout-v1'
+const DEFAULTS = { left: 250, right: 320, split: 0.5 }
+const sizes = ref({ ...DEFAULTS })
+const clamp = (x: number, a: number, b: number) => Math.min(b, Math.max(a, x))
+const narrow = ref(false)
+function resizeLeft(d: number) { sizes.value.left = clamp(sizes.value.left + d, 180, 420) }
+function resizeRight(d: number) { sizes.value.right = clamp(sizes.value.right - d, 240, 520) }
+function resizeSplit(d: number) {
+  const el = document.querySelector('.ga-playground-canvas .ga-editor-stage')
+  const len = el ? (narrow.value ? el.clientHeight : el.clientWidth) : 0
+  if (len) sizes.value.split = clamp(sizes.value.split + d / len, 0.25, 0.75)
+}
+function saveSizes() {
+  try { localStorage.setItem(LAYOUT_STORE, JSON.stringify(sizes.value)) } catch { /* ignore */ }
+}
+const layoutStyle = computed(() => ({ '--pg-left': `${sizes.value.left}px`, '--pg-right': `${sizes.value.right}px` }))
+const splitStyle = computed(() => ({ '--pg-a': String(sizes.value.split), '--pg-b': String(1 - sizes.value.split) }))
+onMounted(() => {
+  try { Object.assign(sizes.value, JSON.parse(localStorage.getItem(LAYOUT_STORE) ?? '{}')) } catch { /* ignore */ }
+  const mq = matchMedia('(max-width: 900px)')
+  narrow.value = mq.matches
+  mq.addEventListener('change', e => { narrow.value = e.matches })
+})
 
 // ---------- load / save ----------
 function fromText(text: string): GraphData | undefined {
@@ -190,7 +216,7 @@ const algoNote = computed(() => {
   const a = algo.value
   if (!a) return ''
   if (a.directed && !isDirected.value) return 'This algorithm needs a directed graph with capacities c (switch the graph type above).'
-  if (['kruskal', 'jarnik', 'boruvka'].includes(a.id)) return 'Uses edge weights w (default 1). Set them in the inspector or with “Random weights”.'
+  if (['kruskal', 'jarnik', 'boruvka'].includes(a.id)) return 'Uses edge weights w (default 1). Set them in the inspector or with Randomize › Weights.'
   if (a.directed) return 'Uses arc capacities c (or weights w for arborescences).'
   return ''
 })
@@ -286,7 +312,7 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
 </script>
 
 <template>
-  <div class="ga-playground">
+  <div class="ga-playground" :style="layoutStyle">
     <aside class="ga-pg-left" aria-label="Graph">
       <section>
         <h2>Graph</h2>
@@ -323,43 +349,52 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
         </div>
       </section>
       <section>
-        <h2>Weights</h2>
+        <h2>Randomize</h2>
         <div class="ga-field-row">
-          <button type="button" class="ga-btn" @click="randomWeights('w')">Random weights</button>
-          <button type="button" class="ga-btn" @click="randomWeights('c')">Random capacities</button>
+          <button type="button" class="ga-btn" title="Random edge weights w from 1 to 12" @click="randomWeights('w')">Weights</button>
+          <button type="button" class="ga-btn" title="Random capacities c from 1 to 12" @click="randomWeights('c')">Capacities</button>
         </div>
       </section>
     </aside>
+    <Splitter class="ga-pg-split-left" label="Left sidebar width" :value="sizes.left" @resize="resizeLeft" @end="saveSizes" @reset="sizes.left = DEFAULTS.left" />
 
     <main class="ga-pg-center">
-      <div class="ga-seg ga-mode" role="tablist" aria-label="Mode">
-        <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'edit'" :class="{ active: mode === 'edit' }" @click="mode = 'edit'">Edit</button>
-        <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'run'" :class="{ active: mode === 'run' }" @click="mode = 'run'">Run {{ algo?.name }}</button>
+      <div class="ga-pg-bar">
+        <div class="ga-seg ga-mode" role="tablist" aria-label="Mode">
+          <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'edit'" :class="{ active: mode === 'edit' }" @click="mode = 'edit'">Edit</button>
+          <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'run'" :class="{ active: mode === 'run' }" @click="mode = 'run'">Run</button>
+        </div>
+        <span class="ga-pg-algo">{{ mode === 'run' ? algo?.name : '' }}</span>
       </div>
-      <div v-show="mode === 'edit'" class="ga-playground-canvas" :class="{ 'ga-split': showResidual && isDirected }">
+      <div v-show="mode === 'edit'" class="ga-playground-canvas" :style="splitStyle">
         <EditableGraph ref="editor" v-model="graph" fill @select="(s) => (sel = s)">
           <template #toolbar>
             <button v-if="isDirected" type="button" class="ga-btn" :class="{ active: showResidual }" :aria-pressed="showResidual"
               title="Show the residual network of the current flow f next to the graph" @click="showResidual = !showResidual">Residual</button>
             <button type="button" class="ga-btn" title="Fit the drawing to the canvas" @click="fit">Fit</button>
           </template>
+          <template v-if="showResidual && isDirected" #side>
+            <Splitter :vertical="narrow" label="Split between graph and residual network" :value="Math.round(sizes.split * 100)"
+              @resize="resizeSplit" @end="saveSizes(); fit()" @reset="sizes.split = DEFAULTS.split" />
+            <div class="ga-pg-residual">
+              <div class="ga-pane-caption"><RichText text="residual network $G_f$" /></div>
+              <GraphView ref="residualView" :graph="residual" fill zoomable background-pan aria-label="Residual network" />
+            </div>
+          </template>
         </EditableGraph>
-        <div v-if="showResidual && isDirected" class="ga-pg-residual">
-          <div class="ga-panel-title"><RichText text="residual network $G_f$ (capacities $c - f$ forward, $f$ backward)" /></div>
-          <GraphView ref="residualView" :graph="residual" fill zoomable background-pan aria-label="Residual network" />
-        </div>
       </div>
       <div v-if="mode === 'run'" class="ga-pg-run">
-        <PlayerWidget :key="algoId + JSON.stringify(algoParams)" :doc="parseGraph('show: pseudocode state residual')" :graph="runGraph" :algo="algoId" :params="algoParams" :height="420" :pseudocode="runPseudo" />
+        <PlayerWidget :key="algoId + JSON.stringify(algoParams)" :doc="parseGraph('show: pseudocode state residual')" :graph="runGraph" :algo="algoId" :params="algoParams" :height="420" :pseudocode="runPseudo" bare />
       </div>
       <p class="ga-pg-message" role="status" aria-live="polite">{{ message }}</p>
     </main>
+    <Splitter class="ga-pg-split-right" label="Right sidebar width" :value="sizes.right" @resize="resizeRight" @end="saveSizes" @reset="sizes.right = DEFAULTS.right" />
 
     <aside class="ga-pg-right" aria-label="Tools">
       <div class="ga-tabs" role="tablist">
         <button v-for="t in (['inspect', 'properties', 'algorithms', 'text', 'io'] as const)" :key="t" type="button" role="tab" class="ga-tab"
-          :aria-selected="tab === t" :class="{ active: tab === t }" @click="tab = t">
-          {{ { inspect: 'Inspect', properties: 'Properties', algorithms: 'Algorithms', text: 'Text', io: 'Import / export' }[t] }}
+          :aria-selected="tab === t" :class="{ active: tab === t }" :title="{ inspect: 'Inspect the selection', properties: 'Graph properties', algorithms: 'Run an algorithm', text: 'Edit as text', io: 'Import and export' }[t]" @click="tab = t">
+          {{ { inspect: 'Inspect', properties: 'Properties', algorithms: 'Algorithm', text: 'Text', io: 'I/O' }[t] }}
         </button>
       </div>
 
