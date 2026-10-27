@@ -55,7 +55,7 @@ describe('interpolate', () => {
   it('reverse plays the merge backwards', () => {
     const r = interpolate(s1.graph, s0.graph, 0.3, s1.merges, true)
     const u = r.graph.vertices.find(v => v.id === 'u')!
-    expect(u.x).toBeLessThan(0) // u overshoots past its own place (x = 0): spring
+    expect(u.x).toBeCloseTo(0.875) // no overshoot: a split is the merge played backwards
     expect(r.fade['v:w']).toBeUndefined()
   })
 })
@@ -68,5 +68,27 @@ describe('renamed arcs', () => {
     expect(r.graph.edges.map(e => e.id)).toEqual(['e1'])
     expect(r.fade['e:e1']).toBeUndefined()
     expect(r.fade['e:e1x']).toBeUndefined()
+  })
+})
+
+describe('parallel edges', () => {
+  const one = parseGraph('layout: fixed\na @(0,0); b @(2,0)\na -- b [id=e1]').panels[0].graph
+  const two = parseGraph('layout: fixed\na @(0,0); b @(2,0)\na -- b [id=e1]; a -- b [id=e2]').panels[0].graph
+  const bend = (g: ReturnType<typeof interpolate>, id: string) => g.graph.edges.find(e => e.id === id)?.data.bend as number | undefined
+  it('one edge becomes two: the new edge grows out of the old one and springs apart', () => {
+    expect(bend(interpolate(one, two, 0.05), 'e2')).toBeCloseTo(0) // starts on top of e1
+    const peaks = [0.5, 0.6, 0.7, 0.8].map(t => Math.abs(bend(interpolate(one, two, t), 'e2')!))
+    expect(Math.max(...peaks)).toBeGreaterThan(0.16 * 1.05) // overshoots its final bend (0.16)
+    expect(interpolate(one, two, 0.05).fade['e:e2']).toBeUndefined() // no fade
+    expect(interpolate(one, two, 1).graph).toBe(two)
+  })
+  it('two edges become one: the leaving edge bends onto the stayer', () => {
+    const r = interpolate(two, one, 0.9)
+    expect(Math.abs(bend(r, 'e2')!)).toBeLessThan(0.05)
+    expect(Math.abs(bend(r, 'e1')!)).toBeLessThan(0.05)
+    expect(r.fade['e:e2']).toBeUndefined()
+  })
+  it('unchanged edges keep their data', () => {
+    expect(bend(interpolate(one, one, 0.5), 'e1')).toBeUndefined()
   })
 })

@@ -36,8 +36,32 @@ function arrowHead(tip: Pt, dir: Pt, size = ARROW): string {
   return `M${f(tip.x)},${f(tip.y)} L${f(a.x)},${f(a.y)} L${f(b.x)},${f(b.y)} Z`
 }
 
+/** Bend of every ordinary non-loop edge: parallel edges fan out around the straight line; `data.bend` overrides. */
+export function defaultBends(g: GraphData): Map<Id, number> {
+  const groups = new Map<string, Edge[]>()
+  for (const e of g.edges) {
+    if (e.hyper) continue
+    const [a, b] = ends(e)
+    if (a === b) continue
+    const key = a < b ? `${a}\u0000${b}` : `${b}\u0000${a}`
+    groups.set(key, [...(groups.get(key) ?? []), e])
+  }
+  const out = new Map<Id, number>()
+  for (const [key, es] of groups) {
+    const [ca] = key.split('\u0000')
+    es.forEach((e, i) => {
+      // canonical orientation so that antiparallel arcs separate
+      const canon = ends(e)[0] === ca ? 1 : -1
+      const k = es.length
+      out.set(e.id, e.data.bend !== undefined ? Number(e.data.bend) : k > 1 ? (i - (k - 1) / 2) * 0.32 * canon : 0)
+    })
+  }
+  return out
+}
+
 export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: boolean; radius?: (id: Id) => number } = {}): EdgeGeom[] {
   const rad = opts.radius ?? (() => R)
+  const bends = defaultBends(g)
   const groups = new Map<string, Edge[]>()
   const loops = new Map<Id, Edge[]>()
   for (const e of g.edges) {
@@ -48,17 +72,12 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
     groups.set(key, [...(groups.get(key) ?? []), e])
   }
   const out: EdgeGeom[] = []
-  for (const [key, es] of groups) {
-    const [ca] = key.split('\u0000')
-    es.forEach((e, i) => {
+  for (const es of groups.values()) {
+    es.forEach(e => {
       const [a, b] = ends(e)
       const P = pos.get(a), Q = pos.get(b)
       if (!P || !Q) return
-      // canonical orientation so that antiparallel arcs separate
-      const canon = a === ca ? 1 : -1
-      const k = es.length
-      let bend = k > 1 ? (i - (k - 1) / 2) * 0.32 * canon : 0
-      if (e.data.bend !== undefined) bend = Number(e.data.bend)
+      const bend = bends.get(e.id) ?? 0
       const v = sub(Q, P), L = len(v), n = perp(unit(v))
       if (Math.abs(bend) < 1e-6) {
         const u = unit(v)

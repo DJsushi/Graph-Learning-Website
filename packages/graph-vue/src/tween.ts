@@ -1,5 +1,6 @@
 // Frame-to-frame interpolation of two graph snapshots that share vertex/edge ids.
-import type { Edge, GraphData, Id, Merge, Vertex } from '@core/model'
+import { ends, type Edge, type GraphData, type Id, type Merge, type Vertex } from '@core/model'
+import { defaultBends } from './geometry'
 
 export interface Tweened {
   graph: GraphData
@@ -16,7 +17,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x))
 const smooth = (x: number) => { const k = clamp01(x); return k * k * (3 - 2 * k) }
 // Choreography: leaving edges fade first, vertices slide over the whole span, arrivals fade in last
-/** damped spring from 0 to 1: overshoots, then settles (a split snaps apart like a rubber band) */
+/** damped spring from 0 to 1: overshoots, then settles (an edge fanning out snaps like a rubber band) */
 export const spring = (x: number) => { const k = clamp01(x); return k >= 1 ? 1 : 1 - Math.exp(-5 * k) * Math.cos(8 * k) }
 const out = (u: number, early = 0.4) => 1 - smooth(u / early)
 const inn = (u: number, late = 0.4) => smooth((u - (1 - late)) / late)
@@ -32,7 +33,7 @@ export function interpolate(a: GraphData, b: GraphData, t: number, merges: Merge
 }
 
 /** s -> d at progress u; `dest` is the graph the viewer is really heading to (its classes win for shared elements). */
-function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: GraphData, splitting: boolean): Tweened {
+function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: GraphData, reversed: boolean): Tweened {
   const fade: Record<string, number> = {}
   const sv = new Map(s.vertices.filter(visible).map(v => [v.id, v]))
   const dv = new Map(d.vertices.filter(visible).map(v => [v.id, v]))
@@ -49,8 +50,7 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   const goo = new Set<Id>()
   const ghost: Id[] = []
   // the members finish sliding at 80%: the last stretch is a single round blob, so the hand-off to the merged vertex is invisible
-  // a split (time reversed) pops apart on a spring instead of easing out
-  const pm = splitting ? 1 - spring((1 - u - 0.1) / 0.9) : clamp01(u / 0.8)
+  const pm = clamp01(u / 0.8)
   for (const [to, from] of sources) for (const f of from) { goo.add(f); if (f !== to) fade[`l:${f}`] = out(u, 0.35) }
   const place = (v: Vertex, p: { x: number; y: number }, f: number) => {
     vertices.push({ ...v, x: p.x, y: p.y })
@@ -86,22 +86,61 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
     const ends = [...e.tail, ...e.head].map(map)
     return (e.directed ? ends : [...ends].sort()).join('>')
   }
+
+  // Parallel edges fan out around the straight line (data.bend). Edges that appear next to a sibling grow out of it and
+  // bend away on a spring; edges that disappear next to a sibling bend onto it and vanish under it.
+  const bs = defaultBends({ ...s, edges: [...se.values()] }), bd = defaultBends({ ...d, edges: [...de.values()] })
+  const pairKey = (e: Edge) => { const [a, b] = ends(e); return a < b ? `${a}\u0000${b}` : `${b}\u0000${a}` }
+  const sizes = (m: Map<Id, Edge>) => { const n = new Map<string, number>(); for (const e of m.values()) if (!e.hyper) n.set(pairKey(e), (n.get(pairKey(e)) ?? 0) + 1); return n }
+  const ns = sizes(se), nd = sizes(de)
+  const delay = merges.length ? 0.3 : 0.1
+  const bendEdge = (e: Edge, startF: number | undefined, endF: number | undefined, nS: number, nD: number): Edge => {
+    if (startF === undefined || endF === undefined || Math.abs(startF - endF) < 1e-6) return e
+    const t = reversed ? 1 - u : u // viewer's progress
+    const [b0, b1] = reversed ? [endF, startF] : [startF, endF]
+    const grows = reversed ? nS > nD : nD > nS
+    const w = (t - delay) / (1 - delay)
+    return { ...e, data: { ...e.data, bend: lerp(b0, b1, grows ? spring(w) : smooth(w)) } }
+  }
+  const sharedBy = (m: Map<Id, Edge>, other: Map<Id, Edge>, k: string) => [...m.values()].find(e => other.has(e.id) && pairKey(e) === k)
+
   // arcs renamed by the step (e.g. after a contraction) still slide: pair them up by their (merged) endpoints
   const waiting = new Map<string, Edge[]>()
   for (const f of lone) { const k = key(f, x => x); waiting.set(k, [...(waiting.get(k) ?? []), f]) }
   const paired = new Set<Id>()
   for (const [id, e] of se) {
+    const nS = ns.get(pairKey(e)) ?? 1
     if (de.has(id)) {
       // shared edge: dest classes, but s endpoints, so it follows the sliding vertices
-      edges.push({ ...(dest.edges.find(x => x.id === id) ?? de.get(id)!), tail: e.tail, head: e.head })
+      const f = de.get(id)!
+      const shared: Edge = { ...(dest.edges.find(x => x.id === id) ?? f), tail: e.tail, head: e.head }
+      edges.push(bendEdge(shared, bs.get(id), bd.get(id), nS, nd.get(pairKey(f)) ?? 1))
       continue
     }
     const f = waiting.get(key(e, x => target.get(x) ?? x))?.shift()
-    if (f) { paired.add(f.id); edges.push({ ...(dest === d ? f : e), id: e.id, tail: e.tail, head: e.head }); continue }
+    if (f) {
+      paired.add(f.id)
+      edges.push(bendEdge({ ...(dest === d ? f : e), id: e.id, tail: e.tail, head: e.head }, bs.get(e.id), bd.get(f.id), nS, nd.get(pairKey(f)) ?? 1))
+      continue
+    }
+    const sib = sharedBy(se, de, pairKey(e)) // still there afterwards: bend onto it
+    if (sib) { edges.push(bendEdge(e, bs.get(id), bd.get(sib.id), nS, nd.get(pairKey(de.get(sib.id)!)) ?? 1)); continue }
     edges.push(e)
     fade[`e:${id}`] = out(u)
   }
-  for (const f of lone) if (!paired.has(f.id)) { edges.push(f); fade[`e:${f.id}`] = inn(u) }
+  for (const f of lone) {
+    if (paired.has(f.id)) continue
+    const sib = sharedBy(de, se, pairKey(f)) // was there before: grow out of it
+    const sibS = sib && se.get(sib.id)
+    if (sib && sibS) {
+      const same = sib.tail[0] === f.tail[0]
+      const born: Edge = { ...f, tail: same ? sibS.tail : sibS.head, head: same ? sibS.head : sibS.tail }
+      edges.push(bendEdge(born, bs.get(sib.id), bd.get(f.id), ns.get(pairKey(sibS)) ?? 1, nd.get(pairKey(f)) ?? 1))
+      continue
+    }
+    edges.push(f)
+    fade[`e:${f.id}`] = inn(u)
+  }
   const base = u < 0.5 ? s : d
   return { graph: { ...base, vertices, edges }, fade, goo: goo.size ? [...goo] : undefined, ghost: ghost.length ? ghost : undefined }
 }
