@@ -28,7 +28,12 @@ $G$ is **$k$-edge-connected** if after deleting any at most $k - 1$ edges of $G$
 
 So "$1$-connected" and "$1$-edge-connected" both mean connected. A vertex whose removal disconnects a connected graph is a
 **cut vertex**, and an edge whose removal disconnects it is a **bridge**. The convention for complete graphs is needed because
-deleting vertices from $K_n$ never disconnects it; without the convention $K_n$ would be "infinitely connected".
+deleting vertices from $K_n$ never disconnects it: without the convention, $K_n$ would be $n$-connected (deleting $n - 1$ vertices
+leaves $K_1$), although no two of its vertices are joined by $n$ internally disjoint paths.
+<!-- REVIEW: was "K_n would be infinitely connected"; deleting all n vertices leaves the empty graph, which is not connected (t02), so literally K_n is n- but not (n+1)-connected. -->
+<!-- REVIEW: for multigraphs the convention is read as applying to every multigraph whose underlying simple graph is K_n (the board states it for K_n only). -->
+
+
 
 ```graph id=t05-connectivity-examples widget=figure
 caption: Left: a cut vertex in the middle; the graph is connected and even 2-edge-connected, but not 2-connected. Right: $K_4$ is 3-connected.
@@ -59,8 +64,10 @@ destroys that edge.
 ## Menger's theorem
 
 ::: theorem {#thm:menger title="Menger's theorem (undirected, vertex and edge versions)" source="theory/2026-10-13 p2"}
-a) An undirected (simple) graph $G$ is $k$-connected $\iff$ for all $s \ne t \in V(G)$ there exist $k$ internally disjoint $s$–$t$
-paths.
+a) An undirected (simple) graph $G$ with at least $2$ vertices is $k$-connected $\iff$ for all $s \ne t \in V(G)$ there exist $k$ internally
+disjoint $s$–$t$ paths.
+<!-- REVIEW: board says "undirected multigraph" in a); restricted to simple graphs (multigraphs: see the remark after the proof). "At least 2 vertices" added: for K_1 the right side is vacuous, but K_1 is not 2-connected. -->
+
 
 b) An undirected multigraph $G$ is $k$-edge-connected $\iff$ for all $s \ne t \in V(G)$ there exist $k$ edge-disjoint $s$–$t$ paths.
 :::
@@ -75,8 +82,11 @@ a -- b [class=color1 bend=0.5]; a -- b [class=color2]; a -- b [class=color3 bend
 b -- t [class=color1 bend=0.5]; b -- t [class=color2]; b -- t [class=color3 bend=-0.5]
 ```
 
-The direction "$\Leftarrow$" is easy in both cases: if $k$ internally disjoint (resp. edge-disjoint) $s$–$t$ paths exist, deleting
-$k - 1$ vertices other than $s, t$ (resp. $k - 1$ edges) destroys at most $k - 1$ of them, so $s$ and $t$ remain connected. The
+The direction "$\Leftarrow$" is easy in both cases: let $X$ be a set of at most $k - 1$ vertices (resp. $F$ a set of at most $k - 1$ edges)
+and $s \ne t$ two vertices not in $X$. Of the $k$ internally disjoint (resp. edge-disjoint) $s$–$t$ paths, $X$ (resp. $F$) destroys at most $k - 1$,
+so $s$ and $t$ remain connected. In a), $G - X$ is also non-empty: a simple graph has at most $1 + (n - 2)$ internally disjoint $s$–$t$ paths
+(at most one is the edge $st$, the others have distinct inner vertices), so $n \ge k + 1$.
+<!-- REVIEW: gap filled: s, t range over vertices outside X, and G − X ≠ ∅ (empty graph is not connected). --> The
 direction "$\Rightarrow$" is the deep part. As the lecture puts it, **this is better done in digraphs**: we prove a directed,
 local version (for one fixed pair $s, t$), and derive everything else from it.
 
@@ -89,6 +99,7 @@ size $\le k - 1$.
 B) $G$ contains $k$ edge-disjoint directed $s$–$t$ paths $\iff$ $G$ has no directed $s$–$t$ edge cut of size $\le k - 1$.
 :::
 
+<!-- REVIEW: hypothesis "no arc from s to t" in A) added; not on the board (p5). -->
 The assumption "no arc from $s$ to $t$" in A) is necessary (and missing on the board): with a single arc $(s, t)$ there is no cut of any
 size, but only one path. Equivalently, the maximum number of internally disjoint (edge-disjoint) $s$–$t$ paths equals the minimum
 size of an $s$–$t$ cut (edge cut).
@@ -224,11 +235,12 @@ $s$–$t$ paths of $G$; a set of at most $k - 1$ arcs (vertices) whose removal d
 edges (the same vertices) whose removal destroys all $s$–$t$ paths of $G$.
 
 **b)** Let $G$ be $k$-edge-connected and $s \ne t$. Then $G$ has no $s$–$t$ edge cut of size $\le k - 1$, hence neither does $D$, and by
-[[thm:menger-directed]] B and its proof $D$ has an $s$–$t$ d-flow $F$ of size $k$. If $F$ contains both arcs $(u, v), (v, u)$ coming from one edge,
+[[thm:menger-directed]] B, $D$ has $k$ edge-disjoint directed $s$–$t$ paths; their arcs form an $s$–$t$ d-flow $F$ of size $k$ (no path enters $s$
+or leaves $t$, and each path enters and leaves each of its inner vertices once). <!-- REVIEW: was "by B and its proof D has a d-flow of size k"; the proof gives a maximum d-flow of size ≥ k, so take the union of k paths instead. --> If $F$ contains both arcs $(u, v), (v, u)$ coming from one edge,
 remove both: $F$ stays a d-flow of the same size (both $u$ and $v$ lose one in- and one out-arc). Now the $k$ edge-disjoint paths in $F$
 ([[claim:d-flow-paths]]) use every undirected edge of $G$ at most once, so they are $k$ edge-disjoint $s$–$t$ paths in $G$.
 
-**a)** Let $G$ be a simple $k$-connected graph and $s \ne t$. If $st \notin E(G)$, every $s$–$t$ cut has at least $k$ vertices (deleting fewer leaves
+**a)** Let $G$ be a simple $k$-connected graph and $s \ne t$. For $k = 1$, $G$ is connected and one $s$–$t$ path suffices; let $k \ge 2$. <!-- REVIEW: case k = 1 added; the case st ∈ E(G) below uses (k−1)-connectivity, defined only for k−1 ≥ 1. --> If $st \notin E(G)$, every $s$–$t$ cut has at least $k$ vertices (deleting fewer leaves
 $G$ connected), so by A applied to $D$ there are $k$ internally disjoint $s$–$t$ paths. If $st \in E(G)$, consider $G - st$. It is
 $(k-1)$-connected: otherwise some $X$ with $\abs{X} \le k - 2$ disconnects $G - st$ but not $G$, so $st$ is a bridge of $G - X$ with sides $S \ni s$
 and $T \ni t$. As $G$ has at least $k + 1$ vertices, $G - X$ has at least $3$, so one side, say $S$, has another vertex besides $s$; then
@@ -237,8 +249,11 @@ $k - 1$ internally disjoint $s$–$t$ paths in $G - st$; together with the edge 
 :::
 
 ::: remark
-For multigraphs, a) holds if we also count parallel $s$–$t$ edges as separate (internally disjoint) paths; vertex connectivity itself does
-not change when edges are duplicated. Note also that b) gives an efficient way to compute edge connectivity: it is the minimum, over pairs,
+For multigraphs (as on the board), vertex connectivity does not see parallel edges or loops: a multigraph is $k$-connected iff its
+underlying simple graph is (with the convention for $K_n$ applied to the underlying simple graph). So a) holds for multigraphs if all
+parallel $s$–$t$ edges together count as **one** path. Counting them separately would fail: $K_2$ with $3$ parallel edges has $3$ internally
+disjoint paths but is only $1$-connected.
+<!-- REVIEW: was "a) holds if we also count parallel s–t edges as separate paths", which contradicts the K_n convention (counterexample above). --> Note also that b) gives an efficient way to compute edge connectivity: it is the minimum, over pairs,
 of the maximum number of edge-disjoint paths, which is a maximum-flow computation.
 :::
 
@@ -247,6 +262,7 @@ of the maximum number of edge-disjoint paths, which is a maximum-flow computatio
 ::: theorem {#thm:total-menger title="Set version of Menger's theorem" aka="total Menger" source="theory/2026-10-13 p2"}
 A graph $G$ with at least $k + 1$ vertices is $k$-connected $\iff$ for all $S, T \subseteq V(G)$ with $\abs{S} = \abs{T} = k$ there exist $k$ (vertex-)disjoint
 paths, each with one end in $S$ and the other end in $T$.
+<!-- REVIEW: "at least k + 1 vertices" added (not on the board, p2): K_k satisfies the right side (trivial paths for S = T = V) but is not k-connected. -->
 :::
 
 Paths of length $0$ are allowed: a vertex of $S \cap T$ is a path from $S$ to $T$ on its own. (This answers the question "$S = T$?" on the board:
@@ -284,6 +300,7 @@ Let $G$ be a graph with at least $3$ vertices. Then
 a) $G$ is $2$-connected $\iff$ every two vertices of $G$ lie on a common cycle;
 
 b) $G$ is $2$-connected $\iff$ every two edges of $G$ lie on a common cycle (and $G$ has no isolated vertex).
+<!-- REVIEW: "at least 3 vertices" and "no isolated vertex" are not on the board (p3). Both needed: K_2 is not 2-connected; a triangle plus an isolated vertex satisfies "every two edges lie on a common cycle". -->
 :::
 
 ::: proof
@@ -295,8 +312,10 @@ two disjoint paths $P_1, P_2$, each containing exactly one vertex of $S$ and one
 walk in which no vertex repeats, i.e. a cycle containing $e$ and $f$. (If $e$ and $f$ share a vertex, say $b = c$, then one of the paths is the trivial
 path $b$, and the cycle is $e$, $f$ plus a $d$–$a$ path avoiding $b$; if $e = f$, take any cycle through $e$ and another edge.)
 
-($\Leftarrow$) Given vertices $u \ne v$, choose edges $e \ni u$ and $f \ni v$ (no vertex is isolated). A cycle through $e$ and $f$ passes through $u$ and $v$, so a)
-applies.
+($\Leftarrow$) Given vertices $u \ne v$, choose distinct edges $e \ni u$ and $f \ni v$ (no vertex is isolated; if $uv$ is the only edge at both $u$ and $v$,
+take $e = uv$ and $f$ any other edge, which exists as $G$ has at least $3$ vertices and none is isolated). A cycle through $e$ and $f$ passes through $u$
+and $v$, so a) applies.
+<!-- REVIEW: gap filled: e and f must be distinct for "two edges". -->
 :::
 
 ```graph id=t05-two-edges-cycle widget=figure
@@ -313,6 +332,7 @@ a -- x [class=cycle]; x -- c [class=cycle]; b -- y [class=cycle]; y -- d [class=
 ::: theorem {#thm:ear-decomposition title="Ear decomposition" defines="ear, ear decomposition" source="theory/2026-10-13 p3–4"}
 A graph $G$ is $2$-connected $\iff$ $G$ has an **ear decomposition**, i.e. $G$ can be built from a cycle by repeatedly adding new paths (**ears**)
 between two distinct existing vertices, whose inner vertices are new. (An ear may have no inner vertices, i.e. be a single new edge.)
+<!-- REVIEW: "distinct" ends and "inner vertices new" made explicit (board: "new paths between some two existing vertices", p3). A closed ear would create a cut vertex. -->
 :::
 
 ```graph id=t05-ear-decomposition widget=stepper
@@ -373,7 +393,8 @@ s -- a; s -- b; s -- c; a -- d; b -- e; c -- f; d -- t; e -- t; f -- t; a -- b; 
 
 :::: exercise {#exr:t05-whitney title="Whitney's inequalities" difficulty=2}
 Let $\kappa(G)$ be the largest $k$ such that $G$ is $k$-connected, $\lambda(G)$ the largest $k$ such that $G$ is $k$-edge-connected, and $\delta(G)$ the minimum
-degree. Show that $\lambda(G) \le \delta(G)$, and that $\kappa(G) \le \lambda(G)$ for every simple connected graph with at least $2$ vertices.
+degree. Show that $\kappa(G) \le \lambda(G) \le \delta(G)$ for every simple connected graph $G$ with at least $2$ vertices.
+<!-- REVIEW: the vertex-count hypothesis now covers λ ≤ δ too (for K_1, λ is unbounded while δ = 0). -->
 
 ::: hint
 For the second inequality, use Menger: edge-disjoint paths versus internally disjoint paths.

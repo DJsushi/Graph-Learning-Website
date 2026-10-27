@@ -124,7 +124,7 @@ there is no topic layer, and there are no dependency links.
 - [x] W t03
 - [x] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [x] W t04
-- [ ] M t05 `content/theory/05-connectivity-menger.md`
+- [x] M t05 `content/theory/05-connectivity-menger.md`
 - [ ] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [ ] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [ ] W a01 (link to the tree theory in t03: cut and cycle properties)
@@ -294,5 +294,35 @@ Entries as in M, except:
 Added: intuitions for all 17 entries; pitfalls (chordal ≠ "no C_4"; minimal vs minimum cut; v_n simplicial, reverse order not a decomposition; Hamiltonian vs Euler; Dirac/Ore sufficient not necessary, Ore only non-adjacent pairs; completions use current degrees); figure `t04-minimal-not-minimum`; links to [[def:mst]] (tour ≥ MST) and [[alg:bfs]] (lexicographic BFS). Lint t01–t04: 0.
 
 Open questions: whether the lecture defines δ(G) separately (source p5 cited). W t05: lint hits for "minimum degree" (line ~383) and "degree" (line ~376).
+
+### t05 Higher connectivity and Menger's theorem (`content/theory/05-connectivity-menger.md`)
+
+**Math fixes (M):** checked against 2026-10-13 pp. 1–6 (whole PDF); completed proof of B (augmenting paths) checked. All REVIEW-marked.
+1. K_n convention: "infinitely connected" wrong; literal definition makes K_n n- but not (n+1)-connected (empty graph not connected); convention extended to multigraphs with underlying K_n (agent's reading).
+2. `thm:menger` a): added "at least 2 vertices" (K_1 counterexample); board says multigraph, lesson restricts a) to simple graphs.
+3. `thm:menger` "⇐": gap filled (s, t outside X; G−X ≠ ∅ since n ≥ k+1).
+4. `thm:menger-directed` A: hypothesis "no arc s→t" marked as not on board.
+5. `thm:menger` b) proof: union of the k edge-disjoint paths from B is a d-flow of size k (was imprecise).
+6. `thm:menger` a) proof: added case k = 1.
+7. Remark after Menger proof: multigraph claim false (K_2 with 3 parallel edges); now all parallel s–t edges count as one path.
+8. `thm:total-menger`: "≥ k+1 vertices" marked as not on board (K_k counterexample).
+9. `thm:two-connected-cycles`: "≥ 3 vertices", "no isolated vertex" marked; b) "⇐" gap (e ≠ f) filled.
+10. `thm:ear-decomposition`: "distinct ends, new inner vertices" marked (board: "new paths between two existing vertices").
+11. `exr:t05-whitney`: now κ ≤ λ ≤ δ for simple connected G with ≥ 2 vertices.
+
+- `def:k-connected` — k ≥ 1; deleting ≤ k−1 vertices (edges) leaves G connected; K_1 1-connected, K_n (n ≥ 2) (n−1)-connected by convention — defines vertex/edge connectivity; κ, λ only in exr:t05-whitney.
+- `def:st-cut` — s–t path; s–t cut X ⊆ V∖{s,t}; s–t edge cut F ⊆ E; internally disjoint; edge-disjoint — directed or undirected; = t04 def:minimal-cut without minimality; no s–t cut if st ∈ E.
+- `thm:menger` — simple G, n ≥ 2: k-connected ⇔ k internally disjoint s–t paths ∀ s≠t; multigraph: k-edge-connected ⇔ k edge-disjoint paths — via directed version on doubled digraph D.
+- `thm:menger-directed` — digraph, no arc s→t: k internally disjoint s–t paths ⇔ no s–t cut of size ≤ k−1; edge version likewise — local; B⇒A by splitting x into x^−, x^+.
+- `def:d-flow` — F ⊆ E, d^−_F(s)=0, d^+_F(t)=0, in = out elsewhere; size d^+_F(s) — notation d^+_F, d^−_F.
+- `claim:d-flow-paths` — d-flow of size k contains k edge-disjoint directed s–t paths — induction, maximal trail.
+- `thm:total-menger` — G with ≥ k+1 vertices: k-connected ⇔ ∀ |S|=|T|=k there are k disjoint S–T paths — trivial paths allowed (S ∩ T).
+- `thm:two-connected-cycles` — n ≥ 3: 2-connected ⇔ any two vertices on a common cycle ⇔ any two edges on a common cycle and no isolated vertex.
+- `thm:ear-decomposition` — 2-connected ⇔ built from a cycle by adding ears (paths between distinct existing vertices, new inner vertices) — an ear may be a single edge.
+
+Open questions:
+- "cut vertex", "bridge" not defined in the lecture; only in lesson prose (~line 29) and exr:t05-bridge-cycle. W t05: make them searchable.
+- Not in lecture (standard): name Whitney, Q_3 (not defined anywhere), κ/λ notation.
+- K_n convention for multigraphs is the agent's reading. W may cross-link def:st-cut ↔ t04 def:minimal-cut.
 
 ## Report
