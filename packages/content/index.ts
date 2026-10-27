@@ -31,7 +31,7 @@ export interface Container {
   body: string          // raw markdown between the fences
   raw: string           // full source including the fences
   parentId?: string
-  forId?: string        // for proofs: the statement proved
+  forId?: string        // for proofs: the statement proved; for intuitions: the reference entry explained
 }
 
 export interface Figure { id: string; info: Record<string, string>; source: string; raw: string; lesson: Lesson; line: number; parentId?: string }
@@ -91,8 +91,8 @@ export function loadContent(root: string): ContentIndex {
   }
   for (const file of files) scanLesson(file, root, index)
   for (const c of index.containers) {
-    if (c.type === 'proof' && c.forId && !index.byId.has(c.forId))
-      index.problems.push({ lesson: c.lesson, line: c.line, message: `proof for=${c.forId}: unknown statement` })
+    if ((c.type === 'proof' || c.type === 'intuition') && c.forId && !index.byId.has(c.forId))
+      index.problems.push({ lesson: c.lesson, line: c.line, message: `${c.type} for=${c.forId}: unknown statement` })
   }
   cached = { root, stamp, index }
   return index
@@ -120,6 +120,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
   const stack: { c: Container; colons: number; start: number }[] = []
   let fence: { ch: string; len: number; info: string; start: number; lines: string[] } | undefined
   let lastStatement: Container | undefined
+  let lastEntry: Container | undefined   // last reference entry (definition, statement, algorithm), for intuitions
   let currentAlg: Container | undefined
 
   for (let i = offset; i < lines.length; i++) {
@@ -162,7 +163,9 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
         c.number = `${lesson.lecture}.${counters[counter]}`
       }
       if (type === 'proof') c.forId = attrs.for ?? lastStatement?.id
+      if (type === 'intuition') c.forId = attrs.for ?? lastEntry?.id
       if (STATEMENT_TYPES.has(type)) lastStatement = c
+      if (id && (STATEMENT_TYPES.has(type) || type === 'definition' || type === 'algorithm') && type !== 'claim') lastEntry = c
       if (type === 'algorithm') currentAlg = c
       if (id) {
         if (index.byId.has(id)) index.problems.push({ lesson, line: lineNo, message: `duplicate id ${id}` })

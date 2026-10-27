@@ -24,6 +24,10 @@ function proofsFor(ix: ContentIndex, id: string): Container[] {
   return ix.containers.filter(c => c.type === 'proof' && c.forId === id && c.parentId === undefined)
 }
 
+export function intuitionsFor(ix: ContentIndex, id: string): Container[] {
+  return ix.containers.filter(c => c.type === 'intuition' && c.forId === id && c.parentId === undefined)
+}
+
 export function referenceMarkdown(ix: ContentIndex, kind: string): string {
   const k = REFERENCE_KINDS[kind]
   const out: string[] = [

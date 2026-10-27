@@ -64,7 +64,7 @@ there is no topic layer, and there are no dependency links.
 
 ### Infrastructure (code; subagent may be skipped for small ones)
 - [x] I0 Copy this file to `REVISION.md`; add `'REVISION.md'` to `srcExclude` in `.vitepress/config.mts`.
-- [ ] I1 Attached intuition.
+- [x] I1 Attached intuition.
   - `packages/content/index.ts`: extend the proof `forId` logic (around line 90) to `intuition`, so that it
     attaches to the nearest preceding statement, or to `for=`.
   - Add `intuitionsFor(ix, id)` next to `proofsFor` in `packages/content/pages.ts`.

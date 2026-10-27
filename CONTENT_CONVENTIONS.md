@@ -98,7 +98,7 @@ A **graph** is a pair $G = (V, E)$ where ...
 | `example` | `ex:` | yes | no | no |
 | `proof` | — (no id) | no | attached to the preceding statement | no |
 | `remark` | optional `rem:` | no | no | no |
-| `intuition` | — | no | no | no |
+| `intuition` | — | no | attached to the preceding entry | no |
 | `pitfall` | — | no | no | no |
 | `exercise` | `exr:` | yes | in practice pages | no |
 | `quiz` | `q:` | no | in practice / exam pages | no |
@@ -126,6 +126,10 @@ A **graph** is a pair $G = (V, E)$ where ...
   (theorem, lemma, proposition, corollary, observation, claim), even if text, figures or
   `intuition`/`remark` blocks come in between. If it proves a different statement, give it
   `for=<id>`: `::: proof {title="Proof of the theorem" for=thm:dirac-ore}`. The renderer adds the ∎.
+- A `::: intuition` container is attached the same way, but to the nearest preceding reference
+  entry with an id (definition, theorem, lemma, proposition, corollary, observation or algorithm;
+  not a claim). Override with `for=<id>`. The reference pages collect them
+  with `intuitionsFor`.
 - Proofs are complete and rigorous. Steps the lecture skips are filled in. If a proof has
   sub-claims, nest `claim` containers inside the proof; the outer container then needs four
   colons:
