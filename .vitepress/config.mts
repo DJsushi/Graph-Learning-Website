@@ -34,7 +34,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: false,
   srcExclude: [
-    'README.md', 'PLAN.md', 'GRAPH_DSL.md', 'CONTENT_CONVENTIONS.md', 'CLAUDE.md',
+    'README.md', 'PLAN.md', 'REVISION.md', 'GRAPH_DSL.md', 'CONTENT_CONVENTIONS.md', 'CLAUDE.md',
     'resources/**', 'packages/**', 'scripts/**', 'node_modules/**',
   ],
   rewrites: {
