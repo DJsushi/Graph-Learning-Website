@@ -16,6 +16,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x))
 const smooth = (x: number) => { const k = clamp01(x); return k * k * (3 - 2 * k) }
 // Choreography: leaving edges fade first, vertices slide over the whole span, arrivals fade in last
+/** damped spring from 0 to 1: overshoots, then settles (a split snaps apart like a rubber band) */
+export const spring = (x: number) => { const k = clamp01(x); return k >= 1 ? 1 : 1 - Math.exp(-5 * k) * Math.cos(8 * k) }
 const out = (u: number, early = 0.4) => 1 - smooth(u / early)
 const inn = (u: number, late = 0.4) => smooth((u - (1 - late)) / late)
 
@@ -26,11 +28,11 @@ const inn = (u: number, late = 0.4) => smooth((u - (1 - late)) / late)
 export function interpolate(a: GraphData, b: GraphData, t: number, merges: Merge[] = [], reverse = false): Tweened {
   if (t <= 0) return { graph: a, fade: {} }
   if (t >= 1) return { graph: b, fade: {} }
-  return reverse ? forward(b, a, 1 - t, merges, b) : forward(a, b, t, merges, b)
+  return reverse ? forward(b, a, 1 - t, merges, b, true) : forward(a, b, t, merges, b, false)
 }
 
 /** s -> d at progress u; `dest` is the graph the viewer is really heading to (its classes win for shared elements). */
-function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: GraphData): Tweened {
+function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: GraphData, splitting: boolean): Tweened {
   const fade: Record<string, number> = {}
   const sv = new Map(s.vertices.filter(visible).map(v => [v.id, v]))
   const dv = new Map(d.vertices.filter(visible).map(v => [v.id, v]))
@@ -47,7 +49,8 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   const goo = new Set<Id>()
   const ghost: Id[] = []
   // the members finish sliding at 80%: the last stretch is a single round blob, so the hand-off to the merged vertex is invisible
-  const pm = clamp01(u / 0.8)
+  // a split (time reversed) pops apart on a spring instead of easing out
+  const pm = splitting ? 1 - spring((1 - u - 0.1) / 0.9) : clamp01(u / 0.8)
   for (const [to, from] of sources) for (const f of from) { goo.add(f); if (f !== to) fade[`l:${f}`] = out(u, 0.35) }
   const place = (v: Vertex, p: { x: number; y: number }, f: number) => {
     vertices.push({ ...v, x: p.x, y: p.y })

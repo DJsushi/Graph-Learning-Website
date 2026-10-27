@@ -53,9 +53,9 @@ describe('interpolate', () => {
     expect(lu).toBeCloseTo(lv!)
   })
   it('reverse plays the merge backwards', () => {
-    const r = interpolate(s1.graph, s0.graph, 0.25, s1.merges, true)
+    const r = interpolate(s1.graph, s0.graph, 0.3, s1.merges, true)
     const u = r.graph.vertices.find(v => v.id === 'u')!
-    expect(u.x).toBeCloseTo(0.9375) // reversed: u has slid 0.75 / 0.8 of the way, as seen from u's side
+    expect(u.x).toBeLessThan(0) // u overshoots past its own place (x = 0): spring
     expect(r.fade['v:w']).toBeUndefined()
   })
 })
