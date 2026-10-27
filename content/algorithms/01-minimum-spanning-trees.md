@@ -274,6 +274,7 @@ $\O(m \cdot t_{\text{DECREASE-KEY}} + n \cdot t_{\text{EXTRACT-MIN}})$:
 | operation | array | binary heap | binomial heap | Fibonacci heap |
 |-----------|-------|-------------|---------------|----------------|
 | `INSERT` | $1$ | $\log n$ | $\log n$ | $1$ |
+<!-- REVIEW: slide p15 lists INSERT on an array as n; an array indexed by vertex inserts in O(1). Kept 1; the O(n^2) total is the same either way. -->
 | `EXTRACT-MIN` | $n$ | $\log n$ | $\log n$ | $\log n$ (amortised) |
 | `DECREASE-KEY` | $1$ | $\log n$ | $\log n$ | $1$ (amortised) |
 | `IS-EMPTY` | $1$ | $1$ | $1$ | $1$ |
@@ -386,7 +387,9 @@ came from, plus the edges of $H$), is the MST of $G$.
 :::
 
 ::: proof
-Edges of $G'$ correspond to edges of $G$ not inside $H$. Spanning trees $T$ of $G$ containing $H$ correspond bijectively to spanning trees of the
+Edges of $G'$ correspond to edges of $G$ not inside $H$. As a connected subgraph of the tree $M$, $H$ is a tree, so $\abs{E(H)} = \abs{V(H)} - 1$.
+<!-- REVIEW: added that H is a tree; the edge count below needs |E(H)| = |V(H)| - 1. -->
+Spanning trees $T$ of $G$ containing $H$ correspond bijectively to spanning trees of the
 multigraph obtained by contracting $H$ (keep $E(T) \setminus E(H)$; a set of edges forms a spanning tree together with $H$ iff it forms a spanning tree
 after contracting $H$, since contraction preserves connectivity and the edge count works out: $(n - 1) - (\abs{V(H)} - 1) = \abs{V(G')} - 1$). Under
 this correspondence $w(T) = w(T') + w(H)$. So minimizing over spanning trees of $G$ containing $H$ is the same as minimizing over spanning trees of
@@ -428,6 +431,8 @@ $\O\bigl(\min(m \log n, n^2)\bigr)$: the sum $\sum_i \min(m, n^2/4^{i})$ is $\O(
 | 1999 | Chazelle; Pettie | $\O(m \alpha(m, n))$ | |
 | 2000 | Pettie, Ramachandran | $\O(T^*(m, n))$ | provably optimal (decision trees); at most $\O(m\alpha(m,n))$, exact complexity unknown |
 
+<!-- REVIEW: slide p25 writes O(m T*(m,n)); T*(m,n) (decision-tree complexity) is already the total time, so O(T*(m,n)) kept. -->
+
 ## Faster deterministic algorithms
 
 ### Going beyond Jarník: Fredman–Tarjan
@@ -436,7 +441,7 @@ Jarník's algorithm takes $\O(m \cdot t_{\text{DECREASE-KEY}} + n \cdot t_{\text
 the $n \log n$ term and reach $\O(m)$? The $\log n$ comes from `EXTRACT-MIN` on a heap that may accumulate $\Theta(n)$ neighbouring vertices. **If the heap
 size never exceeded $k$, we would get $\O(m + n \log k)$.** So: limit the heap size, and never do `EXTRACT-MIN` on a large heap.
 
-::: algorithm {#alg:fredman-tarjan title="Fredman–Tarjan algorithm (one phase)" source="algorithms/01 p27–28"}
+::: algorithm {#alg:fredman-tarjan title="Fredman–Tarjan algorithm (one phase)" source="algorithms/01 p28–29"}
 ```pseudo
 fix the heap size limit k                                          // @limit
 while some vertex is not in any tree of this phase do              // @loop
@@ -464,13 +469,17 @@ $$k_{i+1} = 2^{2m/n_{i+1}} \ \ge\ 2^{k_i}.$$
 Once $k_i \ge n_i$, the heap cannot overflow, a single tree is built, and the algorithm ends.
 
 **Counting the phases.** Write $\log^{(i)} n = \log(\log(\cdots \log(n) \cdots))$ ($i$ times). Starting with $k_1 = 2^{2m/n}$ and $k_{i+1} \ge 2^{k_i}$, after $j$
-phases $k_j$ is a tower of $j$ twos topped by $2m/n$, so we stop as soon as $\log^{(j)} n \le 2m/n$, which certainly holds for
+phases $k_j$ is at least a tower of $j$ twos topped by $2m/n$, so $\log^{(j)} k_j \ge 2m/n$. Hence $k_j \ge n \ge n_j$, and phase $j$ is the last one, as soon as
+$\log^{(j)} n \le 2m/n$, which certainly holds for
+<!-- REVIEW: "we stop as soon as" read as an equivalence; it is only a sufficient condition (k_j >= n implies k_j >= n_j). Spelled out the step. -->
 $$j = \beta(m, n) := \min\set{j \mid \log^{(j)} n \le m/n}.$$
 So there are at most $\beta(m, n)$ phases, each taking $\O(m)$ (contraction can be done in time $\O(m)$ per phase). **Overall complexity:
 $\O(m \cdot \beta(m, n))$.**
 
 ::: remark
-$\log^* n$ is the number of times one has to apply $\log$ to get to at most $1$. Since $\beta(m, n) \le \log^* n$, Fredman–Tarjan runs in $\O(m \log^* n)$, which is
+$\log^* n$ is the number of times one has to apply $\log$ to get to at most $1$. Since $\beta(m, n) \le \log^* n$ for $m \ge n$ (and
+$\beta(m, n) \le \log^* n + 1$ always, as one more $\log$ gives a value $\le 0$), Fredman–Tarjan
+<!-- REVIEW: beta(m,n) <= log* n needs m/n >= 1; a tree has m/n < 1, then the bound is log* n + 1. Slide p32 is garbled here ("β(m/n) ⩽ log*(m/n)"). --> runs in $\O(m \log^* n)$, which is
 clearly better than Jarník on sparse graphs. On dense graphs $\beta(m, n)$ gets smaller; for $m = \Theta(n^2)$ we have $\beta(m, n) = 1$. One can prove that
 $m \cdot \beta(m, n) \le m + n \log n$ for $n \ge 16$, so Fredman–Tarjan is at least as good as Jarník everywhere.
 :::
@@ -482,7 +491,7 @@ $\O(1)$, so we must decrease their **number**. Observation: from the edges incid
 ones; the heavy ones may not even be needed before the algorithm finishes. **Idea:** avoid processing heavy edges before light ones by putting edges into
 **packets**.
 
-::: algorithm {#alg:gabow-packets title="Packets (Gabow, Galil, Spencer, Tarjan)" source="algorithms/01 p34"}
+::: algorithm {#alg:gabow-packets title="Packets (Gabow, Galil, Spencer, Tarjan)" source="algorithms/01 p34–35"}
 1. For each vertex $v$, split its incident edges into packets of $p$ edges each (one packet may be smaller): about $2m/p$ packets in total.
 2. Sort each packet internally ($\O(m \log p)$ in total); the weight of a packet is the weight of its lightest edge.
 3. Run Fredman–Tarjan on packets instead of edges: put only the lightest remaining edge of each packet into the heap; once it is used, take the next one
@@ -604,7 +613,9 @@ RandomizedMSF(G):
     F3 ← RandomizedMSF(H')                                   // @recurse2
     return F1 ∪ F2 ∪ F3                                      // @return
 ```
-Here `BoruvkaPhase` performs one phase of Borůvka's algorithm with contractions, returning the contracted graph and the selected edges.
+Here `BoruvkaPhase` performs one phase of Borůvka's algorithm with contractions, returning the contracted graph (with isolated vertices deleted)
+and the selected edges.
+<!-- REVIEW: added "isolated vertices deleted": the sample H may have isolated vertices, which do not merge, and |V(G2)| <= n/4 needs them gone. Implicit on slides. -->
 :::
 
 **Correctness** follows easily from the colour rules: the edge sets $F_1$ and $F_2$ are correct by the blue rule, the edges of $E(G_2) \setminus E'$ (the $F'$-heavy ones) can be
@@ -757,8 +768,9 @@ a -> e [w=8]; b -> e [w=9]; d -> c [w=4]; d -> e [w=7]
 
 ::: lemma {#lem:edmonds-one-entry title="One arc entering the cycle" extra=true}
 Let $C$ be a directed cycle consisting of arcs $e_v$ (so of reduced weight $0$). Then there is an arborescence, optimal with respect to $w'$, that has exactly one arc entering $C$ (from a
-vertex outside $C$).
+vertex outside $C$) and contains all arcs of $C$ except the one entering the head of that arc.
 :::
+<!-- REVIEW: statement now also says which arcs inside C are used (the proof constructs exactly this); needed for the correspondence with D' below. -->
 
 ::: proof
 Let $T$ be optimal for $w'$. Note $r \notin C$ (no arc enters $r$). Since $r$ reaches $C$ in $T$, choose a directed path in $T$ from $r$ to a vertex of $C$ that meets $C$ only in its last vertex $b$;
@@ -771,12 +783,15 @@ vertex is reachable from $r$: the path from $r$ to $a$ avoids $C$ and all its ar
 $T$ backwards from $v$ until the first time it hits a vertex of $C$ or $r$; this part has no arc entering $C$, so it is kept in $T'$, and its start is reachable from $r$ in $T'$. A digraph in which
 every vertex except $r$ has in-degree exactly $1$ and every vertex is reachable from $r$ is an arborescence (it has $n - 1$ arcs and is connected).
 
-So $T'$ is optimal and has exactly one arc entering $C$.
+So $T'$ is optimal, has exactly one arc entering $C$, and contains all arcs of $C$ except the one entering $b$.
 :::
 
-Arborescences of $D$ with exactly one arc entering $C$ correspond to arborescences of $D'$ (contract $C$; expand by adding $C$ minus one arc), and since the arcs of $C$ have reduced weight $0$,
-the correspondence preserves $w'$. By the lemma, the optimum over $D$ equals the optimum over $D'$; by induction, the recursive call finds the latter, and expanding it gives an optimal
-arborescence of $D$ (for $w'$, hence for $w$ by [[obs:reduced-weights]]).
+The cycles of $F$ are vertex-disjoint (each vertex has only one arc $e_v$), and the construction of the lemma for one cycle changes only arcs entering that cycle. So we can apply it to
+the cycles one after another and get an optimal arborescence of $D$ (for $w'$) that, for every contracted cycle $C$, enters $C$ by exactly one arc and contains all arcs of $C$ except one.
+Such arborescences correspond bijectively to arborescences of $D'$ (contract each $C$; expand by adding $C$ minus the arc entering the head of the entering arc), and since the arcs of $C$
+have reduced weight $0$, the correspondence preserves $w'$. Every arborescence of $D'$ expands, so the optimum over $D$ equals the optimum over $D'$; by induction, the recursive call finds
+the latter, and expanding it gives an optimal arborescence of $D$ (for $w'$, hence for $w$ by [[obs:reduced-weights]]).
+<!-- REVIEW: was "arborescences with exactly one arc entering C correspond to arborescences of D'", which fails when chords inside C are used; now uses the strengthened lemma and treats all contracted cycles at once. -->
 
 **Complexity.** There are at most $n$ contractions in total (each reduces the number of vertices); finding and contracting cycles takes time $\O(m)$, and expanding $T'$ to $T$ takes $\O(m)$.
 **Total time: $\O(m \cdot n)$.**

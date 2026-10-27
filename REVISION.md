@@ -126,7 +126,7 @@ there is no topic layer, and there are no dependency links.
 - [x] W t04
 - [x] M t05 `content/theory/05-connectivity-menger.md`
 - [x] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
-- [ ] M a01 `content/algorithms/01-minimum-spanning-trees.md`
+- [x] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [ ] W a01 (link to the tree theory in t03: cut and cycle properties)
 - [ ] M a02 `content/algorithms/02-maximum-flow.md`
 - [ ] W a02 (Menger ↔ max-flow min-cut, both directions)
@@ -339,5 +339,57 @@ Open questions:
 - W a02 must mirror: link [[thm:menger-directed]] (B = unit capacities) and [[def:d-flow]] from thm:maxflow-mincut / cor:integrality; Menger A from exr:a02-vertex-capacities; possibly [[thm:menger]] from def:unit-capacity / prop:matching-flow.
 - "B = max-flow min-cut" is stated loosely: Menger allows parallel arcs; def:unit-capacity assumes no antiparallel edges.
 - def:cut-vertex-bridge has no lecture source; t04 uses "cut vertices" (plural, not matched by the lint).
+
+### a01 Minimum spanning trees (`content/algorithms/01-minimum-spanning-trees.md`)
+
+**Math fixes (M):** checked against `01-mst.pdf` (56 slides; pp. 50–52 as images). All figure/exercise/quiz numbers recomputed, no errors. REVIEW-marked:
+1. `lem:contraction-mst` proof: H is a tree (connected subgraph of M), needed for the edge count.
+2. Fredman–Tarjan phase count: stopping condition is sufficient, not "iff"; spelled out.
+3. Fredman–Tarjan remark: β(m,n) ≤ log* n only for m ≥ n; in general ≤ log* n + 1 (slide garbled).
+4. `alg:kkt`: BoruvkaPhase deletes isolated vertices (else |V(G_2)| ≤ n/4 fails on sampled subgraphs).
+5. `lem:edmonds-one-entry`: statement also says all arcs of C except the one entering the head of the entering arc are used.
+6. Edmonds correctness: old one-to-one correspondence failed with chords inside C; now strengthened lemma applied to all (vertex-disjoint) cycles in turn, bijection with arborescences of D'. (Checked by the orchestrator.)
+7. Kept against the slides, REVIEW note: Jarník array INSERT O(1) (slide: n); Pettie–Ramachandran O(T*(m,n)) (slide: O(m T*(m,n))).
+8. Source pages: alg:fredman-tarjan p28–29, alg:gabow-packets p34–35.
+Slide errors not copied: Jarník "repeat n−2 times" (lesson n−1); Kruskal union-by-rank "O(n log n)" (lesson O(m log n)).
+
+- `def:mst` — spanning tree M with w(M) ≤ w(T) for all spanning trees T — w: E→R^+, w(H) = Σ w(e).
+- `thm:cut-property` — strictly lightest edge across a cut (S, V∖S) is in every MST — exchange M+e−f.
+- `thm:cycle-property` — strictly heaviest edge on a cycle is in no MST — strict.
+- `thm:strong-cut-cycle` — distinct weights: e ∈ M ⇔ lightest across some cut; e ∉ M ⇔ heaviest on some cycle.
+- `cor:mst-unique` (extra) — distinct weights ⇒ unique MST.
+- `thm:generalized-greedy` (extra) — blue/red rules in any order keep blue ⊆ M, red ∩ M = ∅; a rule always applies — Tarjan colouring.
+- `alg:kruskal` — sort; accept e if FIND-SET(u) ≠ FIND-SET(v) — anchors @init @makeset @sort @loop @test @accept @union.
+- `prop:kruskal-complexity` — O(m log n) (sorting); union-find O(m α(n)).
+- `alg:jarnik` — grow a tree from s by the lightest leaving edge, n−1 times; O(n²) with adjacency matrix — anchors @start @init @loop @select @add.
+- `alg:jarnik-heap` — heap Jarník; O(m·t_DK + n·t_EM); Fibonacci O(m + n log n) — anchors @init @initloop @initkey @insert @source @loop @extract @scan @test @decrease @pred.
+- `def:dense-sparse` — informal; m = Ω(n log n) ⇒ Jarník + Fibonacci heap is O(m).
+- `alg:boruvka` — each component adds its lightest leaving edge per phase; distinct weights — anchors @init @phase @component @collect @add.
+- `prop:boruvka-complexity` — ≤ log n phases, O(m) each; O(m log n).
+- `def:edge-contraction` — G_e: u, v replaced by w_uv; contract subgraph to v_H; keep lightest parallel edge, drop loops.
+- `lem:contraction-mst` — H connected subgraph of MST M: MST(G/H) + H = MST(G).
+- `alg:boruvka-contract` — each vertex picks lightest edge; contract; clean; O(min(m log n, n²)) — anchors @phase @loop @select @add @contract @clean.
+- `alg:fredman-tarjan` — Jarník trees with heap limit k_i = 2^{2m/n_i}; contract; ≤ β(m,n) phases; O(m β(m,n)) — β(m,n) = min{j : log^(j) n ≤ m/n}; anchors @limit @loop @start @stop @contract.
+- `alg:gabow-packets` — packets of β(m,n) edges per vertex; O(m log β(m,n)).
+- `def:f-heavy` — w_F(e) = max weight on the F-path (∞ if none); F-heavy iff w(e) > w_F(e) — defines subforest.
+- `lem:f-heavy-not-in-mst` — no F-heavy edge is in the MST, for any subforest F.
+- `thm:mst-verification` — all w_T(e) in deterministic O(m+n) (Dixon–Rauch–Tarjan, King, Hagerup) — no proof.
+- `cor:mst-verification` — T is the MST iff every edge of G∖T is T-heavy; O(m+n).
+- `lem:sampling` — sample edges with prob. p, F = MSF(H) ⇒ E[# F-light edges] ≤ n/p — MSF defined in prose.
+- `alg:kkt` — two Borůvka phases, sample 1/2, recurse, keep F'-light, recurse — anchors @base @boruvka1 @boruvka2 @sample @recurse1 @light @prune @recurse2 @return.
+- `thm:kkt-complexity` — expected O(n+m) — T(n,m) ≤ c(n+m) + T(n/4,m/2) + T(n/4,n/2).
+- `def:arborescence` — rooted at r: spanning tree (ignoring orientation) with directed r–v paths — defines root.
+- `def:min-cost-arborescence` — find a min-cost arborescence for D, r, w ≥ 0 — assumes one exists, no arcs into r.
+- `prop:arborescence-sufficient` — if the cheapest in-arcs e_v form an arborescence, it is optimal.
+- `def:reduced-weights` — w'(u,v) = w(u,v) − w(e_v).
+- `obs:reduced-weights` — w-optimal ⇔ w'-optimal; w' ≥ 0; w'(e_v) = 0.
+- `alg:edmonds-branching` — cheapest in-arcs; contract cycles, recurse on w', expand; O(mn) — anchors @init @loop @select @add @reduce @test @done @contract @newgraph @recurse @expand @return.
+- `lem:edmonds-one-entry` (extra) — some w'-optimal arborescence enters C by one arc and uses all of C but one arc.
+- `thm:ggst-arborescence` — O(m + n log n) (Gabow–Galil–Spencer–Tarjan 1985) — no proof.
+
+Open questions:
+- Fixes 3 and 7 depart from the slides on purpose; reviewer may prefer the slides.
+- W a01: "MSF", "cut / crosses", union-find are prose only; link exchange arguments to t03 [[thm:tree-characterisations]] and check the t03 MST-exchange intuition against these proofs.
+- Unproved standard facts from slides: generalized greedy due to Tarjan; high-probability / worst-case KKT remarks.
 
 ## Report
