@@ -200,6 +200,10 @@ return T                                          // @return
   students can match them with their notes.
 - Prefer `widget=player` for algorithms in the registry, `widget=stepper` for proof
   constructions, `widget=editable` when a property is best understood by experimenting.
+- Steppers and players animate between steps. Use stable vertex and edge ids so shared elements
+  slide instead of fading; use `merge` / `split` (GRAPH_DSL.md §9.5) for contraction,
+  identification and vertex splitting rather than faking them with `remove` and colours, and give
+  edges that survive a merge an explicit `id`.
 
 ---
 
