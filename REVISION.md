@@ -98,7 +98,7 @@ there is no topic layer, and there are no dependency links.
     - "Uses" and "Used by", computed from the `[[refs]]` in its body and proof.
   - The `[kind]` pages keep their URLs and become compact lists grouped by topic.
   - Update the sidebar and `site/reference/index.md`.
-- [ ] I5 Search bar.
+- [x] I5 Search bar.
   - Add `.vitepress/theme/components/ReferenceSearch.vue` on `/reference`.
   - Data: extend `.vitepress/data/refs.data.ts` with the label (`T5.2`), title, `aka`, `defines`, kind, course,
     topic, plain text and link.
@@ -125,7 +125,7 @@ there is no topic layer, and there are no dependency links.
 - [ ] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [ ] W t04
 - [ ] M t05 `content/theory/05-connectivity-menger.md`
-- [ ] W t05
+- [ ] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [ ] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [ ] W a01 (link to the tree theory in t03: cut and cycle properties)
 - [ ] M a02 `content/algorithms/02-maximum-flow.md`

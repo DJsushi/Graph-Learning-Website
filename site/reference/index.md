@@ -9,7 +9,9 @@ import { data } from '../../.vitepress/data/site.data'
 
 # Reference
 
-Every definition, result and algorithm from both courses, generated from the lessons so that numbers and wording always match. Numbers starting with **T** refer to Graph Theory, numbers starting with **A** to Graph Algorithms. Use the search box (<kbd>Ctrl</kbd> <kbd>K</kbd>) to find a term.
+Every definition, result and algorithm from both courses, generated from the lessons so that numbers and wording always match. Numbers starting with **T** refer to Graph Theory, numbers starting with **A** to Graph Algorithms. Search the entries below (press <kbd>/</kbd>), or use the site search (<kbd>Ctrl</kbd> <kbd>K</kbd>).
+
+<ReferenceSearch />
 
 ## Topics
 

@@ -585,3 +585,20 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-ref-preview-body .ga-math-block { margin: 6px 0; overflow-x: auto; }
 @media (prefers-reduced-motion: no-preference) { .ga-ref-preview { animation: ga-pop 0.12s ease-out; } }
 @keyframes ga-pop { from { opacity: 0; } }
+
+/* reference search (/reference) */
+.ga-refsearch { margin: 1rem 0 1.5rem; }
+.ga-refsearch .ga-field { margin-bottom: 0.25rem; }
+.ga-refsearch-sep { width: 1px; align-self: stretch; margin: 0 0.2rem; background: var(--vp-c-divider); }
+.ga-refsearch-none { color: var(--vp-c-text-2); font-size: 0.9rem; }
+.vp-doc .ga-refsearch-results { list-style: none; padding: 0; margin: 0.5rem 0 0; max-height: 70vh; overflow-y: auto; }
+.vp-doc .ga-refsearch-results li {
+  margin: 0 0 0.4rem; padding: 8px 12px; border: 1px solid var(--vp-c-divider); border-radius: var(--ga-ctl-radius);
+  background: var(--vp-c-bg); cursor: pointer; font-size: 0.9rem; line-height: 1.55;
+}
+.vp-doc .ga-refsearch-results li.active { border-color: var(--vp-c-brand-1); background: var(--vp-c-brand-soft); }
+.ga-refsearch-results .ga-ref-preview-head a { text-decoration: none; }
+.ga-refsearch-results .ga-ref-preview-where { white-space: normal; text-align: right; }
+.ga-refsearch-body { max-height: 9.5em; overflow: hidden; -webkit-mask-image: linear-gradient(to bottom, #000 75%, transparent); mask-image: linear-gradient(to bottom, #000 75%, transparent); }
+.ga-refsearch-body.vp-doc p { margin: 0 0 6px; line-height: 1.55; }
+.ga-refsearch-body .ga-math-block { margin: 4px 0; overflow-x: auto; }
