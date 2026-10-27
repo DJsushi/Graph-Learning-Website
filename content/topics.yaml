@@ -29,11 +29,11 @@
 - slug: mst
   title: Minimum spanning trees
   intro: The cut and cycle properties, the classical greedy algorithms and the faster ones up to expected linear time.
-  ids: [def:mst, thm:cut-property, thm:cycle-property, thm:strong-cut-cycle, cor:mst-unique,
+  ids: [def:mst, def:cut, thm:cut-property, thm:cycle-property, thm:strong-cut-cycle, cor:mst-unique,
     thm:generalized-greedy, alg:kruskal, prop:kruskal-complexity, alg:jarnik, alg:jarnik-heap, def:dense-sparse,
     alg:boruvka, prop:boruvka-complexity, def:edge-contraction, lem:contraction-mst, alg:boruvka-contract,
     alg:fredman-tarjan, alg:gabow-packets, def:f-heavy, lem:f-heavy-not-in-mst, thm:mst-verification,
-    cor:mst-verification, lem:sampling, alg:kkt, thm:kkt-complexity]
+    cor:mst-verification, def:msf, lem:sampling, alg:kkt, thm:kkt-complexity]
 - slug: arborescences
   title: Minimum-cost arborescences
   intro: The directed analogue of the MST, solved by Edmonds' branching algorithm with reduced weights.

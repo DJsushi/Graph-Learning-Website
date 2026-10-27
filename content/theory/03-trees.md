@@ -278,8 +278,8 @@ $7$ vertices and $6$ edges is a tree, with no need to search for cycles.
 The MST algorithms rely on these facts. By 4, adding an edge $e$ to a [[def:spanning-tree|spanning tree]] creates a cycle
 (exactly one, through $e$, by unique paths); exchanging $e$ for another edge of that cycle gives a
 spanning tree again, which is the argument behind the [[thm:cycle-property|cycle property]] and
-[[thm:cut-property|cut property]]. By 3, deleting an edge of a tree splits it into two components,
-i.e. defines a cut.
+[[thm:cut-property|cut property]]. By 3, deleting an edge of a tree disconnects it, into exactly two
+components by [[cor:forest-edges]], i.e. it defines a [[def:cut|cut]].
 :::
 
 ```graph id=t03-tree-plus-edge widget=figure

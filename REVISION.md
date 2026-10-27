@@ -127,7 +127,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M t05 `content/theory/05-connectivity-menger.md`
 - [x] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [x] M a01 `content/algorithms/01-minimum-spanning-trees.md`
-- [ ] W a01 (link to the tree theory in t03: cut and cycle properties)
+- [x] W a01 (link to the tree theory in t03: cut and cycle properties)
 - [ ] M a02 `content/algorithms/02-maximum-flow.md`
 - [ ] W a02 (Menger ↔ max-flow min-cut, both directions)
 - [ ] F Final pass:
@@ -391,5 +391,21 @@ Open questions:
 - Fixes 3 and 7 depart from the slides on purpose; reviewer may prefer the slides.
 - W a01: "MSF", "cut / crosses", union-find are prose only; link exchange arguments to t03 [[thm:tree-characterisations]] and check the t03 MST-exchange intuition against these proofs.
 - Unproved standard facts from slides: generalized greedy due to Tarjan; high-probability / worst-case KKT remarks.
+
+### a01 (W) Minimum spanning trees
+
+**Math fixes (W):** none to checked statements. Citation gap filled in the facts paragraph: T−e is disconnected ([[thm:tree-characterisations]]) and a forest with n−2 edges, hence exactly two components ([[cor:forest-edges]]). Same wording fix in the t03 `thm:tree-characterisations` intuition (point 3 alone gives only "disconnected"); otherwise the t03 exchange sketch matches a01's proofs.
+
+Entries as in M, plus:
+- New `def:cut` — cut (S, V∖S), ∅ ≠ S ≠ V; an edge crosses it if its ends lie on different sides — `defines="cut (vertex partition), crossing edge"` (plain "cut" deliberately not linted, so a02's flow cuts are not flagged); source algorithms/01 p5 (slides use, never define); topics.yaml: mst, after def:mst.
+- New `def:msf` — MSF = union of MSTs of the components — `defines="minimum spanning forest, MSF"`, source p40; topics.yaml: mst, after cor:mst-verification.
+- a01 definition numbers shift; ids unchanged. Union-find "root" → "representative", "matching Borůvka" → "the same bound as Borůvka" (lint false positives).
+
+Added: intuitions for all 35 entries; figure `a01-cycle-property`; pitfalls (MST ≠ shortest-path tree; cut = vertex partition ≠ t04 vertex cut; strictness, one cut suffices; strong ⇒ needs distinct weights; blue rule condition; Kruskal rejects by component; Jarník vs Dijkstra keys; H ⊆ M in lem:contraction-mst; F-light ≠ in MST; sampling lemma bounds an expectation over all of G; arborescence orientation/root; entering arcs). Links to t02–t05 (spanning tree, tree characterisations, unique paths, forest edges, components, cycles, BFS, cut vertex/bridge, minimal cut, s–t cut) and a02 (def:flow-cut, def:flow-network). Lint t01–t05, a01: 0.
+
+Open questions:
+- def:cut, def:msf not marked extra (lecture uses the terms, never defines them).
+- Edmonds "contractions" link to the undirected def:edge-contraction; directed contraction is prose only.
+- Unproved standard facts in intuitions: contracted tree is a tree; no deterministic linear-time MST known; Borůvka parallelises; small-integer weights make Kruskal O(m α(n)).
 
 ## Report
