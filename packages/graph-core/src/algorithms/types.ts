@@ -1,4 +1,4 @@
-import type { Attrs, GraphData, Id } from '../model'
+import type { Attrs, GraphData, Id, Merge } from '../model'
 
 /** Per-step visual state layered over the base graph. */
 export interface Overlay {
@@ -23,6 +23,9 @@ export interface Step {
   overlay: Overlay
   /** replaces the displayed graph (structure changes, e.g. contraction or construction) */
   graph?: GraphData
+  /** vertices of the previous graph merged into `to` in `graph` (or, with `split`, split apart); animates contraction */
+  merges?: Merge[]
+  split?: boolean
   /** extra graphs shown next to the main one (residual network, level graph) */
   panels?: StepPanel[]
   /** state panel entries, name -> display text ($math$ allowed) */

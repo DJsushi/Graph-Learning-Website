@@ -1,11 +1,17 @@
 // Parser for the graph DSL (GRAPH_DSL.md). Line based; produces one GraphData per panel plus stepper frames.
-import { cloneGraph, emptyGraph, resolveRef, type Attrs, type AttrValue, type Edge, type GraphData, type Id } from '../model'
+import { cloneGraph, emptyGraph, resolveRef, type Attrs, type AttrValue, type Edge, type GraphData, type Id, type Merge } from '../model'
 import * as gen from './generators'
 
 export interface DslMessage { line: number; message: string }
 export type Directives = Record<string, string[]>
 
-export interface StepDoc { text: string; graph: GraphData }
+export interface StepDoc {
+  text: string
+  graph: GraphData
+  /** vertices merged (or, with `split`, split apart) by this step's statements; drives the animation */
+  merges?: Merge[]
+  split?: boolean
+}
 
 export interface PanelDoc {
   title?: string
@@ -246,6 +252,8 @@ interface PanelState {
   directives: Directives
   steps: StepDoc[]
   openStep?: string
+  merges: Merge[]
+  split?: boolean
   baseSnapshot?: GraphData
   autoEdge: number
   usedLayoutDefault: boolean
@@ -266,7 +274,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
       const v = header[k]?.at(-1)
       if (v !== undefined) applyGraphDirective(g, k, v)
     }
-    return { title, graph: g, directives: {}, steps: [], autoEdge: 0, usedLayoutDefault: false }
+    return { title, graph: g, directives: {}, steps: [], autoEdge: 0, usedLayoutDefault: false, merges: [] }
   }
   let explicit: PanelState | undefined
   let implicit: PanelState | undefined
@@ -295,8 +303,9 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
           }
           if (key === 'step') {
             const p = panel()
-            if (p.openStep !== undefined) p.steps.push({ text: p.openStep, graph: cloneGraph(p.graph) })
+            if (p.openStep !== undefined) pushStep(p)
             else p.baseSnapshot = cloneGraph(p.graph)
+            p.merges = []; p.split = undefined
             p.openStep = val
             continue
           }
@@ -327,9 +336,17 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
     warnings,
   }
 
+  function pushStep(p: PanelState) {
+    const step: StepDoc = { text: p.openStep!, graph: cloneGraph(p.graph) }
+    if (p.merges.length) { step.merges = p.merges; step.split = p.split }
+    p.steps.push(step)
+    p.merges = []
+    p.split = undefined
+  }
+
   function finishPanel(p: PanelState) {
     if (p.openStep !== undefined) {
-      p.steps.push({ text: p.openStep, graph: cloneGraph(p.graph) })
+      pushStep(p)
       p.openStep = undefined
     }
     validate(p.graph)
@@ -405,7 +422,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
   }
 
   function statement(p: PanelState, st: string) {
-    const kw = /^(hyperedge|face|group|class|unclass|remove)\b\s*(.*)$/.exec(st)
+    const kw = /^(hyperedge|face|group|class|unclass|remove|merge|split)\b\s*(.*)$/.exec(st)
     if (kw) return keyword(p, kw[1], kw[2])
     const sc = new Scanner(st)
     const first = sc.ident()
@@ -453,7 +470,61 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
     }
   }
 
+  // `merge u v -> w` identifies/contracts; `split x -> p q` is the inverse for arcs (into x -> p, out of x -> q)
+  function mergeOrSplit(p: PanelState, kw: 'merge' | 'split', rest: string) {
+    const m = /^(.+?)\s*->\s*(.+)$/.exec(rest)
+    if (!m) throw new Error(`expected "${kw} <vertices> -> <vertices>"`)
+    const split = kw === 'split'
+    if (p.openStep === undefined) throw new Error(`"${kw}" belongs inside a step`)
+    if (p.merges.length && p.split !== split) throw new Error('a step cannot both merge and split')
+    p.split = split
+    const sc = new Scanner(m[2])
+    const targets: Id[] = []
+    for (let x = sc.ident(); x; x = sc.ident()) targets.push(x)
+    const attrs = sc.attrs() ?? {}
+    const sources = m[1].trim().split(/\s+/)
+    const exists = (id: Id) => p.graph.vertices.some(v => v.id === id)
+    for (const id of sources) if (!exists(id)) throw new Error(`unknown vertex "${id}"`)
+    if (!split) {
+      if (targets.length !== 1) throw new Error('merge needs exactly one target vertex')
+      const to = targets[0]
+      const set = new Set(sources)
+      if (exists(to) && !set.has(to)) throw new Error(`vertex "${to}" already exists`)
+      const fresh = !exists(to)
+      const tv = ensureVertex(p, to)
+      applyVertexAttrs(tv, attrs)
+      // a new vertex starts at the centroid of its members
+      const at = sources.map(id => p.graph.vertices.find(v => v.id === id)!).filter(v => v.x !== undefined)
+      if (fresh && at.length) { tv.x = at.reduce((n, v) => n + v.x!, 0) / at.length; tv.y = at.reduce((n, v) => n + v.y!, 0) / at.length }
+      // edges inside the merged set vanish (contraction); the rest are rewired
+      p.graph.edges = p.graph.edges.filter(e => !e.tail.concat(e.head).every(x => set.has(x) || x === to))
+      for (const e of p.graph.edges) {
+        e.tail = e.tail.map(x => (set.has(x) ? to : x))
+        e.head = e.head.map(x => (set.has(x) ? to : x))
+      }
+      p.graph.vertices = p.graph.vertices.filter(v => v.id === to || !set.has(v.id))
+      for (const g of p.graph.groups) g.members = [...new Set(g.members.map(x => (set.has(x) ? to : x)))]
+      p.merges.push({ from: sources, to })
+    } else {
+      if (sources.length !== 1 || targets.length !== 2) throw new Error('split needs one vertex and two targets: "split x -> p q"')
+      const [x] = sources, [into, out] = targets
+      for (const t of targets) if (exists(t)) throw new Error(`vertex "${t}" already exists`)
+      const xv = p.graph.vertices.find(v => v.id === x)!
+      for (const e of p.graph.edges) if (!e.directed || e.hyper) throw new Error('split works on arcs only')
+      applyVertexAttrs(ensureVertex(p, into), attrs)
+      ensureVertex(p, out)
+      for (const e of p.graph.edges) {
+        e.head = e.head.map(v => (v === x ? into : v))
+        e.tail = e.tail.map(v => (v === x ? out : v))
+      }
+      for (const v of [into, out]) { const nv = p.graph.vertices.find(y => y.id === v)!; nv.x = xv.x; nv.y = xv.y }
+      p.graph.vertices = p.graph.vertices.filter(v => v.id !== x)
+      p.merges.push({ from: targets, to: x })
+    }
+  }
+
   function keyword(p: PanelState, kw: string, rest: string) {
+    if (kw === 'merge' || kw === 'split') return mergeOrSplit(p, kw, rest)
     if (kw === 'remove') {
       for (const r of refs(p, rest)) {
         if (r.kind === 'vertex') {

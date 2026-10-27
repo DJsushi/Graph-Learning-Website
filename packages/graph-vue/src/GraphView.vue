@@ -23,6 +23,10 @@ const props = withDefaults(defineProps<{
   backgroundPan?: boolean
   ariaLabel?: string
   midArrows?: boolean
+  /** opacity of entering/leaving elements, keyed `v:<id>` / `e:<id>` (see tween.ts) */
+  fade?: Record<string, number>
+  /** glide the viewBox when the drawing's extent changes */
+  animate?: boolean
 }>(), { selectable: 'none', maxHeight: 320 })
 
 const emit = defineEmits<{
@@ -160,7 +164,25 @@ watch(box, b => {
   const f = frozen.value
   if (props.editable && !props.fill && (!f || f.x !== b.x || f.y !== b.y || f.w !== b.w || f.h !== b.h)) frozen.value = b
 })
-const viewBox = computed(() => `${box.value.x} ${box.value.y} ${box.value.w} ${box.value.h}`)
+// animate: ease the viewBox to its new extent once a frame tween has settled; during the tween it follows the drawing
+const shownBox = ref<Box>(box.value)
+let boxRaf = 0
+watch(box, b => {
+  cancelAnimationFrame(boxRaf)
+  const from = shownBox.value
+  const still = !props.fade || !Object.keys(props.fade).length
+  if (!props.animate || !still || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) { shownBox.value = b; return }
+  const t0 = performance.now()
+  const run = (now: number) => {
+    const p = Math.min(1, Math.max(0, (now - t0) / 350)), k = p * p * (3 - 2 * p)
+    shownBox.value = { x: from.x + (b.x - from.x) * k, y: from.y + (b.y - from.y) * k, w: from.w + (b.w - from.w) * k, h: from.h + (b.h - from.h) * k }
+    if (p < 1) boxRaf = requestAnimationFrame(run)
+  }
+  boxRaf = requestAnimationFrame(run)
+})
+onBeforeUnmount(() => cancelAnimationFrame(boxRaf))
+const viewBox = computed(() => { const b = props.animate ? shownBox.value : box.value; return `${b.x} ${b.y} ${b.w} ${b.h}` })
+const fadeStyle = (k: string) => (props.fade?.[k] === undefined ? undefined : { opacity: props.fade[k] })
 
 // ---- zoom / pan ----
 // an enlarged-figure dialog provides 'ga-zoomable' so every graph inside it can zoom and pan
@@ -359,7 +381,7 @@ const describe = computed(() => {
       <!-- edges -->
       <g class="gv-edges">
         <g v-for="e in visibleEdges" :key="e.id" class="gv-edge" :class="[...classesOf('edge', e), { 'gv-directed': e.directed }]"
-          :data-edge="e.id">
+          :data-edge="e.id" :style="fadeStyle('e:' + e.id)">
           <template v-if="geoms.get(e.id)">
             <path class="gv-hit" :d="geoms.get(e.id)!.d"
               :tabindex="interactiveEdges ? 0 : undefined"
@@ -383,7 +405,7 @@ const describe = computed(() => {
       <!-- edge labels -->
       <g class="gv-edge-labels">
         <template v-for="e in visibleEdges" :key="e.id">
-          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="classesOf('edge', e)"
+          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="classesOf('edge', e)" :style="fadeStyle('e:' + e.id)"
             :x="geoms.get(e.id)!.label.x" :y="geoms.get(e.id)!.label.y" text-anchor="middle" dominant-baseline="central">
             <template v-if="spans(edgeLabel(e)!)">
               <tspan v-for="(s, i) in tspans(spans(edgeLabel(e)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
@@ -396,7 +418,7 @@ const describe = computed(() => {
       <!-- vertices -->
       <g class="gv-vertices">
         <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside }]"
-          :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id"
+          :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id" :style="fadeStyle('v:' + v.id)"
           :tabindex="interactiveVertices ? 0 : undefined"
           :role="interactiveVertices ? 'button' : undefined"
           :aria-label="interactiveVertices ? `vertex ${v.label?.replace(/\$/g, '') ?? v.id}` : undefined"

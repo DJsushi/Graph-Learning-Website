@@ -105,7 +105,7 @@ function solve(V: Id[], A: Arc[], r: Id, depth: number, pos: Map<Id, { x?: numbe
   const members2 = new Map(members)
   cycles.forEach((c, i) => members2.set(name(i), c.flatMap(v => members.get(v) ?? [v])))
   const graph2 = display(V2, A2, members2, pos, labels, orig)
-  steps.push(new Recorder().snap('Contract every cycle to a single vertex and solve the smaller instance recursively.', { line: 'contract', graph: graph2 }))
+  steps.push(new Recorder().snap('Contract every cycle to a single vertex and solve the smaller instance recursively.', { line: 'contract', graph: graph2, merges: cycles.map((c, i) => ({ from: c, to: name(i) })) }))
   const sub = solve(V2, A2, r, depth + 1, pos, labels, orig, members2)
   if (!sub) return undefined
   steps.push(...sub.steps)
@@ -118,7 +118,7 @@ function solve(V: Id[], A: Arc[], r: Id, depth: number, pos: Map<Id, { x?: numbe
   const R2 = new Recorder()
   for (const a of result) R2.addE(a.id, 'tree')
   for (const a of reduced) R2.o.edgeLabels[a.id] = fmt(a.w)
-  steps.push(R2.snap(`Expand the contracted cycle${cycles.length > 1 ? 's' : ''}: keep the arc entering each cycle and all cycle arcs except the one entering the same vertex.`, { line: 'expand', graph }))
+  steps.push(R2.snap(`Expand the contracted cycle${cycles.length > 1 ? 's' : ''}: keep the arc entering each cycle and all cycle arcs except the one entering the same vertex.`, { line: 'expand', graph, split: true, merges: cycles.map((c, i) => ({ from: c, to: name(i) })) }))
   return { arcs: result, steps }
 }
 

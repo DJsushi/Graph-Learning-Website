@@ -52,6 +52,12 @@ export interface GraphData {
   meta: Record<string, string>
 }
 
+/** Vertices `from` of the previous frame are merged into `to` of the next one (contraction, identification). Played backwards it is a split. */
+export interface Merge {
+  from: Id[]
+  to: Id
+}
+
 export function emptyGraph(type: GraphType = 'undirected'): GraphData {
   return { type, simple: false, vertices: [], edges: [], faces: [], groups: [], meta: {} }
 }

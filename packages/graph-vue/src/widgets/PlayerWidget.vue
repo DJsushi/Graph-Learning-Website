@@ -7,6 +7,7 @@ import GraphView from '../GraphView.vue'
 import RichText from '../RichText.vue'
 import StepControls from './StepControls.vue'
 import { positioned, positionsOf } from '../positions'
+import { useTweened } from '../useTweened'
 
 // bare: the host shows the algorithm name itself (playground)
 const props = defineProps<{ doc: GraphDoc; height: number; pseudocode?: string; graph?: GraphData; params?: Record<string, string>; algo?: string; bare?: boolean }>()
@@ -43,6 +44,17 @@ const stable = computed(() => {
   return last ? positioned(last) : base.value
 })
 const shownGraph = computed(() => (cur.value?.graph ? place(cur.value.graph) : base.value))
+// contraction steps slide their vertices together; stepping back plays them in reverse
+const prev = ref(0)
+watch(run, () => { prev.value = 0 })
+watch(step, (_, old) => { prev.value = old }, { flush: 'sync' })
+const { graph: tweened, fade } = useTweened(() => {
+  const i = step.value, steps = run.value.steps
+  const g = shownGraph.value
+  if (i === prev.value + 1 && steps[i]?.merges) return { graph: g, merges: steps[i].merges, reverse: steps[i].split }
+  if (i === prev.value - 1 && steps[i + 1]?.merges) return { graph: g, merges: steps[i + 1].merges, reverse: !steps[i + 1].split }
+  return { graph: g }
+})
 const panels = computed(() => (show.value.includes('residual') || !props.doc.directives.show ? cur.value?.panels ?? [] : []).map(p => ({ ...p, graph: place(p.graph) })))
 
 const codeHtml = computed(() => {
@@ -67,7 +79,7 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
         <div class="ga-player-main" :class="{ 'ga-player-graphs': panels.length }">
           <div class="ga-side-graph">
             <div v-if="panels.length" class="ga-pane-caption"><RichText text="network $G$" /></div>
-            <GraphView :graph="shownGraph" :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
+            <GraphView :graph="tweened" :fade="fade" animate :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
           </div>
           <div v-for="(p, i) in panels" :key="i" class="ga-side-graph">
             <div class="ga-pane-caption"><RichText :text="p.title" /></div>
