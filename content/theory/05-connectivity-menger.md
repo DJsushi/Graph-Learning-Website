@@ -194,17 +194,19 @@ vertex at most once), and the resulting $k$ paths share no inner vertex. Two of 
 $(s, t)$, which does not exist by assumption. So $G$ has $k$ internally disjoint $s$–$t$ paths.
 :::
 
-```graph id=t05-vertex-splitting widget=figure
+```graph id=t05-vertex-splitting widget=stepper
 caption: Splitting a vertex $x$ into $x^- \to x^+$: all arcs into $x$ enter $x^-$, all arcs out of $x$ leave $x^+$. A path through $x$ must use the arc $e_x$, so edge-disjoint paths in the new graph visit $x$ at most once in total.
 intent: Transcription of the lecture construction for the reduction from vertex to edge version.
 type: directed
 layout: fixed
-panel: before
 a1 @(0, 1); a2 @(0, 0); a3 @(0, -1); x [class=current] @(1, 0); b1 @(2, 1); b2 @(2, -1)
 a1 -> x; a2 -> x; a3 -> x; x -> b1; x -> b2
-panel: after
-a1 @(0, 1); a2 @(0, 0); a3 @(0, -1); xm [label="$x^-$"] @(1, 0); xp [label="$x^+$"] @(2, 0); b1 @(3, 1); b2 @(3, -1)
-a1 -> xm; a2 -> xm; a3 -> xm; xm -> xp [class=highlight label="$e_x$"]; xp -> b1; xp -> b2
+step: The vertex $x$ with its in-arcs and out-arcs.
+step: Split $x$ into $x^-$ and $x^+$: all arcs into $x$ enter $x^-$, all arcs out of $x$ leave $x^+$.
+split x -> xm xp
+xm [label="$x^-$"] @(1, 0); xp [label="$x^+$"] @(2, 0); b1 @(3, 1); b2 @(3, -1)
+step: Join them by the arc $e_x$; a path through $x$ must use it.
+xm -> xp [class=highlight label="$e_x$"]
 ```
 
 ### Step 2: proving B

@@ -495,7 +495,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
       applyVertexAttrs(tv, attrs)
       // a new vertex starts at the centroid of its members
       const at = sources.map(id => p.graph.vertices.find(v => v.id === id)!).filter(v => v.x !== undefined)
-      if (fresh && at.length) { tv.x = at.reduce((n, v) => n + v.x!, 0) / at.length; tv.y = at.reduce((n, v) => n + v.y!, 0) / at.length }
+      if (fresh && at.length) { tv.x = at.reduce((n, v) => n + v.x!, 0) / at.length; tv.y = at.reduce((n, v) => n + v.y!, 0) / at.length; tv.pinned = true }
       // edges inside the merged set vanish (contraction); the rest are rewired
       p.graph.edges = p.graph.edges.filter(e => !e.tail.concat(e.head).every(x => set.has(x) || x === to))
       for (const e of p.graph.edges) {
@@ -517,7 +517,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
         e.head = e.head.map(v => (v === x ? into : v))
         e.tail = e.tail.map(v => (v === x ? out : v))
       }
-      for (const v of [into, out]) { const nv = p.graph.vertices.find(y => y.id === v)!; nv.x = xv.x; nv.y = xv.y }
+      for (const v of [into, out]) { const nv = p.graph.vertices.find(y => y.id === v)!; nv.x = xv.x; nv.y = xv.y; nv.pinned = xv.pinned }
       p.graph.vertices = p.graph.vertices.filter(v => v.id !== x)
       p.merges.push({ from: targets, to: x })
     }

@@ -369,7 +369,16 @@ step: Adding $v$ back cannot create a cycle, since $\deg v = 1$.
 - Each `step: <text>` starts a new step; statements after it (edges, removals, class edits,
   attribute merges, groups) are applied **cumulatively** on top of the previous step.
 - Layout is computed once on the union of all elements over all steps, so vertices do not
-  jump between steps.
+  jump between steps. A vertex given an explicit `@(x, y)` in a later step moves there.
+- Moving between steps is animated: shared vertices slide, new ones fade in, removed ones fade out
+  (instant under `prefers-reduced-motion`).
+- `merge u v w -> x [attrs]` identifies or contracts vertices into `x` (an existing id among the
+  sources, or a new one placed at their centroid). Incident edges are rewired and keep their ids
+  (`[id=...]` on the edge); edges whose ends all lie in the merged set vanish. The animation slides
+  the sources together. Parallel edges are kept; remove the extra ones in a later step.
+- `split x -> p q [attrs]` is the inverse for directed graphs: arcs into `x` now enter `p`, arcs
+  out of `x` now leave `q`. Give `p`, `q` their positions with a vertex statement afterwards.
+- A step may merge or split, not both.
 
 ---
 
@@ -467,7 +476,9 @@ line        = [ statement { ";" statement } ] [ comment ] NEWLINE ;
 comment     = "//" { any-char } ;
 
 statement   = directive | step | panel | hyperedge | face | group
-            | class-edit | removal | edge-stmt | vertex-stmt ;
+            | class-edit | removal | merge | split | edge-stmt | vertex-stmt ;
+merge       = "merge" ident { ident } "->" ident [ attrs ] ;    (* inside a step *)
+split       = "split" ident "->" ident ident [ attrs ] ;        (* inside a step, arcs only *)
 
 directive   = keyword ":" rest-of-statement ;      (* keyword ∈ known directive names *)
 step        = "step" ":" text ;

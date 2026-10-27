@@ -537,13 +537,12 @@ caption: Contracting the edge $uv$: $u$ and $v$ merge into $w_{uv}$; the two edg
 intent: Illustrate edge contraction and removal of parallel edges.
 layout: fixed
 u @(0, 0); v @(1, 0); x @(0.5, 1); y @(-0.8, 0.6); z @(1.8, 0.6)
-u -- v [w=1 class=highlight]; u -- x [w=4]; v -- x [w=3]; u -- y [w=2]; v -- z [w=5]
+u -- v [w=1 class=highlight]; u -- x [id=ux w=4]; v -- x [w=3]; u -- y [w=2]; v -- z [w=5]
 step: Contract the edge $uv$.
 step: $u$ and $v$ become one vertex $w_{uv}$; $x$ now has two parallel edges to it.
-remove u--v
-class color1: u v
+merge u v -> w [label="$w_{uv}$" class=color1]
 step: Keep only the lighter parallel edge (weight 3).
-remove u--x
+remove @ux
 ```
 
 ::: lemma {#lem:contraction-mst title="Contractions and MST" source="algorithms/01 p20"}

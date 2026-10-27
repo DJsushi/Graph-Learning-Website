@@ -39,9 +39,10 @@ export function unionPositions(graphs: GraphData[]): Positions {
   return positionsOf(positioned(u))
 }
 
+/** Fill in laid-out positions; vertices placed explicitly with @(x, y) keep theirs (so a step may move them). */
 export function applyPositions(g: GraphData, p: Positions): GraphData {
   const c = cloneGraph(g)
-  for (const v of c.vertices) { const q = p.get(v.id); if (q) { v.x = q.x; v.y = q.y } }
+  for (const v of c.vertices) { const q = p.get(v.id); if (q && !v.pinned) { v.x = q.x; v.y = q.y } }
   return c
 }
 
