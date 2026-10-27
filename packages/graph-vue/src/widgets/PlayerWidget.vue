@@ -48,7 +48,7 @@ const shownGraph = computed(() => (cur.value?.graph ? place(cur.value.graph) : b
 const prev = ref(0)
 watch(run, () => { prev.value = 0 })
 watch(step, (_, old) => { prev.value = old }, { flush: 'sync' })
-const { graph: tweened, fade, goo } = useTweened(() => {
+const { graph: tweened, fade, goo, ghost } = useTweened(() => {
   const i = step.value, steps = run.value.steps
   const g = shownGraph.value
   if (i === prev.value + 1 && steps[i]?.merges) return { graph: g, merges: steps[i].merges, reverse: steps[i].split }
@@ -79,7 +79,7 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
         <div class="ga-player-main" :class="{ 'ga-player-graphs': panels.length }">
           <div class="ga-side-graph">
             <div v-if="panels.length" class="ga-pane-caption"><RichText text="network $G$" /></div>
-            <GraphView :graph="tweened" :fade="fade" :goo="goo" animate :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
+            <GraphView :graph="tweened" :fade="fade" :goo="goo" :ghost="ghost" animate :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
           </div>
           <div v-for="(p, i) in panels" :key="i" class="ga-side-graph">
             <div class="ga-pane-caption"><RichText :text="p.title" /></div>

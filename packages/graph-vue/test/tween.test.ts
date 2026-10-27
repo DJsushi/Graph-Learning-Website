@@ -39,23 +39,24 @@ describe('interpolate', () => {
   it('slides merged vertices together and fades them', () => {
     const r = interpolate(s0.graph, s1.graph, 0.5, s1.merges)
     const u = r.graph.vertices.find(v => v.id === 'u')!
-    expect(u.x).toBeCloseTo(0.5)
-    // slide first, cross-fade at the end
+    expect(u.x).toBeCloseTo(0.625) // 0.5 / 0.8 of the way to w
+    // the members slide without fading; the merged vertex waits behind them
     expect(r.fade['v:u']).toBeUndefined()
-    expect(r.fade['v:w']).toBeCloseTo(0)
+    expect(r.fade['v:w']).toBeUndefined()
+    expect(r.ghost).toEqual(['w'])
     expect(r.fade['e:uv']).toBeCloseTo(0) // the contracted edge is already gone
     expect(r.goo?.sort()).toEqual(['u', 'v'])
     expect(r.fade['l:u']).toBeCloseTo(0) // labels clear out before the blobs fuse
+    // from 80% the members coincide
     const late = interpolate(s0.graph, s1.graph, 0.85, s1.merges)
-    expect(late.fade['v:u']).toBeCloseTo(0.5)
-    expect(late.fade['v:w']).toBeCloseTo(0.5)
-    expect(r.graph.edges.find(e => e.id === 'ux')!.tail[0]).toBe('u') // still on the sliding vertex
+    const [lu, lv] = ['u', 'v'].map(id => late.graph.vertices.find(v => v.id === id)!.x)
+    expect(lu).toBeCloseTo(lv!)
   })
   it('reverse plays the merge backwards', () => {
     const r = interpolate(s1.graph, s0.graph, 0.25, s1.merges, true)
     const u = r.graph.vertices.find(v => v.id === 'u')!
-    expect(u.x).toBeCloseTo(0.75) // a quarter of the way back from w (x=1) towards u (x=0)
-    expect(r.fade['v:w']).toBeCloseTo(0.074, 2) // time reversed: the cross-fade comes first
+    expect(u.x).toBeCloseTo(0.9375) // reversed: u has slid 0.75 / 0.8 of the way, as seen from u's side
+    expect(r.fade['v:w']).toBeUndefined()
   })
 })
 

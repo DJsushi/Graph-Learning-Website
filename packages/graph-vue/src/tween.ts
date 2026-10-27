@@ -7,6 +7,8 @@ export interface Tweened {
   fade: Record<string, number>
   /** vertices currently melting into / out of one another, drawn as one liquid blob */
   goo?: Id[]
+  /** merged vertices waiting behind the blob: shape hidden, label fading in */
+  ghost?: Id[]
 }
 
 const visible = (el: Vertex | Edge) => !el.classes.includes('hidden')
@@ -43,6 +45,9 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   const pt = (v: Vertex) => ({ x: v.x ?? 0, y: v.y ?? 0 })
   const vertices: Vertex[] = []
   const goo = new Set<Id>()
+  const ghost: Id[] = []
+  // the members finish sliding at 80%: the last stretch is a single round blob, so the hand-off to the merged vertex is invisible
+  const pm = clamp01(u / 0.8)
   for (const [to, from] of sources) for (const f of from) { goo.add(f); if (f !== to) fade[`l:${f}`] = out(u, 0.35) }
   const place = (v: Vertex, p: { x: number; y: number }, f: number) => {
     vertices.push({ ...v, x: p.x, y: p.y })
@@ -52,10 +57,10 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   for (const [id, v] of sv) {
     const to = target.get(id)
     const dt = to && dv.get(to)
-    if (dt) place(v, { x: lerp(v.x ?? 0, dt.x ?? 0, u), y: lerp(v.y ?? 0, dt.y ?? 0, u) }, 1 - inn(u, 0.3))
+    if (dt) place(v, { x: lerp(v.x ?? 0, dt.x ?? 0, pm), y: lerp(v.y ?? 0, dt.y ?? 0, pm) }, 1)
     else if (dv.has(id)) {
       const w = dv.get(id)!
-      place(destOf(id, w), { x: lerp(v.x ?? 0, w.x ?? 0, u), y: lerp(v.y ?? 0, w.y ?? 0, u) }, 1)
+      { const k = sources.has(id) ? pm : u; place(destOf(id, w), { x: lerp(v.x ?? 0, w.x ?? 0, k), y: lerp(v.y ?? 0, w.y ?? 0, k) }, 1) }
     } else place(v, pt(v), out(u, 0.5))
   }
   for (const [id, w] of dv) {
@@ -63,7 +68,11 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
     const from = (sources.get(id) ?? []).map(f => sv.get(f)!)
     // a merged vertex grows out of the centroid of its members
     const c = from.length ? { x: from.reduce((n, v) => n + (v.x ?? 0), 0) / from.length, y: from.reduce((n, v) => n + (v.y ?? 0), 0) / from.length } : pt(w)
-    place(w, from.length ? { x: lerp(c.x, w.x ?? 0, u), y: lerp(c.y, w.y ?? 0, u) } : pt(w), from.length ? inn(u, 0.3) : inn(u, 0.5))
+    if (from.length) {
+      place(w, { x: lerp(c.x, w.x ?? 0, pm), y: lerp(c.y, w.y ?? 0, pm) }, 1)
+      ghost.push(id)
+      fade[`l:${id}`] = inn(u, 0.2)
+    } else place(w, pt(w), inn(u, 0.5))
   }
 
   const se = new Map(s.edges.filter(visible).map(e => [e.id, e]))
@@ -91,5 +100,5 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   }
   for (const f of lone) if (!paired.has(f.id)) { edges.push(f); fade[`e:${f.id}`] = inn(u) }
   const base = u < 0.5 ? s : d
-  return { graph: { ...base, vertices, edges }, fade, goo: goo.size ? [...goo] : undefined }
+  return { graph: { ...base, vertices, edges }, fade, goo: goo.size ? [...goo] : undefined, ghost: ghost.length ? ghost : undefined }
 }

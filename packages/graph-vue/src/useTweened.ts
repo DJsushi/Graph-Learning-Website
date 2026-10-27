@@ -16,6 +16,7 @@ export function useTweened(source: () => TweenTarget, duration: () => number = t
   const graph = shallowRef<GraphData>(source().graph)
   const fade = shallowRef<Record<string, number>>({})
   const goo = shallowRef<string[]>([])
+  const ghost = shallowRef<string[]>([])
   let raf = 0
   const stop = () => { if (raf) cancelAnimationFrame(raf); raf = 0 }
 
@@ -30,7 +31,7 @@ export function useTweened(source: () => TweenTarget, duration: () => number = t
     }
     stop()
     const ms = duration()
-    if (tgt.graph === a || ms <= 0 || typeof requestAnimationFrame === 'undefined') { graph.value = tgt.graph; fade.value = {}; goo.value = []; return }
+    if (tgt.graph === a || ms <= 0 || typeof requestAnimationFrame === 'undefined') { graph.value = tgt.graph; fade.value = {}; goo.value = []; ghost.value = []; return }
     const t0 = performance.now()
     const frame = (now: number) => {
       const p = Math.min(1, (now - t0) / ms)
@@ -39,10 +40,11 @@ export function useTweened(source: () => TweenTarget, duration: () => number = t
       graph.value = r.graph
       fade.value = r.fade
       goo.value = r.goo ?? []
+      ghost.value = r.ghost ?? []
       raf = p < 1 ? requestAnimationFrame(frame) : 0
     }
     raf = requestAnimationFrame(frame)
   })
   onBeforeUnmount(stop)
-  return { graph, fade, goo }
+  return { graph, fade, goo, ghost }
 }

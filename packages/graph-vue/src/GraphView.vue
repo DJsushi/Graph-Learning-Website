@@ -28,6 +28,8 @@ const props = withDefaults(defineProps<{
   fade?: Record<string, number>
   /** vertices drawn as merging droplets (see tween.ts) */
   goo?: string[]
+  /** vertices whose shape is hidden behind the droplets */
+  ghost?: string[]
   /** glide the viewBox when the drawing's extent changes */
   animate?: boolean
 }>(), { selectable: 'none', maxHeight: 320 })
@@ -445,7 +447,7 @@ const describe = computed(() => {
       </g>
       <!-- vertices -->
       <g class="gv-vertices">
-        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) }]"
+        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) || ghost?.includes(v.id) }]"
           :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id" :style="fadeStyle('v:' + v.id)"
           :tabindex="interactiveVertices ? 0 : undefined"
           :role="interactiveVertices ? 'button' : undefined"
