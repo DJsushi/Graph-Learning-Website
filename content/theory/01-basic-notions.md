@@ -145,7 +145,7 @@ a "$C_2$" would need two [[def:mixed-multigraph|parallel edges]] and a "$C_1$" a
 Example: $C_3 = K_3$ is the triangle, and $C_4$ is the square.
 :::
 
-::: definition {#def:complete-graph title="Complete graph $K_n$" defines="complete graph, K_n, clique" source="theory/2026-09-15 p2"}
+::: definition {#def:complete-graph title="Complete graph $K_n$" defines="complete graph, K_n" source="theory/2026-09-15 p2"}
 The **complete graph on $n$ vertices**, denoted $K_n$, has $\abs{V(K_n)} = n$ and
 $E(K_n) = \binom{V(K_n)}{2}$: every two distinct vertices are adjacent.
 :::

@@ -119,7 +119,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M t01 `content/theory/01-basic-notions.md`
 - [x] W t01
 - [x] M t02 `content/theory/02-walks-connectivity-bipartite.md`
-- [ ] W t02
+- [x] W t02
 - [ ] M t03 `content/theory/03-trees.md`
 - [ ] W t03
 - [ ] M t04 `content/theory/04-chordal-hamiltonian.md`
@@ -202,5 +202,15 @@ Open questions: SOURCE UNCLEAR on `t01-iso-multigraph` (check the recording); th
 Open questions:
 - "clique" in both `def:complete-graph` (t01) and `def:clique` (t02) defines; drop it from t01 in W/F.
 - König attribution kept (standard, not in lecture).
+
+### t02 (W) Subgraphs, walks and bipartite graphs
+
+**Math fixes (W):** none. The BFS correctness argument from M is now `::: remark {title="Why BFS computes distances"}` after the layer paragraph (math unchanged, REVIEW kept).
+
+Entries as in M; statements only gained links (def:clique → isomorphism, complete graph; prop:bipartite-subgraph-kmn → isomorphic, subgraph; thm:bipartite-odd-cycle → cycle; alg:bfs → BFS tree [[def:forest-tree]]). Metadata: "clique" removed from t01 `def:complete-graph` defines; now only `def:clique`.
+
+Added: intuitions for all entries (alg:bfs: O(n+m), links [[alg:edmonds-karp]], [[def:level-graph]]; def:bipartite: [[def:matching]], [[prop:matching-flow]]); pitfalls (G−v induced, G−e not; walk vs path/cycle; empty graph not connected, connected subgraph ≠ component; BFS mark on discovery, DFS tree paths not shortest; triangle-free ≠ bipartite, C_5); figure `t02-bipartite-c6`. Lint t01: 0, t02: 0.
+
+Open questions: König attribution kept. t04 has 3 "clique" lint hits (lines 83, 350, 403) for W t04. Unproved standard facts added in intuition/pitfall: BFS is O(n+m).
 
 ## Report
