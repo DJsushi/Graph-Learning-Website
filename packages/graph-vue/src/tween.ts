@@ -5,6 +5,8 @@ export interface Tweened {
   graph: GraphData
   /** opacity of entering / leaving elements, keyed `v:<id>` / `e:<id>`; absent = fully visible */
   fade: Record<string, number>
+  /** vertices currently melting into / out of one another, drawn as one liquid blob */
+  goo?: Id[]
 }
 
 const visible = (el: Vertex | Edge) => !el.classes.includes('hidden')
@@ -40,6 +42,8 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   }
   const pt = (v: Vertex) => ({ x: v.x ?? 0, y: v.y ?? 0 })
   const vertices: Vertex[] = []
+  const goo = new Set<Id>()
+  for (const [to, from] of sources) for (const f of from) { goo.add(f); if (f !== to) fade[`l:${f}`] = out(u, 0.35) }
   const place = (v: Vertex, p: { x: number; y: number }, f: number) => {
     vertices.push({ ...v, x: p.x, y: p.y })
     if (f < 1) fade[`v:${v.id}`] = f
@@ -87,5 +91,5 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   }
   for (const f of lone) if (!paired.has(f.id)) { edges.push(f); fade[`e:${f.id}`] = inn(u) }
   const base = u < 0.5 ? s : d
-  return { graph: { ...base, vertices, edges }, fade }
+  return { graph: { ...base, vertices, edges }, fade, goo: goo.size ? [...goo] : undefined }
 }

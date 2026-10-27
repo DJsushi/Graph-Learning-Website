@@ -44,6 +44,8 @@ describe('interpolate', () => {
     expect(r.fade['v:u']).toBeUndefined()
     expect(r.fade['v:w']).toBeCloseTo(0)
     expect(r.fade['e:uv']).toBeCloseTo(0) // the contracted edge is already gone
+    expect(r.goo?.sort()).toEqual(['u', 'v'])
+    expect(r.fade['l:u']).toBeCloseTo(0) // labels clear out before the blobs fuse
     const late = interpolate(s0.graph, s1.graph, 0.85, s1.merges)
     expect(late.fade['v:u']).toBeCloseTo(0.5)
     expect(late.fade['v:w']).toBeCloseTo(0.5)

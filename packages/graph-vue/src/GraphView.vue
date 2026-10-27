@@ -4,7 +4,7 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
-import { routeEdges, toScreen, blobPath, centroid, UNIT, R, type Pt } from './geometry'
+import { routeEdges, toScreen, blobPath, centroid, bridgePath, UNIT, R, type Pt } from './geometry'
 import { labelToSpans, spansWidth, type TSpan } from './texsvg'
 import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
@@ -26,6 +26,8 @@ const props = withDefaults(defineProps<{
   midArrows?: boolean
   /** opacity of entering/leaving elements, keyed `v:<id>` / `e:<id>` (see tween.ts) */
   fade?: Record<string, number>
+  /** vertices drawn as merging droplets (see tween.ts) */
+  goo?: string[]
   /** glide the viewBox when the drawing's extent changes */
   animate?: boolean
 }>(), { selectable: 'none', maxHeight: 320 })
@@ -184,6 +186,17 @@ watch(box, b => {
 })
 onBeforeUnmount(() => cancelAnimationFrame(boxRaf))
 const viewBox = computed(() => { const b = props.animate ? shownBox.value : box.value; return `${b.x} ${b.y} ${b.w} ${b.h}` })
+const gooShapes = computed(() => {
+  const vs = props.goo?.length ? visibleVertices.value.filter(v => props.goo!.includes(v.id)) : []
+  const bridges: { d: string; classes: string[] }[] = []
+  for (let i = 0; i < vs.length; i++) for (let j = i + 1; j < vs.length; j++) {
+    const d = bridgePath(pos.value.get(vs[i].id)!, radius.value, pos.value.get(vs[j].id)!, radius.value)
+    if (d) bridges.push({ d, classes: classesOf('vertex', vs[i]) })
+  }
+  return { vs, bridges }
+})
+// all members fade together
+const gooOpacity = computed(() => props.fade?.[`v:${props.goo?.[0]}`] ?? 1)
 const fadeStyle = (k: string) => (props.fade?.[k] === undefined ? undefined : { opacity: props.fade[k] })
 
 // ---- zoom / pan ----
@@ -417,9 +430,22 @@ const describe = computed(() => {
           </text>
         </template>
       </g>
+      <!-- merging droplets: circles plus metaball bridges; an ink underlay gives the fused shape one outline -->
+      <g v-if="gooShapes.vs.length" class="gv-goo" :style="{ opacity: gooOpacity }">
+        <g class="gv-goo-ink">
+          <circle v-for="v in gooShapes.vs" :key="v.id" :cx="pos.get(v.id)!.x" :cy="pos.get(v.id)!.y" :r="radius" />
+          <path v-for="(b, i) in gooShapes.bridges" :key="i" :d="b.d" />
+        </g>
+        <g v-for="v in gooShapes.vs" :key="v.id" class="gv-vertex" :class="classesOf('vertex', v)" :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`">
+          <circle class="gv-vertex-shape gv-goo-fill" :r="radius" />
+        </g>
+        <g v-for="(b, i) in gooShapes.bridges" :key="'b' + i" class="gv-vertex" :class="b.classes">
+          <path class="gv-vertex-shape gv-goo-fill" :d="b.d" />
+        </g>
+      </g>
       <!-- vertices -->
       <g class="gv-vertices">
-        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside }]"
+        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) }]"
           :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id" :style="fadeStyle('v:' + v.id)"
           :tabindex="interactiveVertices ? 0 : undefined"
           :role="interactiveVertices ? 'button' : undefined"
@@ -432,12 +458,12 @@ const describe = computed(() => {
           <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 18)" />
           <circle class="gv-vertex-shape" :r="radius" />
           <template v-if="vertexLabels.get(v.id)">
-            <text v-if="spans(vertexLabels.get(v.id)!)" class="gv-vertex-label" :class="{ 'gv-outside': !labelsInside }"
+            <text v-if="spans(vertexLabels.get(v.id)!)" class="gv-vertex-label" :class="{ 'gv-outside': !labelsInside }" :style="fadeStyle('l:' + v.id)"
               :x="labelsInside ? 0 : 9" :y="labelsInside ? 0.5 : -11" :text-anchor="labelsInside ? 'middle' : 'start'" dominant-baseline="central">
               <tspan v-for="(s, i) in tspans(spans(vertexLabels.get(v.id)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
                 :font-size="s.small ? '72%' : undefined" :dy="s.dy || undefined">{{ s.text }}</tspan>
             </text>
-            <foreignObject v-else class="gv-fo" :x="labelsInside ? -40 : 8" :y="labelsInside ? -12 : -26" width="80" height="24">
+            <foreignObject v-else class="gv-fo" :style="fadeStyle('l:' + v.id)" :x="labelsInside ? -40 : 8" :y="labelsInside ? -12 : -26" width="80" height="24">
               <div xmlns="http://www.w3.org/1999/xhtml" class="gv-fo-label" :class="{ 'gv-fo-left': !labelsInside }" v-html="katexHtml(vertexLabels.get(v.id)!)" />
             </foreignObject>
           </template>

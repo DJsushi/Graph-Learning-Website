@@ -20,7 +20,7 @@ const prev = ref(0)
 watch(frames, () => { step.value = 0; prev.value = 0 })
 watch(step, (_, old) => { prev.value = old }, { flush: 'sync' })
 // moving one step forward plays that step's merges; one step back plays them in reverse
-const { graph, fade } = useTweened(() => {
+const { graph, fade, goo } = useTweened(() => {
   const i = step.value, f = frames.value
   if (i === prev.value + 1) return { graph: f[i].graph, merges: f[i].merges, reverse: f[i].split }
   if (i === prev.value - 1) return { graph: f[i].graph, merges: f[i + 1].merges, reverse: !f[i + 1].split }
@@ -30,7 +30,7 @@ const { graph, fade } = useTweened(() => {
 
 <template>
   <div class="ga-stepper">
-    <GraphView :graph="graph" :fade="fade" animate :max-height="height" :aria-label="doc.directives.caption?.[0]?.replace(/\$/g, '') ?? 'Step-by-step figure'" />
+    <GraphView :graph="graph" :fade="fade" :goo="goo" animate :max-height="height" :aria-label="doc.directives.caption?.[0]?.replace(/\$/g, '') ?? 'Step-by-step figure'" />
     <div class="ga-step-message" aria-live="polite"><RichText :text="frames[step].text" /></div>
     <StepControls v-model="step" :count="frames.length" />
   </div>

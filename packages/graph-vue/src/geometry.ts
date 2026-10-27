@@ -154,3 +154,25 @@ export function blobPath(points: Pt[]): string {
 export function centroid(points: Pt[]): Pt {
   return mul(points.reduce(add, { x: 0, y: 0 }), 1 / Math.max(1, points.length))
 }
+
+/**
+ * Metaball bridge between two circles (after Hiroyuki Sato): a closed path that pinches into a neck when the circles are
+ * close and snaps off when they are further than r1 + 2.5 r2 apart. Undefined when there is no neck to draw.
+ */
+export function bridgePath(c1: Pt, r1: number, c2: Pt, r2: number, v = 0.5, handleSize = 2.4): string | undefined {
+  const dx = c2.x - c1.x, dy = c2.y - c1.y, d = Math.hypot(dx, dy)
+  if (d > r1 + r2 * 2.5 || d <= Math.abs(r1 - r2) + 0.01) return undefined
+  const at = (c: Pt, a: number, r: number): Pt => ({ x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r })
+  const u1 = d < r1 + r2 ? Math.acos((r1 * r1 + d * d - r2 * r2) / (2 * r1 * d)) : 0
+  const u2 = d < r1 + r2 ? Math.acos((r2 * r2 + d * d - r1 * r1) / (2 * r2 * d)) : 0
+  const th = Math.atan2(dy, dx), spread = Math.acos((r1 - r2) / d)
+  const a1 = th + u1 + (spread - u1) * v, a2 = th - u1 - (spread - u1) * v
+  const a3 = th + Math.PI - u2 - (Math.PI - u2 - spread) * v, a4 = th - Math.PI + u2 + (Math.PI - u2 - spread) * v
+  const p1 = at(c1, a1, r1), p2 = at(c1, a2, r1), p3 = at(c2, a3, r2), p4 = at(c2, a4, r2)
+  const total = r1 + r2
+  const k = Math.min(v * handleSize, Math.hypot(p1.x - p3.x, p1.y - p3.y) / total) * Math.min(1, (d * 2) / total)
+  const h1 = at(p1, a1 - Math.PI / 2, r1 * k), h2 = at(p2, a2 + Math.PI / 2, r1 * k)
+  const h3 = at(p3, a3 + Math.PI / 2, r2 * k), h4 = at(p4, a4 - Math.PI / 2, r2 * k)
+  const fmt = (p: Pt) => `${f(p.x)},${f(p.y)}`
+  return `M${fmt(p1)} C${fmt(h1)} ${fmt(h3)} ${fmt(p3)} A${r2},${r2} 0 1 0 ${fmt(p4)} C${fmt(h4)} ${fmt(h2)} ${fmt(p2)} A${r1},${r1} 0 1 0 ${fmt(p1)}Z`
+}

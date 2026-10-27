@@ -621,3 +621,8 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 @keyframes ga-sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .ga-settings-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--vp-c-text-2); }
 @media (prefers-reduced-motion: reduce) { .ga-settings-sweep { animation: none; } }
+
+/* merging / splitting droplets */
+.gv-vertex.gv-gooed .gv-vertex-shape { opacity: 0; }
+.gv-goo-ink circle, .gv-goo-ink path { fill: var(--gv-ink); stroke: var(--gv-ink); stroke-width: 2.4; stroke-linejoin: round; }
+.gv-goo .gv-goo-fill { stroke: none; transition: none; }

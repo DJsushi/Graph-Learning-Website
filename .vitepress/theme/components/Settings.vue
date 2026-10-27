@@ -19,7 +19,7 @@ const after = doc.panels[0].steps[0]
 
 const merged = ref(false)
 // the preview is built on the client only: it reads the stored speed
-const { graph, fade } = useTweened(() => merged.value
+const { graph, fade, goo } = useTweened(() => merged.value
   ? { graph: after.graph, merges: after.merges }
   : { graph: before, merges: after.merges, reverse: true })
 
@@ -40,7 +40,12 @@ watch(() => [settings.animations, settings.animSpeed], () => { ms.value = tweenM
 
 onMounted(() => { loadSettings(); ms.value = tweenMs() || 900; timer = setTimeout(loop, 600) })
 onBeforeUnmount(() => clearTimeout(timer))
-const replay = () => { clearTimeout(timer); merged.value = false; timer = setTimeout(loop, 300) }
+const replay = () => {
+  clearTimeout(timer)
+  if (!merged.value) return loop()
+  merged.value = false // split first; the loop picks up after it settles
+  timer = setTimeout(loop, tweenMs() + 900)
+}
 </script>
 
 <template>
@@ -67,7 +72,7 @@ const replay = () => { clearTimeout(timer); merged.value = false; timer = setTim
 
     <div class="ga-settings-preview">
       <div class="ga-settings-figure">
-        <GraphView :graph="graph" :fade="fade" animate :max-height="170" aria-label="Preview: two vertices merge into one" />
+        <GraphView :graph="graph" :fade="fade" :goo="goo" animate :max-height="170" aria-label="Preview: two vertices merge into one" />
       </div>
       <div class="ga-settings-bar" aria-hidden="true">
         <div :key="runKey" class="ga-settings-sweep" :style="{ animationDuration: `${settings.animations ? ms : 0}ms` }" />
