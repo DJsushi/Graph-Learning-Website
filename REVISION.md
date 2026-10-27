@@ -121,7 +121,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M t02 `content/theory/02-walks-connectivity-bipartite.md`
 - [x] W t02
 - [x] M t03 `content/theory/03-trees.md`
-- [ ] W t03
+- [x] W t03
 - [ ] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [ ] W t04
 - [ ] M t05 `content/theory/05-connectivity-menger.md`
@@ -240,5 +240,15 @@ Open questions:
 - Lecture base case "OK for d, k ∈ {3,4}" read as k ∈ {3,4} for every d (K_{d+1}, K_{d,d}); no SOURCE UNCLEAR added.
 - "Pitman" attribution and "cage problem" remark not in lecture (standard).
 - W: "leaf" is defined only in prose, not in any `defines` (not searchable); `t03-girth-construction` caption says every vertex gets an H-edge but the drawing shows 3 (illustrative).
+
+### t03 (W) Trees
+
+**Math fixes (W):** none (statements gained links only; M REVIEW comments kept).
+
+New entry `def:leaf` — a vertex of degree 1 is a leaf — `defines="leaf"`; was prose after `thm:two-leaves`, same place; added to topics.yaml (trees, after thm:two-leaves); no `source` yet. Definition numbers in t03 shift (def:spanning-tree 3.3, def:girth 3.4); ids unchanged. `t03-girth-construction` caption now says only some H-edges are drawn. Otherwise entries as in M.
+
+Added: intuitions for all 15 entries; figure `t03-tree-plus-edge` (T+e has exactly one cycle; deleting any cycle edge gives a tree); pitfalls (subgraph quantifier in cor:acyclic-subgraph-small-degree; inclusive or in lem:closed-walk-cycle; n−1 edges alone insufficient; spanning tree not induced/unique; Cayley counts labelled trees of K_n; girth ≥ 3 in simple graphs); cross-course links [[thm:cycle-property]], [[thm:cut-property]], [[def:mst]], [[alg:kruskal]], [[alg:jarnik]]. Lint t01–t03: 0.
+
+Open questions: `def:leaf` source page (≈ 2026-09-29 p2–3). Pitman / cage-problem attribution (from M). W a01: check the informal MST exchange sketch in the `thm:tree-characterisations` intuition matches a01's proofs.
 
 ## Report

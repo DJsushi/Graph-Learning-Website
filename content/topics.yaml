@@ -23,7 +23,7 @@
 - slug: trees
   title: Trees
   intro: Forests and trees, leaves, the equivalent characterisations of trees, spanning trees and Cayley's formula.
-  ids: [def:forest-tree, thm:two-leaves, cor:tree-leaf, cor:acyclic-subgraph-small-degree, cor:tree-unique-path,
+  ids: [def:forest-tree, thm:two-leaves, def:leaf, cor:tree-leaf, cor:acyclic-subgraph-small-degree, cor:tree-unique-path,
     lem:leaf-removal, thm:tree-characterisations, cor:forest-edges, def:spanning-tree, prop:spanning-tree-exists,
     thm:cayley]
 - slug: mst

@@ -19,11 +19,18 @@ a surprising existence theorem about graphs without short cycles.
 ## Forests and trees
 
 ::: definition {#def:forest-tree title="Forest, tree" defines="acyclic, forest, tree" source="theory/2026-09-29 p1"}
-A graph $G$ is **acyclic**, or a **forest**, if $G$ contains no cycle. $G$ is a **tree** if $G$ is acyclic
-and connected.
+A graph $G$ is **acyclic**, or a **forest**, if $G$ contains no [[def:cycle-graph|cycle]]. $G$ is a **tree** if $G$ is acyclic
+and [[def:component|connected]].
 :::
 
-For multigraphs, a loop is a cycle of length $1$ and two parallel edges form a cycle of length $2$; so an
+::: intuition
+A tree connects its vertices with no redundancy: there is a way between any two vertices, but no
+detour, because a cycle would give a second way around. A forest is a collection of trees side by side.
+Example: every [[def:path-graph|path]] $P_n$ and every star $K_{1,n}$ is a tree. Non-examples: $C_3$ is connected but
+not acyclic; two disjoint edges form a forest but not a tree.
+:::
+
+For [[def:mixed-multigraph|multigraphs]], a loop is a cycle of length $1$ and two parallel edges form a cycle of length $2$; so an
 acyclic multigraph has neither, i.e. **an acyclic multigraph is simple**. The components of a forest are
 trees, which explains the name.
 
@@ -37,11 +44,19 @@ z
 ```
 
 ::: theorem {#thm:two-leaves title="Acyclic graphs have two vertices of small degree" source="theory/2026-09-29 p1–2"}
-Every acyclic graph $G$ on at least $2$ vertices contains at least two vertices of degree at most $1$.
+Every acyclic graph $G$ on at least $2$ vertices contains at least two vertices of [[def:degree|degree]] at most $1$.
+:::
+
+::: intuition
+Travel through a forest without turning back. Since there is no cycle, you never return to a vertex
+you have seen, so in a finite graph you get stuck, and you can only get stuck at a vertex with no
+other way out. Doing this in both directions gives two such dead ends: the two ends of a longest path.
+Example: in the star $K_{1,3}$ the three outer vertices have degree $1$. Non-example: in $C_4$
+every vertex has degree $2$, and indeed $C_4$ has a cycle.
 :::
 
 ::: proof
-Let $P \subseteq G$ be a path of maximum length in $G$ (there are finitely many paths, and single vertices
+Let $P \subseteq G$ be a [[def:path-graph|path]] of maximum length in $G$ (there are finitely many paths, and single vertices
 are paths of length $0$, so a longest path exists).
 
 **(a)** If $\abs{V(P)} = 1$, then $G$ has no edges at all (an edge would be a path with two vertices). So
@@ -70,10 +85,25 @@ u -- p1 -- p2 -- p3 -- v [class=path]
 u -- x1 [class="rejected dashed"]; u -- p2 [class="rejected dashed" bend=0.4]
 ```
 
+::: definition {#def:leaf title="Leaf" defines="leaf"}
 A vertex of degree $1$ is called a **leaf**.
+:::
+
+::: intuition
+In a drawing of a tree the leaves are the tips of the branches: vertices hanging on a single edge.
+Example: the path $P_n$ ($n \ge 1$) has exactly two leaves, its ends, and the star $K_{1,n}$ ($n \ge 2$) has $n$.
+Non-example: an isolated vertex has degree $0$, so it is not a leaf, although it is a tree on its own.
+:::
 
 ::: corollary {#cor:tree-leaf title="Trees have leaves" source="theory/2026-09-29 p3"}
 Every tree on at least $2$ vertices has a vertex of degree $1$. (In fact it has at least two.)
+:::
+
+::: intuition
+The two vertices of degree at most $1$ from [[thm:two-leaves]] cannot have degree $0$, because a
+connected graph with an edge has no isolated vertex. So a tree on $n \ge 2$ vertices always has a
+[[def:leaf|leaf]] to remove, which is what makes induction on trees work ([[lem:leaf-removal]]). Example: $K_2$ is a
+tree whose two vertices are both leaves.
 :::
 
 ::: proof
@@ -82,8 +112,22 @@ vertices has no vertex of degree $0$, so both have degree exactly $1$.
 :::
 
 ::: corollary {#cor:acyclic-subgraph-small-degree title="Acyclicity via small degrees" source="theory/2026-09-29 p3"}
-For every (multi)graph $G$: $G$ is acyclic $\iff$ every (non-empty) subgraph of $G$ contains a vertex of degree
+For every (multi)graph $G$: $G$ is acyclic $\iff$ every (non-empty) [[def:subgraph|subgraph]] of $G$ contains a vertex of degree
 at most $1$.
+:::
+
+::: intuition
+A cycle is a subgraph in which every vertex has degree $2$, so it is exactly the kind of subgraph with
+no vertex of small degree. The corollary says that cycles are the only obstruction. It gives a
+"peeling" test: keep deleting vertices of degree at most $1$; the graph is acyclic if and only if
+everything gets deleted. Example: in a triangle with a pendant edge, peeling removes the pendant
+vertex and then gets stuck at the triangle.
+:::
+
+::: pitfall
+"Every vertex of $G$ has degree at most $1$" is much stronger than acyclicity, and "$G$ has a vertex of
+degree $1$" is much weaker. The corollary quantifies over **all subgraphs**: a triangle with a pendant
+edge has a vertex of degree $1$ but contains a cycle.
 :::
 
 ::: proof
@@ -101,9 +145,22 @@ Recall that a walk may repeat vertices and edges, and a closed walk returns to i
 ([[def:walk]]).
 
 ::: lemma {#lem:closed-walk-cycle title="Closed walks contain cycles or double back" source="theory/2026-09-29 p3–4"}
-For every (multi)graph $G$ and every closed walk $W$ in $G$: (the edges of) $W$ contain a cycle,
+For every [[def:mixed-multigraph|(multi)graph]] $G$ and every closed walk $W$ in $G$: (the edges of) $W$ contain a [[def:cycle-graph|cycle]],
 or every edge of $G$ is traversed by $W$ an even number of times (possibly both).
 <!-- REVIEW: dropped "either" and added "(possibly both)": the "or" is inclusive (e.g. a cycle traversed twice); lecture just says "or". -->
+:::
+
+::: intuition
+A closed walk that never goes around a cycle can only get back to its start by retracing its steps,
+so every edge it goes out along, it must also come back along. Example: in the path $a - b - c$, the
+closed walk $(a, b, c, b, a)$ uses both edges twice. The lemma is the tool for proving uniqueness in
+acyclic graphs: two different routes between the same vertices combine into a closed walk that
+does not double back everywhere, so they create a cycle.
+:::
+
+::: pitfall
+The lemma does not say that the closed walk **is** a cycle, nor that a closed walk using some edge
+twice has no cycle: going around a triangle twice uses every edge twice **and** contains a cycle.
 :::
 
 ::: proof
@@ -139,7 +196,14 @@ group W2: b c [label="$W_2$"]
 ```
 
 ::: corollary {#cor:tree-unique-path title="Unique paths in trees" source="theory/2026-09-29 p5"}
-In every tree $T$, every two vertices $u, v \in V(T)$ are connected by exactly one path.
+In every [[def:forest-tree|tree]] $T$, every two vertices $u, v \in V(T)$ are [[def:component|connected]] by exactly one [[def:path-graph|path]].
+:::
+
+::: intuition
+Connectivity gives at least one path, and acyclicity forbids a second: two different $u$–$v$ paths
+would together run around a cycle. This is why a tree is a good "routing table": the way from $u$ to
+$v$ is determined. Example: in the star $K_{1,3}$ with centre $c$, the only path between two outer
+vertices $a, b$ is $a - c - b$. Non-example: in $C_4$ opposite vertices are joined by two paths.
 :::
 
 ::: proof
@@ -156,20 +220,28 @@ the edges determine the order). So $P_1 = P_2$.
 ## Characterisations of trees
 
 The following facts are used constantly, in particular in the algorithms course. The key tool is that
-deleting a leaf keeps a tree a tree.
+deleting a [[def:leaf|leaf]] keeps a [[def:forest-tree|tree]] a tree.
 
 ::: lemma {#lem:leaf-removal title="Removing a leaf" extra=true}
 Let $T$ be a tree with at least two vertices and $v$ a leaf of $T$. Then $T - v$ is a tree. Conversely,
 adding a new vertex joined by one edge to a vertex of a tree gives a tree.
 :::
 
+::: intuition
+A leaf is a dead end, so no route between two other vertices passes through it; cutting it off
+disconnects nothing. Attaching a new vertex by a single edge cannot close a cycle, since a cycle needs
+two edges at each of its vertices. Together with [[cor:tree-leaf]] this gives the standard induction
+on trees: remove a leaf, use the induction hypothesis, put the leaf back. Non-example: removing the
+centre of the star $K_{1,3}$ (not a leaf) leaves three isolated vertices.
+:::
+
 ::: proof
-$T - v$ is acyclic as a subgraph of $T$. It is connected: for $x, y \ne v$, the unique $x$–$y$ path in $T$
-does not pass through $v$, because an inner vertex of a path has degree at least $2$ in the path, while
+$T - v$ is acyclic as a [[def:subgraph|subgraph]] of $T$. It is [[def:component|connected]]: for $x, y \ne v$, the unique $x$–$y$ [[def:path-graph|path]] in $T$
+does not pass through $v$, because an inner vertex of a path has [[def:degree|degree]] at least $2$ in the path, while
 $d_T(v) = 1$. So the path lies in $T - v$.
 
 Conversely, if $v$ is added to a tree $T'$ with one edge $vw$, the result is connected ($v$ is reached via
-$w$), and a cycle through $v$ would need two edges at $v$; so every cycle would lie in $T'$, which has none.
+$w$), and a [[def:cycle-graph|cycle]] through $v$ would need two edges at $v$; so every cycle would lie in $T'$, which has none.
 :::
 
 ```graph id=t03-leaf-removal widget=stepper
@@ -196,6 +268,36 @@ For a graph $G$ with $n \ge 1$ vertices, the following are equivalent:
 6. $G$ is acyclic and has $n - 1$ edges.
 :::
 
+::: intuition
+A tree sits exactly on the boundary between "connected" and "acyclic". Deleting any edge breaks
+connectivity (3), adding any edge creates a cycle (4), and $n - 1$ is both the fewest edges a connected
+graph can have and the most an acyclic one can have (5, 6). So any two of "connected", "acyclic",
+"$n - 1$ edges" imply the third. In practice, 5 and 6 are the quickest test: a connected graph with
+$7$ vertices and $6$ edges is a tree, with no need to search for cycles.
+
+The MST algorithms rely on these facts. By 4, adding an edge $e$ to a [[def:spanning-tree|spanning tree]] creates a cycle
+(exactly one, through $e$, by unique paths); exchanging $e$ for another edge of that cycle gives a
+spanning tree again, which is the argument behind the [[thm:cycle-property|cycle property]] and
+[[thm:cut-property|cut property]]. By 3, deleting an edge of a tree splits it into two components,
+i.e. defines a cut.
+:::
+
+```graph id=t03-tree-plus-edge widget=figure
+caption: Adding the edge $e = 3\,6$ to a tree creates exactly one cycle, the unique $3$–$6$ path in the tree plus $e$. Deleting any edge of that cycle gives a tree again.
+intent: Maximally acyclic and the exchange argument used by the MST cycle and cut properties.
+height: small
+1 -- 2
+3 -- 2 -- 4 -- 5 -- 6 [class=path]
+3 -- 6 [class="highlight dashed"]
+```
+
+::: pitfall
+Counting edges alone proves nothing: $n - 1$ edges must be combined with connectivity **or**
+acyclicity. A triangle plus an isolated vertex has $4$ vertices and $3$ edges, but is neither
+connected nor acyclic. And "minimally connected" means that **no** edge can be deleted, not that
+some edge can.
+:::
+
 :::: proof
 First we show that **every tree on $n$ vertices has $n - 1$ edges**, by induction on $n$: for $n = 1$ there
 are no edges; for $n \ge 2$ remove a leaf ([[cor:tree-leaf]]); by [[lem:leaf-removal]] the rest is a tree on
@@ -206,7 +308,7 @@ adjacent on the cycle would be connected by two paths (the edge $uv$, and the re
 
 **1 ⇒ 3:** if $e = uv$ and $G - e$ were connected, a $u$–$v$ path in $G - e$ would be a second $u$–$v$ path
 besides $e$ itself, contradicting 2. **3 ⇒ 1:** if $G$ had a cycle $C$, removing an edge $e = uv$ of $C$ keeps
-$G$ connected (any walk using $e$ can use the rest of $C$ from $u$ to $v$ instead), contradicting 3.
+$G$ connected (any [[def:walk|walk]] using $e$ can use the rest of $C$ from $u$ to $v$ instead), contradicting 3.
 
 **1 ⇒ 4:** for a non-edge $uv$, the unique $u$–$v$ path in $G$ plus the edge $uv$ is a cycle. **4 ⇒ 1:** if $G$
 were disconnected, joining vertices $u, v$ from different components would create no cycle (a cycle through
@@ -224,6 +326,13 @@ so $\abs{E(G)} = \sum_j (n_j - 1) = n - c$. From $\abs{E(G)} = n - 1$ we get $c 
 A forest with $n$ vertices and $c$ components has exactly $n - c$ edges.
 :::
 
+::: intuition
+Start with $n$ isolated vertices: $c = n$ components and $0$ edges. In a forest, every edge joins two
+different components (inside a component it would close a cycle), so each edge lowers the number of
+components by exactly one. Example: the forest in [[fig:t03-forest]] has $11$ vertices, $3$ components and
+$8$ edges. Conversely, $n$ minus the number of edges counts the components of a forest.
+:::
+
 ::: proof
 This was shown in the step 6 ⇒ 1 above.
 :::
@@ -231,17 +340,39 @@ This was shown in the step 6 ⇒ 1 above.
 ## Spanning trees
 
 ::: definition {#def:spanning-tree title="Spanning tree" defines="spanning tree" source="theory/2026-09-29 p6"}
-A tree $T \subseteq G$ is **spanning** in $G$ if $V(T) = V(G)$.
+A [[def:forest-tree|tree]] $T \subseteq G$ is **spanning** in $G$ if $V(T) = V(G)$.
+:::
+
+::: intuition
+A spanning tree is a minimal skeleton of $G$ that still reaches every vertex: it keeps all vertices
+and only as many edges as needed to stay connected, namely $n - 1$
+([[thm:tree-characterisations]]). Example: removing any one edge of $C_n$ gives a spanning tree (a [[def:path-graph|path]]).
+Non-example: a tree in $G$ that misses a vertex is not spanning. With edge weights, finding the
+lightest spanning tree is the [[def:mst|minimum spanning tree]] problem of the algorithms course.
+:::
+
+::: pitfall
+A spanning tree has to contain **every** vertex of $G$ but only **some** of its edges; it is not an
+induced subgraph in general. Also, $G$ usually has many spanning trees ($K_n$ has $n^{n-2}$, see below),
+not a single one.
 :::
 
 ::: proposition {#prop:spanning-tree-exists title="Connected graphs have spanning trees" extra=true}
-A graph has a spanning tree if and only if it is connected.
+A graph has a spanning tree if and only if it is [[def:component|connected]].
+:::
+
+::: intuition
+Spanning trees are exactly what remains of a connected graph after removing redundancy: an edge on a
+cycle can be deleted without disconnecting anything, and once no cycle is left we have a tree. A
+disconnected graph cannot have one, as a tree is connected. The proof deletes edges; the MST
+algorithms build the tree instead by adding edges that close no cycle ([[alg:kruskal]]) or by growing it
+from one vertex ([[alg:jarnik]]), like the BFS tree.
 :::
 
 ::: proof
 A spanning tree is connected and contains all vertices, so $G$ is connected. Conversely, as long as a
-connected graph has a cycle, delete an edge of a cycle; the graph stays connected. When no cycle is left
-we have a connected acyclic spanning subgraph, a spanning tree. (A BFS tree, [[alg:bfs]], is another
+connected graph has a [[def:cycle-graph|cycle]], delete an edge of a cycle; the graph stays connected. When no cycle is left
+we have a connected acyclic spanning [[def:subgraph|subgraph]], a spanning tree. (A BFS tree, [[alg:bfs]], is another
 spanning tree of a connected graph.)
 :::
 
@@ -282,10 +413,24 @@ layout: fixed
 The number of distinct spanning trees of $K_n$ is $n^{n-2}$.
 :::
 
+::: intuition
+The trees are labelled: two trees on $\set{1, \dots, n}$ count as different when their edge sets differ,
+even if they have the same shape. So the count is much larger than the number of shapes; for $n = 4$ there
+are only two shapes but $16$ trees ([[fig:t03-k4-spanning-trees]]). The proof below counts trees with extra
+data that is easy to count, a root ($n$ choices) and an order of the edges ($(n-1)!$ choices), and then
+divides out. Example: $K_3$ has $3^1 = 3$ spanning trees, one for each edge left out.
+:::
+
+::: pitfall
+$n^{n-2}$ counts spanning trees of the **complete** graph $K_n$, i.e. labelled trees on $n$ vertices. It is
+not the number of non-isomorphic trees ($2$ for $n = 4$), and it is not the number of spanning trees of an
+arbitrary graph on $n$ vertices ($C_n$ has only $n$).
+:::
+
 The proof (due to Pitman) counts the same set of objects in two ways (**double counting**).
 
 :::: proof
-We build directed graphs on $V(K_n)$ in $n - 1$ steps $k = 1, 2, \dots, n - 1$, adding one arc per step,
+We build directed graphs on $V(K_n)$ in $n - 1$ steps $k = 1, 2, \dots, n - 1$, adding one [[def:mixed-multigraph|arc]] per step,
 and count the total number of ways to make the choices.
 
 **Construction.** Start with no arcs. In step $k$, choose any vertex $x_k \in V(K_n)$, and any vertex
@@ -354,8 +499,21 @@ unclass highlight: 5->2
 ## Girth and regular graphs
 
 ::: definition {#def:girth title="Girth, regular graph" defines="girth, regular, d-regular" source="theory/2026-09-29 p8"}
-The **girth** of a graph $G$ is the length of the shortest cycle in $G$ ($\infty$ if $G$ is acyclic). A
-graph is **$d$-regular** if every vertex has degree $d$.
+The **girth** of a graph $G$ is the length of the shortest [[def:cycle-graph|cycle]] in $G$ ($\infty$ if $G$ is [[def:forest-tree|acyclic]]). A
+graph is **$d$-regular** if every vertex has [[def:degree|degree]] $d$.
+:::
+
+::: intuition
+Large girth means that the graph looks like a tree nearby: if the girth is at least $k$, two different
+[[def:path-graph|paths]] from a vertex $v$ of length less than $k/2$ never meet again, since together they would close a
+cycle shorter than $k$. Regularity means every vertex looks the same as far as degrees go. Examples:
+$C_n$ is $2$-regular with girth $n$; $K_4$ is $3$-regular with girth $3$; a tree has girth $\infty$.
+:::
+
+::: pitfall
+A simple graph has girth at least $3$: [[def:mixed-multigraph|loops and parallel edges]] (cycles of length $1$ and $2$) only
+exist in multigraphs. And the girth is the **shortest** cycle, not the longest: $K_4$ has a $4$-cycle
+but girth $3$.
 :::
 
 For example $K_n$ ($n \ge 3$) has girth $3$, $K_{m,n}$ ($m, n \ge 2$) has girth $4$, $C_n$ has girth $n$, and the
@@ -375,6 +533,15 @@ such a graph looks like a tree branching $d$ ways, for $k/2$ levels. Surprisingl
 For all $d \ge 0$ and $k \ge 1$ there exists a $d$-regular graph of girth at least $k$.
 :::
 
+::: intuition
+Many edges at every vertex and no short cycles pull in opposite directions, but they can be reconciled
+by making the graph huge. The proof raises the degree by one at a time: take many copies of a graph
+of degree $d - 1$ and add one edge at every vertex, joining the copies along the pattern of a graph $H$
+whose own girth is at least $k/2$. A short cycle would have to travel through at least $k/2$ copies,
+and it spends at least one edge inside each, so it is not short after all. Example: for $d = 2$ a long enough
+cycle does the job; for $d = 3$, $k = 5$ the Petersen graph does ([[fig:t03-petersen]]).
+:::
+
 :::: proof
 Call a graph **good for $(k, d)$** if it is $d$-regular with girth at least $k$. We proceed by induction,
 primarily on $k$ and secondarily on $d$.
@@ -383,7 +550,7 @@ primarily on $k$ and secondarily on $d$.
 
 - $d = 0$: $K_1$; $d = 1$: $K_2$ (both acyclic, girth $\infty$). $d = 2$: the cycle $C_{\max(k,3)}$.
 - $k \le 3$: $K_{d+1}$ (every simple graph has girth at least $3$). $k = 4$: $K_{d,d}$, which is
-  $d$-regular and bipartite, hence has no triangle ([[thm:bipartite-odd-cycle]]).
+  $d$-regular and [[def:bipartite|bipartite]], hence has no triangle ([[thm:bipartite-odd-cycle]]).
 
 **(b) Induction step.** Let $k \ge 5$ and $d \ge 3$, and assume we have graphs
 
@@ -402,7 +569,7 @@ $H$-edges come from different edges of $H$, so they cannot join the same pair of
 *$F$ has girth at least $k$.* Let $C$ be a cycle in $F$. If $C$ uses no $H$-edge, it lies inside one copy of $G$
 and has length at least $k$. Otherwise let $f_1, \dots, f_t$ be the $H$-edges of $C$ in cyclic order. Between
 $f_i$ and $f_{i+1}$ the cycle stays inside one copy $G_h$, so the copies visited, $h_1, h_2, \dots, h_t, h_1$,
-form a closed walk in $H$ that uses the edges of $H$ corresponding to $f_1, \dots, f_t$, each exactly once.
+form a [[def:walk|closed walk]] in $H$ that uses the edges of $H$ corresponding to $f_1, \dots, f_t$, each exactly once.
 (A single $H$-edge cannot close a walk, so $t \ge 2$.) By [[lem:closed-walk-cycle]], since no edge is traversed
 an even number of times, this closed walk contains a cycle of $H$, which has length at least
 $\lceil k/2 \rceil$; its edges are among the $t$ edges of the walk, so $t \ge \lceil k/2 \rceil$. Moreover, let
@@ -416,7 +583,7 @@ $$\abs{E(C)} \ \ge\ 2t\ \ge\ 2\lceil k/2 \rceil\ \ge\ k.$$
 ::::
 
 ```graph id=t03-girth-construction widget=figure
-caption: The construction: one copy of $G$ for each vertex of $H$; each edge of $H$ becomes one edge between the corresponding copies, and every vertex of every copy gets exactly one such edge.
+caption: The construction: one copy of $G$ for each vertex of $H$; each edge of $H$ becomes one edge between the corresponding copies (only some of these $H$-edges are drawn; in $F$ every vertex of every copy gets exactly one).
 intent: Schematic version of the lecture drawing. Groups are the copies of G (here G = C_4 is good for (4, 2)); H-edges are highlighted. Purely illustrative, not an actual instance of the theorem's parameters.
 layout: fixed
 a1 @(0, 1); a2 @(0.6, 1); a3 @(0.6, 0.4); a4 @(0, 0.4)
@@ -436,22 +603,23 @@ famous open problem (the "cage problem"); the Petersen graph is the smallest $3$
 
 ## Summary
 
-- Forests are acyclic graphs, trees are connected forests ([[def:forest-tree]]). Every acyclic graph on
-  $\ge 2$ vertices has two vertices of degree $\le 1$ ([[thm:two-leaves]]); trees have leaves.
-- A closed walk contains a cycle or traverses every edge an even number of times
-  ([[lem:closed-walk-cycle]]); hence paths in trees are unique ([[cor:tree-unique-path]]).
+- Forests are acyclic graphs, trees are [[def:component|connected]] forests ([[def:forest-tree]]). Every acyclic graph on
+  $\ge 2$ vertices has two vertices of [[def:degree|degree]] $\le 1$ ([[thm:two-leaves]]); trees have [[def:leaf|leaves]] ([[cor:tree-leaf]]).
+- A [[def:walk|closed walk]] contains a [[def:cycle-graph|cycle]] or traverses every edge an even number of times
+  ([[lem:closed-walk-cycle]]); hence [[def:path-graph|paths]] in trees are unique ([[cor:tree-unique-path]]).
 - Trees: connected + acyclic ⟺ unique paths ⟺ minimally connected ⟺ maximally acyclic ⟺ connected
   with $n-1$ edges ⟺ acyclic with $n-1$ edges ([[thm:tree-characterisations]]).
-- Every connected graph has a spanning tree; $K_n$ has $n^{n-2}$ of them ([[thm:cayley]]).
-- For all $d, k$ there is a $d$-regular graph of girth $\ge k$ ([[thm:regular-large-girth]]).
+- Every connected graph has a [[def:spanning-tree|spanning tree]] ([[prop:spanning-tree-exists]]); it is the starting point
+  of the [[def:mst|minimum spanning tree]] problem. $K_n$ has $n^{n-2}$ of them ([[thm:cayley]]).
+- For all $d, k$ there is a $d$-regular graph of [[def:girth|girth]] $\ge k$ ([[thm:regular-large-girth]]).
 
 ## Exercises
 
 :::: exercise {#exr:t03-leaves-count title="Many leaves" difficulty=2}
-Let $T$ be a tree with a vertex of degree $\Delta$. Show that $T$ has at least $\Delta$ leaves.
+Let $T$ be a [[def:forest-tree|tree]] with a vertex of [[def:degree|degree]] $\Delta$. Show that $T$ has at least $\Delta$ leaves.
 
 ::: hint
-Use the handshake lemma together with $\abs{E(T)} = n - 1$, or look at the paths starting at the
+Use the handshake lemma together with $\abs{E(T)} = n - 1$, or look at the [[def:path-graph|paths]] starting at the
 vertex of degree $\Delta$.
 :::
 
@@ -459,7 +627,7 @@ vertex of degree $\Delta$.
 Let $v$ have degree $\Delta$ with neighbours $u_1, \dots, u_\Delta$. For each $i$, start at $v$, step to $u_i$,
 and keep walking to a not yet visited neighbour as long as possible. This is a path, so it stops (the
 graph is finite) at some vertex $\ell_i \ne v$ all of whose neighbours are already on the path. A neighbour
-of $\ell_i$ other than its predecessor would close a cycle with the path, so $\ell_i$ is a leaf.
+of $\ell_i$ other than its predecessor would close a [[def:cycle-graph|cycle]] with the path, so $\ell_i$ is a [[def:leaf|leaf]].
 <!-- REVIEW: filled the gap why the last vertex of the walk is a leaf. -->
 The leaves $\ell_i$ are distinct: if
 $\ell_i = \ell_j$ for $i \ne j$, the two paths from $v$ to $\ell_i$ (one through $u_i$, the other through $u_j$)
@@ -469,7 +637,7 @@ would be different, contradicting [[cor:tree-unique-path]]. (If $\Delta = 1$, $v
 
 :::: exercise {#exr:t03-degree-sequence-tree title="Degree sequences of trees" difficulty=2}
 Let $n \ge 2$ and $d_1, \dots, d_n \ge 1$ be integers with $d_1 + \dots + d_n = 2n - 2$. Prove that there is a tree
-with degree sequence $(d_1, \dots, d_n)$.
+with [[def:degree-sequence|degree sequence]] $(d_1, \dots, d_n)$.
 
 ::: hint
 Induction on $n$: some $d_i$ must equal $1$, and some $d_j$ must be at least $2$ (if $n \ge 3$).
@@ -485,7 +653,7 @@ vertices with these degrees; attach a new leaf (of degree $1$) to the vertex wit
 ::::
 
 :::: exercise {#exr:t03-spanning-trees-cycle title="Spanning trees of a cycle" difficulty=1}
-How many spanning trees does $C_n$ have? And $K_{2,3}$?
+How many [[def:spanning-tree|spanning trees]] does $C_n$ have? And $K_{2,3}$?
 
 ::: solution
 A spanning tree of $C_n$ has $n - 1$ of the $n$ edges, and removing any single edge of $C_n$ leaves a path,
@@ -519,7 +687,7 @@ By [[thm:cayley]], $5^{5-2} = 125$.
 ::::
 
 :::: quiz {#q:t03-forest-edges}
-A forest has 20 vertices and 3 components. How many edges does it have?
+A forest has 20 vertices and 3 [[def:component|components]]. How many edges does it have?
 
 answer: 17
 
@@ -541,11 +709,11 @@ Which statement is true for every tree with at least 2 vertices?
 ::::
 
 :::: quiz {#q:t03-girth-kmn}
-What is the girth of $K_{3,3}$?
+What is the [[def:girth|girth]] of $K_{3,3}$?
 
 answer: 4
 
 ::: explanation
-$K_{3,3}$ is bipartite, so it has no triangles (no odd cycles at all), and $1\,1'\,2\,2'\,1$ is a 4-cycle.
+$K_{3,3}$ is [[def:bipartite|bipartite]], so it has no triangles (no odd cycles at all), and $1\,1'\,2\,2'\,1$ is a 4-cycle.
 :::
 ::::
