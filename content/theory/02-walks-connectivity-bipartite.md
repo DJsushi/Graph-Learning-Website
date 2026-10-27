@@ -155,7 +155,9 @@ with $\mathrm{dist}_G(u, v) = \infty$ if $u$ and $v$ lie in different components
 For all vertices $u, v, w$ of a graph $G$: $\mathrm{dist}(u, v) \ge 0$ with equality iff $u = v$;
 $\mathrm{dist}(u, v) = \mathrm{dist}(v, u)$; and
 $\mathrm{dist}(u, w) \le \mathrm{dist}(u, v) + \mathrm{dist}(v, w)$. In particular, if
-$uv \in E(G)$, then $\abs{\mathrm{dist}(x, u) - \mathrm{dist}(x, v)} \le 1$ for every vertex $x$.
+$uv \in E(G)$, then $\abs{\mathrm{dist}(x, u) - \mathrm{dist}(x, v)} \le 1$ for every vertex $x$ in the
+component of $u$ (for $x$ in another component both distances are $\infty$).
+<!-- REVIEW: restricted the last claim to x in the component of u; for other x the difference is ∞ − ∞. -->
 :::
 
 ::: proof
@@ -190,6 +192,16 @@ $L_i = \set{v : \mathrm{dist}(x, v) = i}$; the edges $\set{\mathrm{parent}(w), w
 in which the path from any $w \in L_i$ up to $x$ has length exactly $i$ and visits one vertex of each
 layer $L_{i-1}, L_{i-2}, \dots, L_0$. By [[prop:distance-metric]], every edge of $G$ joins two vertices in the
 same layer or in consecutive layers.
+
+Why the computed values are the true distances: the queue always holds some vertices with value
+$i$ followed by some with value $i + 1$, so vertices leave the queue in non-decreasing order of value.
+Each value $\mathrm{dist}(w) = \mathrm{dist}(u) + 1$ is the length of a walk (the tree path) from $x$
+to $w$, so it is at least $\mathrm{dist}(x, w)$. Conversely, by induction on $d = \mathrm{dist}(x, w)$: a
+vertex $w$ at distance $d \ge 1$ has a neighbour $u$ at distance $d - 1$, which by induction is
+reached with value $d - 1$. When $u$ leaves the queue, $w$ is either marked now with value $d$, or it was
+marked earlier from a vertex that left the queue before $u$, hence with value at most $d$. So BFS
+reaches exactly the component of $x$, and the value of $w$ is $\mathrm{dist}(x, w)$.
+<!-- REVIEW: added the BFS correctness argument; the theorem proof below relies on BFS values being the true distances. -->
 
 ```graph id=t02-bfs-player widget=player
 caption: Breadth-first search from $x$. Vertices are discovered layer by layer; the BFS tree edges are highlighted.

@@ -118,7 +118,7 @@ there is no topic layer, and there are no dependency links.
 ### Content (lesson order matters: the ledger accumulates)
 - [x] M t01 `content/theory/01-basic-notions.md`
 - [x] W t01
-- [ ] M t02 `content/theory/02-walks-connectivity-bipartite.md`
+- [x] M t02 `content/theory/02-walks-connectivity-bipartite.md`
 - [ ] W t02
 - [ ] M t03 `content/theory/03-trees.md`
 - [ ] W t03
@@ -179,5 +179,28 @@ Open questions:
 Entries as in M (`prop:iso-invariants` now links [[def:degree-sequence]], [[def:degree]]). Added: intuitions for all entries; pitfalls (multigraph degree ≠ neighbour count; Havel–Hakimi re-sort each round; Erdős–Gallai needs all k and the sorted order); remark after `thm:havel-hakimi` on the hypothesis d_1 ≤ n−1; links to t02 (def:bipartite, def:clique, def:component) and a02 (def:flow-network). Lint for t01: 0.
 
 Open questions: SOURCE UNCLEAR on `t01-iso-multigraph` (check the recording); the 2-switch connectivity claim in a remark is unproved (standard).
+
+### t02 Subgraphs, walks and bipartite graphs (`content/theory/02-walks-connectivity-bipartite.md`)
+
+**Math fixes (M):** checked against 2026-09-22 pp. 3–5.
+1. `prop:distance-metric`: |dist(x,u) − dist(x,v)| ≤ 1 for an edge uv now restricted to x in the component of u (otherwise ∞ − ∞). REVIEW.
+2. BFS section: added a correctness argument (computed values are true distances, BFS reaches exactly the component of x; queue order + induction), needed by the odd-cycle proof. REVIEW. Prose after the algorithm; W may move it into a remark/proof.
+
+- `def:subgraph` — G_1 ⊆ G: V(G_1)⊆V(G), E(G_1)⊆E(G); induced G_1 ⊆_i G keeps all edges among its vertices — G[X], G−X, G−F, G+e, G−v, G−e in the prose.
+- `def:submultigraph` — (V_1,E_1,ε_1) ⊆ (V,E,ε): V_1⊆V, E_1⊆E, ε_1 = ε restricted — endpoints in V_1 implicit.
+- `def:clique` — clique = subgraph ≅ K_m; independent set X ⊆ V(G) with no edge inside — "clique" also in t01 `def:complete-graph` defines.
+- `def:walk` — (v_0,e_0,…,e_{k−1},v_k), e_i joins v_i v_{i+1}; length k; closed if v_0=v_k — path/cycle in G = subgraph ≅ P_k / C_k (prose); "u–v path".
+- `claim:shortest-walk-path` — a shortest walk between two vertices is a path — shortcut argument.
+- `def:component` — components = equivalence classes of "joined by a walk"; connected = exactly one component.
+- `def:distance` — dist_G(u,v) = min length of a u–v walk; ∞ across components — \mathrm{dist}_G.
+- `prop:distance-metric` (extra) — dist is a metric (allowing ∞); edge uv ⇒ |dist(x,u)−dist(x,v)| ≤ 1 for x in u's component.
+- `alg:bfs` — queue BFS computing dist, parent, BFS tree; layers L_i = {v : dist(x,v)=i} — anchors @init @loop @dequeue @scan @test @discover @enqueue.
+- `def:bipartite` — V(G)=A∪B disjoint, A and B independent; (A,B) bipartition — lecture omits A∩B=∅ (equivalent).
+- `prop:bipartite-subgraph-kmn` — G bipartite iff G isomorphic to a subgraph of some K_{m,n} — lecture writes G ⊆ K_{m,n}; m or n may be 0.
+- `thm:bipartite-odd-cycle` — G bipartite iff G has no odd cycle — title "König" not in lecture (standard); proof via BFS layer parity + LCA, cycle length 2(i−j)+1.
+
+Open questions:
+- "clique" in both `def:complete-graph` (t01) and `def:clique` (t02) defines; drop it from t01 in W/F.
+- König attribution kept (standard, not in lecture).
 
 ## Report
