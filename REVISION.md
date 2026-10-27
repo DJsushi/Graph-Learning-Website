@@ -116,7 +116,7 @@ there is no topic layer, and there are no dependency links.
   Then run `npm run typecheck && npm run build`.
 
 ### Content (lesson order matters: the ledger accumulates)
-- [ ] M t01 `content/theory/01-basic-notions.md`
+- [x] M t01 `content/theory/01-basic-notions.md`
 - [ ] W t01
 - [ ] M t02 `content/theory/02-walks-connectivity-bipartite.md`
 - [ ] W t02
@@ -141,5 +141,35 @@ there is no topic layer, and there are no dependency links.
 
 ## Ledger
 (appended by each content task)
+
+### t01 Basic notions (`content/theory/01-basic-notions.md`)
+
+**Math fixes (M):** none; file unchanged. Checked against 2026-09-15 pp. 1–7 and 2026-09-22 pp. 1–2: all proofs (Havel–Hakimi both cases; Erdős–Gallai TVW proof all cases), the 11-term Havel–Hakimi run and stepper, exercise/quiz answers, figure claims. Existing SOURCE UNCLEAR on `t01-iso-multigraph` confirmed (lecture H has 34 and 45 doubled, so not isomorphic; pentagram replacement valid).
+
+- `def:graph` — Graph G=(V,E) with E ⊆ binom(V,2) — V(G), E(G); n=|V(G)|, m=|E(G)|; edge uv; finite simple by default; `basic=true`.
+- `def:adjacent` (extra) — endpoints of e=uv adjacent (neighbours), e incident with both; N_G(v) neighbour set — British "neighbour"; `basic=true`.
+- `def:mixed-multigraph` — (V,E,ε), ε: E→V ∪ (V×V) ∪ binom(V,2); loops, arcs, edges, parallel edges — remark: graph / digraph D=(V,E) / multigraph as special cases.
+- `def:path-graph` — P_n: vertices 0..n, edges {i−1,i} — index = length (n edges, n+1 vertices).
+- `def:cycle-graph` — C_n (n ≥ 3): vertices 1..n, edges {i,i+1}, {n,1} — n vertices, n edges.
+- `def:complete-graph` — K_n: n vertices, all pairs adjacent — also defines "clique".
+- `def:complete-bipartite` — K_{m,n}: all edges between V_m={1..m} and V_n={1'..n'} — lecture writes E = V_m × V_n.
+- `obs:edge-counts-classes` (extra) — |E(P_n)|=n, |E(C_n)|=n, |E(K_n)|=binom(n,2), |E(K_{m,n})|=mn.
+- `def:isomorphism` — G ≅ H iff bijection f with uv ∈ E(G) ⇔ f(u)f(v) ∈ E(H) — "a graph" = isomorphism class.
+- `def:isomorphism-multigraph` — bijections f: V1→V2, g: E1→E2 with f(ε1(e)) = ε2(g(e)) — preserves type and direction.
+- `prop:iso-invariants` (extra) — isomorphic graphs share n, m, degree multiset; d_G(v)=d_H(f(v)) — necessary not sufficient (C6 vs 2·C3).
+- `def:degree` — d_G(v) = number of incident edges, loops twice; degree 0 = isolated — notation d_G(v), not deg.
+- `lem:handshake` — Σ_v d_G(v) = 2|E(G)| for every (multi)graph — aka "degree sum formula".
+- `cor:odd-degree-count` (extra) — every (multi)graph has an even number of odd-degree vertices.
+- `def:degree-sequence` — (d_G(v_1),…,d_G(v_n)), usually non-increasing.
+- `def:graphic-sequence` (extra) — non-negative integer sequence realised by some simple graph — "realisation".
+- `thm:havel-hakimi` — non-increasing (d_1..d_n), d_1 ≤ n−1, graphic iff φ_1=(d_2−1,…,d_{d_1+1}−1,d_{d_1+2},…,d_n) is — proof: extremal choice + 2-switch.
+- `alg:havel-hakimi` — sort, check d_1 ≤ k−1, remove d_1, decrement next d_1, reject on negatives — anchors @loop @sort @yes @too-big @reduce @negative.
+- `thm:erdos-gallai` — graphic iff sum even and Σ_{i≤k} d_i ≤ k(k−1)+Σ_{i>k} min(d_i,k) ∀k — sufficiency proof extra (Tripathi–Venugopalan–West 2010); "subrealisation", "deficiency e_i".
+
+Open questions:
+- `thm:havel-hakimi` hypothesis d_1 ≤ n−1 is not on the board but needed for φ_1; kept unmarked. W may add a remark.
+- Lecture H drawing in the multigraph isomorphism example: SOURCE UNCLEAR stays (could check the recording).
+- W: Erdős–Gallai Case 3b bookkeeping (v_k full, u=x) is clumsy and repeated in the remark after the proof.
+- 2-switch connectivity claim in a remark is stated without proof (standard).
 
 ## Report
