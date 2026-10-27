@@ -22,6 +22,7 @@ Ore.
 ::: definition {#def:chordal title="Chord, chordal graph" defines="chord, chordal graph" source="theory/2026-10-06 p1"}
 A **chord** of a cycle $C \subseteq G$ is an edge of $G$ between two vertices of $C$ that are not consecutive on
 $C$. A graph $G$ is **chordal** if every cycle $C \subseteq G$ of length at least $4$ has a chord.
+<!-- REVIEW: lecture writes "every cycle C ⊆ G has a chord"; "of length at least 4" added, since a triangle can never have a chord. -->
 :::
 
 (A triangle has no pair of non-consecutive vertices, so the condition is only about cycles of length at least $4$.)
@@ -156,9 +157,10 @@ If $G$ is chordal, then $G$ is complete or $G$ contains two non-adjacent simplic
 
 :::: proof
 By induction on $n = \abs{V(G)}$. If $G$ is complete there is nothing to prove (this covers $n \le 1$). Assume $G$ is
-not complete, and let $u \ne v \in V(G)$ with $uv \notin E(G)$. By [[lem:minimal-cut-clique]] there is a minimal cut
-$X$ between $u$ and $v$, and $X$ is a clique. Let $A$ be the component of $G - X$ containing $u$. Note that **no
-edge joins $A$ to $V(G) \setminus (A \cup X)$**, because $A$ is a component of $G - X$.
+not complete, and let $u \ne v \in V(G)$ with $uv \notin E(G)$. As $u, v$ are non-adjacent, there is a minimal cut
+$X$ between $u$ and $v$, and by [[lem:minimal-cut-clique]] $X$ is a clique. Let $A$ be the
+component of $G - X$ containing $u$. Note that **no edge joins $A$ to $V(G) \setminus (A \cup X)$**, because $A$ is a component of $G - X$.
+<!-- REVIEW: existence of the minimal cut comes from non-adjacency (remark after the definition), not from the lemma. -->
 
 Both $G[A \cup X]$ and $G - A$ are induced subgraphs of $G$, so they are chordal ([[obs:chordal-induced]]), and they
 have fewer vertices than $G$ ($v \notin A \cup X$ and $u \in A$). So the lemma holds for them by induction.
@@ -339,8 +341,10 @@ Hamiltonian.
 
 ::: remark
 The graph obtained by adding edges as long as possible (it does not depend on the order) is the
-**Bondy–Chvátal closure** of $G$. The lemma shows: $G$ is Hamiltonian iff its closure is. Dirac and Ore are the cases
-where the closure is complete.
+**Bondy–Chvátal closure** of $G$. The lemma shows: $G$ is Hamiltonian iff its closure is. Dirac's and Ore's conditions
+are special cases in which the closure is complete; the closure can be complete also when neither condition holds.
+<!-- REVIEW: "Dirac and Ore are the cases where the closure is complete" overstated it (complete closure is strictly more general). -->
+
 :::
 
 ## Summary
@@ -384,8 +388,9 @@ $1, 1', 2, 2', \dots, n, n', 1$ is Hamiltonian.
 ::::
 
 :::: exercise {#exr:t04-ore-path title="Hamiltonian paths" difficulty=2}
-Let $G$ be a graph on $n \ge 2$ vertices such that $d(u) + d(v) \ge n - 1$ for all non-adjacent $u \ne v$. Show that $G$ has a
+Let $G$ be a graph on $n \ge 2$ vertices such that $d_G(u) + d_G(v) \ge n - 1$ for all non-adjacent $u \ne v$. Show that $G$ has a
 Hamiltonian path.
+<!-- REVIEW: d(u) → d_G(u) (course notation). -->
 
 ::: hint
 Add a new vertex adjacent to all vertices of $G$, and apply Ore's theorem.
@@ -405,13 +410,15 @@ generally: gluing two chordal graphs along a common clique gives a chordal graph
 ::: solution
 Let $G = G_1 \cup G_2$ and $K = V(G_1) \cap V(G_2)$, a clique. There are no edges between $V(G_1) \setminus K$ and
 $V(G_2) \setminus K$. Let $C$ be a cycle of length $\ge 4$ in $G$. If $C \subseteq G_1$ or $C \subseteq G_2$, it has a chord because
-$G_1, G_2$ are chordal. Otherwise $C$ contains a vertex $a \in V(G_1) \setminus K$ and a vertex $b \in V(G_2) \setminus K$. The
-vertices $a$ and $b$ split $C$ into two $a$–$b$ arcs. Walking along either arc from $a$ to $b$ we must leave
+$G_1, G_2$ are chordal. Otherwise $C$ contains a vertex $a \in V(G_1) \setminus K$ and a vertex $b \in V(G_2) \setminus K$
+(if $C \not\subseteq G_2$, then $C$ has a vertex outside $V(G_2)$, or an edge of $G_1$ not in $G_2$, which has an endpoint
+outside $K$ because $K$ is a clique in $G_2$; symmetrically for $b$). The vertices $a$ and $b$ split $C$ into two $a$–$b$ arcs. Walking along either arc from $a$ to $b$ we must leave
 $V(G_1) \setminus K$, and the only way to do so is to step into $K$; so each arc contains an inner vertex in $K$. Pick
 $k_1 \in K$ on the first arc and $k_2 \in K$ on the second; $k_1 \ne k_2$. Going around $C$ we meet $a, k_1, b, k_2$ in this
 order, so each of the two $k_1$–$k_2$ arcs of $C$ has an inner vertex ($b$, respectively $a$). Hence $k_1, k_2$ are not
 consecutive on $C$, and the edge $k_1k_2$ (present, as $K$ is a clique) is a chord. (If $\abs{K} = 1$, this shows that
 no cycle can leave $G_1$ or $G_2$ at all.)
+<!-- REVIEW: filled the gap why a and b exist (C ⊄ G_1 could a priori be due to an edge only). -->
 :::
 ::::
 

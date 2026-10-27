@@ -122,7 +122,7 @@ there is no topic layer, and there are no dependency links.
 - [x] W t02
 - [x] M t03 `content/theory/03-trees.md`
 - [x] W t03
-- [ ] M t04 `content/theory/04-chordal-hamiltonian.md`
+- [x] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [ ] W t04
 - [ ] M t05 `content/theory/05-connectivity-menger.md`
 - [ ] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
@@ -250,5 +250,36 @@ New entry `def:leaf` — a vertex of degree 1 is a leaf — `defines="leaf"`; wa
 Added: intuitions for all 15 entries; figure `t03-tree-plus-edge` (T+e has exactly one cycle; deleting any cycle edge gives a tree); pitfalls (subgraph quantifier in cor:acyclic-subgraph-small-degree; inclusive or in lem:closed-walk-cycle; n−1 edges alone insufficient; spanning tree not induced/unique; Cayley counts labelled trees of K_n; girth ≥ 3 in simple graphs); cross-course links [[thm:cycle-property]], [[thm:cut-property]], [[def:mst]], [[alg:kruskal]], [[alg:jarnik]]. Lint t01–t03: 0.
 
 Open questions: `def:leaf` source page (≈ 2026-09-29 p2–3). Pitman / cage-problem attribution (from M). W a01: check the informal MST exchange sketch in the `thm:tree-characterisations` intuition matches a01's proofs.
+
+### t04 Chordal and Hamiltonian graphs (`content/theory/04-chordal-hamiltonian.md`)
+
+**Math fixes (M):** checked against 2026-10-06 pp. 1–6 (whole PDF); no statement errors.
+1. `def:chordal`: lecture says "every cycle has a chord"; lesson's "of length ≥ 4" kept, REVIEW comment.
+2. `lem:two-simplicial` proof: existence of the minimal cut now from u, v non-adjacent (remark after def:minimal-cut), not from lem:minimal-cut-clique. REVIEW.
+3. Bondy–Chvátal remark: "Dirac/Ore are the cases where the closure is complete" weakened to "special cases"; complete closure can occur without them. REVIEW.
+4. `exr:t04-ore-path`: d(u) → d_G(u). REVIEW.
+5. `exr:t04-chordal-tree-like` solution: gap filled (why C ⊄ G_1, G_2 gives a ∈ V(G_1)∖K, b ∈ V(G_2)∖K). REVIEW.
+
+- `def:chordal` — chord joins non-consecutive vertices of C; chordal: every cycle of length ≥ 4 has a chord — equivalently no induced C_k, k ≥ 4 (prose).
+- `obs:chordal-induced` (extra) — induced subgraphs of chordal graphs are chordal — G[X].
+- `ex:interval-graphs` — intersection graphs of finitely many closed real intervals — "interval graph" not in any defines.
+- `prop:interval-chordal` (extra) — every interval graph is chordal — interval with smallest right endpoint b_1.
+- `def:simplicial` — x simplicial if N_G(x) is a clique.
+- `thm:chordal-simplicial` — every chordal graph with ≥ 1 vertex has a simplicial vertex — lecture omits "≥ 1 vertex".
+- `def:minimal-cut` — X ⊆ V∖{u,v} separating u, v in G−X, inclusion-minimal — defines vertex cut, separator, minimal cut; exists iff uv ∉ E.
+- `lem:minimal-cut-clique` — in a chordal graph every minimal u–v cut is a clique — C_u, C_v components; shortest Q_u, Q_v.
+- `lem:two-simplicial` — chordal G is complete or has two non-adjacent simplicial vertices — induction on G[A∪X], G−A.
+- `def:simplicial-decomposition` — ordering v_1..v_n with earlier neighbours of each v_i a clique — aka perfect elimination ordering (reversed).
+- `thm:chordal-decomposition` — G chordal ⇔ G has a simplicial decomposition — ⇐ uses rightmost vertex of a cycle.
+- `def:hamiltonian` — Hamiltonian cycle/path spans V(G); graph Hamiltonian if it has a Hamiltonian cycle.
+- `thm:dirac-ore` — n ≥ 3 and (δ(G) ≥ n/2, or d_G(u)+d_G(v) ≥ n for all non-adjacent u,v) ⇒ Hamiltonian — δ(G) defined in prose only.
+- `ex:dirac-tight` — K_{k,k+1}: δ = (n−1)/2, not Hamiltonian.
+- `def:hamiltonian-completion` — add uv for non-adjacent u,v with d(u)+d(v) ≥ n in the current graph, repeatedly — defines Hamiltonian completion, closure.
+- `lem:hamiltonian-completion` — H Hamiltonian completion of G ⇒ (H Hamiltonian ⇔ G Hamiltonian) — black/red pigeonhole on w_1..w_n; source pp. 6, 5.
+
+Open questions:
+- "closure" is in defines of def:hamiltonian-completion but explained only in the remark; order-independence of the closure is unproved. W: move or add a short argument.
+- W: "interval graph" and "minimum degree δ(G)" defined only in prose; add to some `defines` so search finds them.
+- `t04-hamiltonian-switch` has d(x)+d(y) = 6 < n = 7; illustrates only the switch, caption makes no degree claim.
 
 ## Report
