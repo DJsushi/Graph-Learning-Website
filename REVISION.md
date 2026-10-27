@@ -120,7 +120,7 @@ there is no topic layer, and there are no dependency links.
 - [x] W t01
 - [x] M t02 `content/theory/02-walks-connectivity-bipartite.md`
 - [x] W t02
-- [ ] M t03 `content/theory/03-trees.md`
+- [x] M t03 `content/theory/03-trees.md`
 - [ ] W t03
 - [ ] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [ ] W t04
@@ -212,5 +212,33 @@ Entries as in M; statements only gained links (def:clique → isomorphism, compl
 Added: intuitions for all entries (alg:bfs: O(n+m), links [[alg:edmonds-karp]], [[def:level-graph]]; def:bipartite: [[def:matching]], [[prop:matching-flow]]); pitfalls (G−v induced, G−e not; walk vs path/cycle; empty graph not connected, connected subgraph ≠ component; BFS mark on discovery, DFS tree paths not shortest; triangle-free ≠ bipartite, C_5); figure `t02-bipartite-c6`. Lint t01: 0, t02: 0.
 
 Open questions: König attribution kept. t04 has 3 "clique" lint hits (lines 83, 350, 403) for W t04. Unproved standard facts added in intuition/pitfall: BFS is O(n+m).
+
+### t03 Trees (`content/theory/03-trees.md`)
+
+**Math fixes (M):** checked against 2026-09-29 pp. 1–8; no statement errors.
+1. `lem:closed-walk-cycle`: "either … or" → inclusive or ("possibly both"). REVIEW.
+2. `thm:regular-large-girth` proof: β_h applied to edges e_i ∈ E(H), not to H-edges f_i of F; made explicit why t ≥ ⌈k/2⌉. REVIEW.
+3. `exr:t03-leaves-count` solution: gap filled (why the maximal walk ends at a leaf). REVIEW.
+4. `t03-leaf-removal` caption: `\deg v = 1` → "v gets only one edge" (notation d_G, not deg).
+
+- `def:forest-tree` — acyclic/forest: no cycle; tree: acyclic and connected — acyclic multigraph is simple (loop = 1-cycle, parallel edges = 2-cycle).
+- `thm:two-leaves` — acyclic graph on ≥ 2 vertices has ≥ 2 vertices of degree ≤ 1 — longest path; "leaf" (degree 1) defined only in prose.
+- `cor:tree-leaf` — tree on ≥ 2 vertices has a leaf (in fact two).
+- `cor:acyclic-subgraph-small-degree` — G acyclic ⇔ every non-empty subgraph has a vertex of degree ≤ 1 — lecture omits "non-empty".
+- `lem:closed-walk-cycle` — closed walk contains a cycle or uses every edge an even number of times (inclusive) — induction, split at repeated vertex.
+- `cor:tree-unique-path` — in a tree any two vertices are joined by exactly one path — P_1·P_2^{-1} notation.
+- `lem:leaf-removal` (extra) — T tree, v leaf ⇒ T−v tree; adding a new leaf keeps a tree.
+- `thm:tree-characterisations` (extra) — tree ⇔ unique paths ⇔ minimally connected ⇔ maximally acyclic ⇔ connected, n−1 edges ⇔ acyclic, n−1 edges — n ≥ 1; G+e, e ∈ binom(V,2)∖E.
+- `cor:forest-edges` (extra) — forest with n vertices, c components has n−c edges.
+- `def:spanning-tree` — tree T ⊆ G with V(T) = V(G).
+- `prop:spanning-tree-exists` (extra) — G has a spanning tree iff connected — delete cycle edges; BFS tree also works.
+- `thm:cayley` — K_n has n^{n−2} spanning trees — Pitman double counting C(n)·n·(n−1)! = n^{n−1}(n−1)!.
+- `def:girth` — girth = length of a shortest cycle (∞ if acyclic, not in lecture); d-regular: all degrees d.
+- `thm:regular-large-girth` — ∀ d ≥ 0, k ≥ 1 ∃ d-regular graph with girth ≥ k — lexicographic induction on (k,d); ⌈k/2⌉; "good for (k,d)", "H-edges", bijection β_h.
+
+Open questions:
+- Lecture base case "OK for d, k ∈ {3,4}" read as k ∈ {3,4} for every d (K_{d+1}, K_{d,d}); no SOURCE UNCLEAR added.
+- "Pitman" attribution and "cage problem" remark not in lecture (standard).
+- W: "leaf" is defined only in prose, not in any `defines` (not searchable); `t03-girth-construction` caption says every vertex gets an H-edge but the drawing shows 3 (illustrative).
 
 ## Report

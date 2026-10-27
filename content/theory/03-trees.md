@@ -101,8 +101,9 @@ Recall that a walk may repeat vertices and edges, and a closed walk returns to i
 ([[def:walk]]).
 
 ::: lemma {#lem:closed-walk-cycle title="Closed walks contain cycles or double back" source="theory/2026-09-29 p3–4"}
-For every (multi)graph $G$ and every closed walk $W$ in $G$: either (the edges of) $W$ contain a cycle,
-or every edge of $G$ is traversed by $W$ an even number of times.
+For every (multi)graph $G$ and every closed walk $W$ in $G$: (the edges of) $W$ contain a cycle,
+or every edge of $G$ is traversed by $W$ an even number of times (possibly both).
+<!-- REVIEW: dropped "either" and added "(possibly both)": the "or" is inclusive (e.g. a cycle traversed twice); lecture just says "or". -->
 :::
 
 ::: proof
@@ -179,7 +180,7 @@ step: A tree $T$ with a leaf $v = 5$.
 class highlight: 5 4--5
 step: Remove $v$ and its edge: $T - v$ is still connected and acyclic.
 remove 5
-step: Adding $v$ back cannot create a cycle, since $\deg v = 1$.
+step: Adding $v$ back cannot create a cycle, since $v$ gets only one edge.
 4 -- 5 [class=highlight]
 ```
 
@@ -404,10 +405,13 @@ $f_i$ and $f_{i+1}$ the cycle stays inside one copy $G_h$, so the copies visited
 form a closed walk in $H$ that uses the edges of $H$ corresponding to $f_1, \dots, f_t$, each exactly once.
 (A single $H$-edge cannot close a walk, so $t \ge 2$.) By [[lem:closed-walk-cycle]], since no edge is traversed
 an even number of times, this closed walk contains a cycle of $H$, which has length at least
-$\lceil k/2 \rceil$; so $t \ge \lceil k/2 \rceil$. Moreover, $C$ enters $G_h$ through $f_i$ at the vertex
-$\beta_h(f_i)$ and leaves through $f_{i+1}$ at $\beta_h(f_{i+1})$; these are different vertices because $f_i$ and
-$f_{i+1}$ correspond to different edges of $H$ at $h$. So between any two consecutive $H$-edges, $C$ uses at
-least one edge of a copy of $G$. Therefore
+$\lceil k/2 \rceil$; its edges are among the $t$ edges of the walk, so $t \ge \lceil k/2 \rceil$. Moreover, let
+$e_i \in E(H)$ be the edge corresponding to $f_i$. If $C$ enters $G_h$ through $f_i$ and leaves through
+$f_{i+1}$, it enters at the vertex $\beta_h(e_i)$ and leaves at $\beta_h(e_{i+1})$; these are different vertices
+because $e_i \ne e_{i+1}$ are different edges of $H$ at $h$ and $\beta_h$ is a bijection. So between any two
+consecutive $H$-edges, $C$ uses at least one edge of a copy of $G$. Therefore
+<!-- REVIEW: β_h is defined on edges of H, not on H-edges of F: introduced e_i and wrote β_h(e_i); made explicit why t ≥ ⌈k/2⌉ (the cycle's edges are among the t walk edges). -->
+
 $$\abs{E(C)} \ \ge\ 2t\ \ge\ 2\lceil k/2 \rceil\ \ge\ k.$$
 ::::
 
@@ -453,8 +457,11 @@ vertex of degree $\Delta$.
 
 ::: solution
 Let $v$ have degree $\Delta$ with neighbours $u_1, \dots, u_\Delta$. For each $i$, start at $v$, step to $u_i$,
-and keep walking to a not yet visited neighbour as long as possible. The walk never revisits a vertex
-(that would create a cycle), so it stops at a leaf $\ell_i$. The leaves $\ell_i$ are distinct: if
+and keep walking to a not yet visited neighbour as long as possible. This is a path, so it stops (the
+graph is finite) at some vertex $\ell_i \ne v$ all of whose neighbours are already on the path. A neighbour
+of $\ell_i$ other than its predecessor would close a cycle with the path, so $\ell_i$ is a leaf.
+<!-- REVIEW: filled the gap why the last vertex of the walk is a leaf. -->
+The leaves $\ell_i$ are distinct: if
 $\ell_i = \ell_j$ for $i \ne j$, the two paths from $v$ to $\ell_i$ (one through $u_i$, the other through $u_j$)
 would be different, contradicting [[cor:tree-unique-path]]. (If $\Delta = 1$, $v$ itself is a leaf.)
 :::
