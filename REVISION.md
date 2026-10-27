@@ -73,7 +73,7 @@ there is no topic layer, and there are no dependency links.
 - [x] I2 Lint in `scripts/validate-content.ts`, as warnings with their own count:
   - a reference container without an intuition;
   - a `defines` term mentioned unlinked in a section other than its defining one (first mention per section).
-- [ ] I3 Topic map.
+- [x] I3 Topic map.
   - Add `content/topics.yaml`: an ordered list of `{slug, title, intro, ids[]}`. Draft topics:
     - basics and isomorphism
     - degrees

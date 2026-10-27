@@ -72,6 +72,13 @@ export function parseContainerInfo(rest: string): { id?: string; attrs: Record<s
   return { id: idm?.[1], attrs }
 }
 
+export interface Topic { slug: string; title: string; intro: string; ids: string[] }
+
+/** content/topics.yaml: the ordered topic map of the reference. */
+export function loadTopics(root: string): Topic[] {
+  return (matter as any).engines.yaml.parse(fs.readFileSync(path.join(root, 'content', 'topics.yaml'), 'utf8')) ?? []
+}
+
 let cached: { root: string; stamp: string; index: ContentIndex } | undefined
 
 export function loadContent(root: string): ContentIndex {

@@ -1,0 +1,69 @@
+# Topic map for the reference: an ordered list of topics, each listing its reference entries
+# (definitions, statements, algorithms) in reading order. Every reference entry is in exactly one topic;
+# scripts/validate-content.ts checks this.
+- slug: basics
+  title: Basic notions and isomorphism
+  intro: Graphs, multigraphs and the standard families, subgraphs and cliques, and when two graphs are the same.
+  ids: [def:graph, def:adjacent, def:mixed-multigraph, def:path-graph, def:cycle-graph, def:complete-graph,
+    def:complete-bipartite, obs:edge-counts-classes, def:subgraph, def:submultigraph, def:clique,
+    def:isomorphism, def:isomorphism-multigraph, prop:iso-invariants]
+- slug: degrees
+  title: Degrees
+  intro: Degrees and the handshake lemma, which sequences are degree sequences, and regular graphs of large girth.
+  ids: [def:degree, lem:handshake, cor:odd-degree-count, def:degree-sequence, def:graphic-sequence,
+    thm:havel-hakimi, alg:havel-hakimi, thm:erdos-gallai, def:girth, thm:regular-large-girth]
+- slug: walks-connectivity
+  title: Walks and connectivity
+  intro: Walks, connected components and graph distance, and breadth-first search to compute them.
+  ids: [def:walk, lem:closed-walk-cycle, def:component, def:distance, prop:distance-metric, alg:bfs]
+- slug: bipartite
+  title: Bipartite graphs
+  intro: Two-colourable graphs and König's characterisation by odd cycles.
+  ids: [def:bipartite, prop:bipartite-subgraph-kmn, thm:bipartite-odd-cycle]
+- slug: trees
+  title: Trees
+  intro: Forests and trees, leaves, the equivalent characterisations of trees, spanning trees and Cayley's formula.
+  ids: [def:forest-tree, thm:two-leaves, cor:tree-leaf, cor:acyclic-subgraph-small-degree, cor:tree-unique-path,
+    lem:leaf-removal, thm:tree-characterisations, cor:forest-edges, def:spanning-tree, prop:spanning-tree-exists,
+    thm:cayley]
+- slug: mst
+  title: Minimum spanning trees
+  intro: The cut and cycle properties, the classical greedy algorithms and the faster ones up to expected linear time.
+  ids: [def:mst, thm:cut-property, thm:cycle-property, thm:strong-cut-cycle, cor:mst-unique,
+    thm:generalized-greedy, alg:kruskal, prop:kruskal-complexity, alg:jarnik, alg:jarnik-heap, def:dense-sparse,
+    alg:boruvka, prop:boruvka-complexity, def:edge-contraction, lem:contraction-mst, alg:boruvka-contract,
+    alg:fredman-tarjan, alg:gabow-packets, def:f-heavy, lem:f-heavy-not-in-mst, thm:mst-verification,
+    cor:mst-verification, lem:sampling, alg:kkt, thm:kkt-complexity]
+- slug: arborescences
+  title: Minimum-cost arborescences
+  intro: The directed analogue of the MST, solved by Edmonds' branching algorithm with reduced weights.
+  ids: [def:arborescence, def:min-cost-arborescence, prop:arborescence-sufficient, def:reduced-weights,
+    obs:reduced-weights, alg:edmonds-branching, lem:edmonds-one-entry, thm:ggst-arborescence]
+- slug: chordal
+  title: Chordal graphs
+  intro: Graphs without long induced cycles, simplicial vertices, minimal cuts and simplicial decompositions.
+  ids: [def:chordal, obs:chordal-induced, prop:interval-chordal, def:simplicial, thm:chordal-simplicial,
+    def:minimal-cut, lem:minimal-cut-clique, lem:two-simplicial, def:simplicial-decomposition,
+    thm:chordal-decomposition]
+- slug: hamiltonian
+  title: Hamiltonian graphs
+  intro: Cycles through every vertex, the degree conditions of Dirac and Ore, and Hamiltonian completions.
+  ids: [def:hamiltonian, thm:dirac-ore, def:hamiltonian-completion, lem:hamiltonian-completion]
+- slug: menger
+  title: k-connectivity and Menger's theorem
+  intro: Vertex and edge connectivity, Menger's theorem in its variants, 2-connected graphs and ear decompositions.
+  ids: [def:k-connected, def:st-cut, thm:menger, thm:menger-directed, def:d-flow, thm:total-menger,
+    thm:two-connected-cycles, thm:ear-decomposition]
+- slug: flows
+  title: Flows and cuts
+  intro: Flow networks, the max-flow min-cut theorem, augmenting paths, Ford–Fulkerson and bipartite matching.
+  ids: [def:flow-network, def:flow, def:flow-cut, lem:flow-across-cut, thm:maxflow-mincut, def:residual-network,
+    def:augmenting-path, lem:augment, alg:augment, thm:maxflow-characterisation, alg:ford-fulkerson,
+    thm:ford-fulkerson-analysis, cor:integrality, def:matching, prop:matching-flow]
+- slug: fast-flows
+  title: Faster maximum flows
+  intro: Shortest augmenting paths, level graphs and blocking flows, Dinic and MPM, and unit-capacity networks.
+  ids: [alg:edmonds-karp, def:level-graph, lem:ek-monotone, lem:ek-phase, thm:edmonds-karp, def:blocking-flow,
+    alg:dinic, lem:dinic-phases, alg:dinic-blocking, prop:dinic-blocking-time, thm:dinic, thm:mpm,
+    def:vertex-capacity, alg:mpm, prop:mpm-time, thm:mpm-time, def:unit-capacity, lem:unit-distance,
+    thm:unit-dinic]

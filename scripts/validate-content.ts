@@ -2,7 +2,7 @@
 // Exits with code 1 on errors. Run: npm run validate
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadContent, resolveTarget } from '../packages/content/index'
+import { loadContent, loadTopics, resolveTarget } from '../packages/content/index'
 import { REFERENCE_KINDS } from '../packages/content/pages'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
@@ -64,6 +64,19 @@ const refTypes = new Set(Object.values(REFERENCE_KINDS).flatMap(k => k.types))
 const entries = index.containers.filter(c => refTypes.has(c.type) && c.id && !c.parentId)
 const explained = new Set(index.containers.filter(c => c.type === 'intuition').map(c => c.forId))
 for (const c of entries) if (!explained.has(c.id)) lint.push(`${where(c.lesson.file, c.line)} ${c.id} has no intuition`)
+
+// Topic map: every reference entry in exactly one topic, no unknown ids.
+const topicOf = new Map<string, string>()
+const topicsFile = 'content/topics.yaml'
+for (const t of loadTopics(root)) {
+  for (const id of t.ids ?? []) {
+    const c = index.byId.get(id)
+    if (!c || !refTypes.has(c.type) || c.parentId) errors.push(`${topicsFile} [${t.slug}] ${id} is not a reference entry`)
+    else if (topicOf.has(id)) errors.push(`${topicsFile} ${id} in topics ${topicOf.get(id)} and ${t.slug}`)
+    else topicOf.set(id, t.slug)
+  }
+}
+for (const c of entries) if (!topicOf.has(c.id!)) errors.push(`${where(c.lesson.file, c.line)} ${c.id} is in no topic of ${topicsFile}`)
 
 // Lint: a defined term mentioned in another section (## heading) must be linked there to one of its definitions.
 // Terms of definitions marked basic=true (graph, vertex, edge, ...) are exempt; cross-course links are added by hand.
