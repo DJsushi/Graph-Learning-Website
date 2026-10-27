@@ -1,16 +1,19 @@
 // Generates Markdown for the reference, practice and exam pages from the content index.
 // The generated Markdown goes through the same pipeline as the lessons (math, containers, refs, graph blocks).
-import { COURSE_NAMES, KIND_NAMES, containerLabel, type Container, type ContentIndex, type Course, type Lesson } from './index'
+import { COURSE_NAMES, KIND_NAMES, anchorId, containerLabel, type Container, type ContentIndex, type Lesson, type Topic } from './index'
 
 export const REFERENCE_KINDS: Record<string, { title: string; types: string[]; intro: string }> = {
-  definitions: { title: 'Definitions', types: ['definition'], intro: 'Every definition from both courses, in lesson order.' },
+  definitions: { title: 'Definitions', types: ['definition'], intro: 'Every definition from both courses, grouped by topic. Each links to its full entry.' },
   theorems: {
     title: 'Theorems and lemmas',
     types: ['theorem', 'lemma', 'proposition', 'corollary', 'observation'],
-    intro: 'Every theorem, lemma, proposition, corollary and observation, with its proof (click a proof to expand it).',
+    intro: 'Every theorem, lemma, proposition, corollary and observation, grouped by topic. Each links to its full entry with the proof.',
   },
-  algorithms: { title: 'Algorithms', types: ['algorithm'], intro: 'Every algorithm with its pseudocode.' },
+  algorithms: { title: 'Algorithms', types: ['algorithm'], intro: 'Every algorithm, grouped by topic. Each links to its full entry with the pseudocode.' },
 }
+
+/** Sections of a topic page, in order. */
+const TOPIC_SECTIONS: [string, string][] = [['Definitions', 'definitions'], ['Results', 'theorems'], ['Algorithms', 'algorithms']]
 
 const sortedLessons = (ix: ContentIndex) =>
   [...ix.lessons].sort((a, b) => (a.course === b.course ? a.lecture - b.lecture : a.course === 'theory' ? -1 : 1))
@@ -28,20 +31,68 @@ export function intuitionsFor(ix: ContentIndex, id: string): Container[] {
   return ix.containers.filter(c => c.type === 'intuition' && c.forId === id && c.parentId === undefined)
 }
 
-export function referenceMarkdown(ix: ContentIndex, kind: string): string {
+/** Label with the course prefix and title, e.g. "Theorem T3.2 (Two leaves)". */
+function entryLabel(c: Container): string {
+  return `${containerLabel(c, c.lesson.course === 'theory' ? 'algorithms' : 'theory')}${c.title ? ` (${c.title})` : ''}`
+}
+
+const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/** Compact list of the entries of one kind, grouped by topic, linking to the topic pages. */
+export function referenceMarkdown(ix: ContentIndex, topics: Topic[], kind: string): string {
   const k = REFERENCE_KINDS[kind]
-  const out: string[] = [
-    `# ${k.title}`, '', k.intro, '',
-  ]
-  let course: Course | undefined
-  for (const l of sortedLessons(ix)) {
-    const items = ix.containers.filter(c => c.lesson === l && k.types.includes(c.type) && c.id && !c.parentId)
+  const out: string[] = [`# ${k.title}`, '', k.intro, '']
+  for (const t of topics) {
+    const items = t.ids.map(id => ix.byId.get(id)!).filter(c => k.types.includes(c.type))
     if (!items.length) continue
-    if (course !== l.course) { course = l.course; out.push(`## ${COURSE_NAMES[l.course]}`, '') }
-    out.push(`### ${l.lecture}. ${l.title}`, '')
+    out.push(`## ${t.title}`, '')
+    for (const c of items) out.push(`- [${entryLabel(c)}](/reference/${t.slug}#${anchorId(c.id!)})`)
+    out.push('')
+  }
+  return out.join('\n')
+}
+
+/** For every reference entry: the entries its body and proofs link to ([[refs]]), and the inverse. */
+export function entryLinks(ix: ContentIndex, topics: Topic[]) {
+  const ids = new Set(topics.flatMap(t => t.ids))
+  const uses = new Map<string, string[]>()
+  const usedBy = new Map<string, string[]>()
+  for (const id of ids) {
+    const c = ix.byId.get(id)
+    if (!c) continue
+    const text = [c.raw, ...proofsFor(ix, id).map(p => p.raw)].join('\n')
+    const targets = [...new Set([...text.matchAll(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g)].map(m => m[1].trim()))]
+      .filter(t => t !== id && ids.has(t))
+    uses.set(id, targets)
+    for (const t of targets) usedBy.set(t, [...(usedBy.get(t) ?? []), id])
+  }
+  return { uses, usedBy }
+}
+
+/** A topic page: the intro, then each entry with its statement, intuition (open), proof (collapsed) and links. */
+export function topicMarkdown(ix: ContentIndex, topics: Topic[], slug: string): string {
+  const topic = topics.find(t => t.slug === slug)!
+  const { uses, usedBy } = entryLinks(ix, topics)
+  const refList = (ids: string[]) => ids.map(id => `[[${id}|${entryLabel(ix.byId.get(id)!)}]]`).join(', ')
+  const out: string[] = [`# ${topic.title}`, '', topic.intro, '']
+  for (const [title, kind] of TOPIC_SECTIONS) {
+    const items = topic.ids.map(id => ix.byId.get(id)!).filter(c => REFERENCE_KINDS[kind].types.includes(c.type))
+    if (!items.length) continue
+    out.push(`## ${title}`, '')
     for (const c of items) {
+      // the container renders its head as an h4 carrying the anchor (topicPage frontmatter)
       out.push(fenced(c), '')
+      // visually hidden, for the local search
+      const words = [c.attrs.aka && `Also known as: ${c.attrs.aka}.`, c.attrs.defines && `Defines: ${c.attrs.defines}.`].filter(Boolean)
+      if (words.length) out.push(`<p class="ga-sr-only">${escapeHtml(words.join(' '))}</p>`, '')
+      for (const i of intuitionsFor(ix, c.id!)) out.push(i.raw, '')
       for (const p of proofsFor(ix, c.id!)) out.push(p.raw, '')
+      const u = uses.get(c.id!) ?? [], b = usedBy.get(c.id!) ?? []
+      if (!u.length && !b.length) continue
+      out.push('<div class="ga-uses">', '')
+      if (u.length) out.push(`**Uses:** ${refList(u)}`, '')
+      if (b.length) out.push(`**Used by:** ${refList(b)}`, '')
+      out.push('</div>', '')
     }
   }
   return out.join('\n')

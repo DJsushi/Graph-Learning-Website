@@ -88,7 +88,7 @@ there is no topic layer, and there are no dependency links.
 
     Adjust the topics to the actual containers.
   - Validator: every reference container is in exactly one topic, and no listed id is unknown.
-- [ ] I4 Topic reference pages.
+- [x] I4 Topic reference pages.
   - Add `site/reference/[topic].md` and `[topic].paths.ts`, modelled on `[kind]`.
   - Each page has the intro, then definitions, then results, then algorithms. Each entry is a real `####` heading
     with the container anchor (so Ctrl-K indexes it) and a visually hidden line with `aka` and `defines`. It shows:

@@ -1,20 +1,20 @@
 // Build-time summary of the content for landing, course and practice pages.
 import path from 'node:path'
 import { defineLoader } from 'vitepress'
-import { loadContent } from '../../packages/content/index'
+import { loadContent, loadTopics } from '../../packages/content/index'
 
 export interface LessonSummary {
   path: string; course: 'theory' | 'algorithms'; lecture: number; slug: string; title: string; summary: string
   counts: { definitions: number; statements: number; algorithms: number; figures: number }
   exercises: string[]   // ids of interactive exercises and quizzes (for progress)
 }
-export interface SiteData { lessons: LessonSummary[]; totals: { definitions: number; statements: number; algorithms: number; figures: number; exercises: number } }
+export interface SiteData { lessons: LessonSummary[]; topics: { slug: string; title: string; intro: string }[]; totals: { definitions: number; statements: number; algorithms: number; figures: number; exercises: number } }
 
 declare const data: SiteData
 export { data }
 
 export default defineLoader({
-  watch: ['../../content/**/*.md'],
+  watch: ['../../content/**/*.md', '../../content/topics.yaml'],
   load(): SiteData {
     const ix = loadContent(path.resolve(__dirname, '../..'))
     const lessons = ix.lessons.map(l => {
@@ -32,6 +32,7 @@ export default defineLoader({
       }
     }).sort((a, b) => (a.course === b.course ? a.lecture - b.lecture : a.course === 'theory' ? -1 : 1))
     const sum = (k: keyof LessonSummary['counts']) => lessons.reduce((z, l) => z + l.counts[k], 0)
-    return { lessons, totals: { definitions: sum('definitions'), statements: sum('statements'), algorithms: sum('algorithms'), figures: sum('figures'), exercises: lessons.reduce((z, l) => z + l.exercises.length, 0) } }
+    const topics = loadTopics(path.resolve(__dirname, '../..')).map(({ slug, title, intro }) => ({ slug, title, intro }))
+    return { lessons, topics, totals: { definitions: sum('definitions'), statements: sum('statements'), algorithms: sum('algorithms'), figures: sum('figures'), exercises: lessons.reduce((z, l) => z + l.exercises.length, 0) } }
   },
 })

@@ -1,7 +1,8 @@
 import { defineConfig, type DefaultTheme } from 'vitepress'
 import path from 'node:path'
-import { loadContent, COURSE_NAMES, type Course } from '../packages/content/index'
+import { loadContent, loadTopics, COURSE_NAMES, type Course } from '../packages/content/index'
 import { setupMarkdown, ROOT } from './markdown'
+import { topicSections } from './search'
 
 import { BASE } from './base'
 
@@ -68,8 +69,12 @@ export default defineConfig({
       '/reference/': [
         {
           text: 'Reference',
+          items: [{ text: 'Overview', link: '/reference/' }],
+        },
+        { text: 'Topics', items: loadTopics(ROOT).map(t => ({ text: t.title, link: `/reference/${t.slug}` })) },
+        {
+          text: 'Lists',
           items: [
-            { text: 'Overview', link: '/reference/' },
             { text: 'Definitions', link: '/reference/definitions' },
             { text: 'Theorems and lemmas', link: '/reference/theorems' },
             { text: 'Algorithms', link: '/reference/algorithms' },
@@ -89,7 +94,10 @@ export default defineConfig({
       ],
     },
     outline: { level: [2, 3], label: 'On this page' },
-    search: { provider: 'local' },
+    search: {
+      provider: 'local',
+      options: { miniSearch: { _splitIntoSections: (file, html) => (html ? undefined : topicSections(file)) as any } },
+    },
     footer: {
       message: 'Unofficial student resource based on the lectures <em>Graph Theory</em> (P. Hliněný) and <em>MA015 Graph Algorithms</em> (Jan Obdržálek), Faculty of Informatics, Masaryk University.',
       copyright: 'Errors are ours, not the lecturers\'.',

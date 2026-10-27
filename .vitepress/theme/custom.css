@@ -86,7 +86,10 @@
   scroll-margin-top: calc(var(--vp-nav-height) + 16px);
 }
 .vp-doc .ga-box-head { font-weight: 600; margin-bottom: 0.35em; line-height: 1.5; }
+.vp-doc .ga-box-head h4 { display: inline; margin: 0; font: inherit; letter-spacing: inherit; scroll-margin-top: calc(var(--vp-nav-height) + 32px); }
 .vp-doc .ga-box-kind { color: var(--ga-stmt); letter-spacing: 0.01em; }
+.vp-doc .ga-uses { margin: -0.6em 0 2em; font-size: 0.9em; color: var(--vp-c-text-2); }
+.vp-doc .ga-uses p { margin: 0.2em 0; }
 .vp-doc .ga-box-title { font-weight: 500; color: var(--vp-c-text-1); }
 .vp-doc .ga-box-body > :first-child { margin-top: 0; }
 .vp-doc .ga-box-body > :last-child { margin-bottom: 0.5em; }

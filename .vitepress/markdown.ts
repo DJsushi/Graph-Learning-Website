@@ -212,7 +212,14 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
       const diff = attrs.difficulty ? ` <span class="ga-difficulty" title="difficulty ${attrs.difficulty} of 3">${'●'.repeat(Number(attrs.difficulty))}${'○'.repeat(3 - Number(attrs.difficulty))}</span>` : ''
       const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="${BASE}${c.lesson.path}#${anchorId(id!)}">in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}</a>` : ''
       const dataId = id ? ` data-ref="${escapeHtml(id)}"` : ''
-      return `<div class="ga-box ga-${type}${kindClass}${attrs.extra === 'true' ? ' ga-extra' : ''}"${anchor}${dataId}><div class="ga-box-head"><span class="ga-box-kind">${name}${num}</span>${title}${diff}${extra}${back}</div><div class="ga-box-body">\n`
+      const cls = `ga-box ga-${type}${kindClass}${attrs.extra === 'true' ? ' ga-extra' : ''}`
+      const head = `<span class="ga-box-kind">${name}${num}</span>${title}`
+      // topic pages: the head is an h4 with the anchor, on one line, so the local search indexes each entry
+      if (env?.frontmatter?.topicPage && c && !c.parentId && (kindClass || type === 'definition' || type === 'algorithm')) {
+        const a = anchorId(id!)
+        return `<div class="${cls}"${dataId}><div class="ga-box-head"><h4 id="${a}" tabindex="-1">${head} <a class="header-anchor" href="#${a}" aria-label="Permalink">&#8203;</a></h4>${diff}${extra}${back}</div><div class="ga-box-body">\n`
+      }
+      return `<div class="${cls}"${anchor}${dataId}><div class="ga-box-head">${head}${diff}${extra}${back}</div><div class="ga-box-body">\n`
     }
   }
 }
