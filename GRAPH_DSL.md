@@ -379,6 +379,9 @@ step: Adding $v$ back cannot create a cycle, since $\deg v = 1$.
 - `split x -> p q [attrs]` is the inverse for directed graphs: arcs into `x` now enter `p`, arcs
   out of `x` now leave `q`. Give `p`, `q` their positions with a vertex statement afterwards.
 - A step may merge or split, not both.
+- Parallel edges animate too: an edge that appears next to an existing edge between the same two vertices grows out
+  of it and springs apart; an edge that disappears next to one bends onto it. (Readers can set the easing curve
+  and speed on the Settings page.)
 
 ---
 

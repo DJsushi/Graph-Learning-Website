@@ -3,14 +3,13 @@ import { onBeforeUnmount, shallowRef, watch } from 'vue'
 import type { GraphData, Merge } from '@core/model'
 import { interpolate } from './tween'
 import { tweenMs } from './settings'
+import { easeFn } from './easing'
 
 export interface TweenTarget {
   graph: GraphData
   merges?: Merge[]
   reverse?: boolean
 }
-
-const ease = (p: number) => p * p * (3 - 2 * p) // smoothstep: gentle start and stop
 
 export function useTweened(source: () => TweenTarget, duration: () => number = tweenMs) {
   const graph = shallowRef<GraphData>(source().graph)
@@ -33,6 +32,7 @@ export function useTweened(source: () => TweenTarget, duration: () => number = t
     const ms = duration()
     if (tgt.graph === a || ms <= 0 || typeof requestAnimationFrame === 'undefined') { graph.value = tgt.graph; fade.value = {}; goo.value = []; ghost.value = []; return }
     const t0 = performance.now()
+    const ease = easeFn()
     const frame = (now: number) => {
       const p = Math.min(1, (now - t0) / ms)
       const r = interpolate(a, tgt.graph, ease(p), // merges only describe the previous frame -> this one

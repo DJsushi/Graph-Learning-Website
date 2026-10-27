@@ -617,7 +617,7 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-settings-preview { border: 1px solid var(--vp-c-divider); border-radius: 12px; padding: 0.75rem 1rem 0.6rem; margin: 1.25rem 0; background: var(--vp-c-bg-soft); }
 .ga-settings-figure { height: 170px; display: flex; justify-content: center; }
 .ga-settings-bar { height: 4px; border-radius: 2px; background: var(--vp-c-divider); overflow: hidden; margin: 0.5rem 0; }
-.ga-settings-sweep { height: 100%; width: 100%; background: var(--vp-c-brand-1); transform-origin: left; animation: ga-sweep linear both; }
+.ga-settings-sweep { height: 100%; width: 100%; background: var(--vp-c-brand-1); transform-origin: left; animation: ga-sweep both; }
 @keyframes ga-sweep { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .ga-settings-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; color: var(--vp-c-text-2); }
 @media (prefers-reduced-motion: reduce) { .ga-settings-sweep { animation: none; } }
@@ -626,3 +626,17 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .gv-vertex.gv-gooed .gv-vertex-shape { opacity: 0; }
 .gv-goo-ink circle, .gv-goo-ink path { fill: var(--gv-ink); stroke: var(--gv-ink); stroke-width: 2.4; stroke-linejoin: round; }
 .gv-goo .gv-goo-fill { stroke: none; transition: none; }
+
+/* easing curve editor */
+.ga-settings-easing { display: flex; gap: 1.25rem; align-items: flex-start; flex-wrap: wrap; margin: 1rem 0; }
+.ga-settings-easing.ga-off { opacity: 0.5; pointer-events: none; }
+.ga-curve { width: 220px; height: 220px; flex: none; touch-action: none; }
+.ga-curve-box { fill: var(--vp-c-bg-soft); stroke: var(--vp-c-divider); }
+.ga-curve-diag { stroke: var(--vp-c-divider); stroke-dasharray: 3 4; }
+.ga-curve-arm { stroke: var(--vp-c-text-3); stroke-width: 1; }
+.ga-curve-line { fill: none; stroke: var(--vp-c-brand-1); stroke-width: 2.5; }
+.ga-curve-handle { fill: var(--vp-c-bg); stroke: var(--vp-c-brand-1); stroke-width: 2.5; cursor: grab; }
+.ga-curve-handle:focus-visible { outline: none; stroke-width: 4; }
+.ga-settings-easing-side { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; }
+.ga-settings-easing-side .ga-seg { flex-wrap: wrap; }
+.ga-settings-css { font-size: 0.8rem; }

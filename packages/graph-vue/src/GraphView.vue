@@ -8,6 +8,7 @@ import { routeEdges, toScreen, blobPath, centroid, bridgePath, UNIT, R, type Pt 
 import { labelToSpans, spansWidth, type TSpan } from './texsvg'
 import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
+import { easeFn } from './easing'
 
 const props = withDefaults(defineProps<{
   graph: GraphData
@@ -179,8 +180,9 @@ watch(box, b => {
   const ms = tweenMs() * 0.5
   if (!props.animate || !still || ms <= 0) { shownBox.value = b; return }
   const t0 = performance.now()
+  const ease = easeFn()
   const run = (now: number) => {
-    const p = Math.min(1, Math.max(0, (now - t0) / ms)), k = p * p * (3 - 2 * p)
+    const p = Math.min(1, Math.max(0, (now - t0) / ms)), k = ease(p)
     shownBox.value = { x: from.x + (b.x - from.x) * k, y: from.y + (b.y - from.y) * k, w: from.w + (b.w - from.w) * k, h: from.h + (b.h - from.h) * k }
     if (p < 1) boxRaf = requestAnimationFrame(run)
   }
