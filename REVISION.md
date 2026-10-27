@@ -125,7 +125,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M t04 `content/theory/04-chordal-hamiltonian.md`
 - [x] W t04
 - [x] M t05 `content/theory/05-connectivity-menger.md`
-- [ ] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
+- [x] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [ ] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [ ] W a01 (link to the tree theory in t03: cut and cycle properties)
 - [ ] M a02 `content/algorithms/02-maximum-flow.md`
@@ -324,5 +324,20 @@ Open questions:
 - "cut vertex", "bridge" not defined in the lecture; only in lesson prose (~line 29) and exr:t05-bridge-cycle. W t05: make them searchable.
 - Not in lecture (standard): name Whitney, Q_3 (not defined anywhere), κ/λ notation.
 - K_n convention for multigraphs is the agent's reading. W may cross-link def:st-cut ↔ t04 def:minimal-cut.
+
+### t05 (W) Higher connectivity and Menger's theorem
+
+**Math fixes (W):** `exr:t05-whitney` hint said Menger is for "the second inequality"; it is for κ ≤ λ (λ ≤ δ is direct). REVIEW.
+
+Entries as in M, plus:
+- New `def:cut-vertex-bridge` (extra, no source) — connected multigraph G: v cut vertex if G−v has ≥ 2 components; e bridge if G−e has ≥ 2 components — `defines="cut vertex, bridge"`; "≥ 2 components" so K_1 has no cut vertex; replaces the prose sentence; topics.yaml: menger, after def:k-connected.
+- Statements gained links only ("multigraph" → [[def:mixed-multigraph]] in def:k-connected, thm:menger b)).
+
+Added: intuitions for all 9 entries (def:st-cut ↔ [[def:minimal-cut]]; thm:menger-directed B = [[thm:maxflow-mincut]] with capacity 1 per arc + [[cor:integrality]] + [[claim:d-flow-paths]], A by vertex splitting, [[exr:a02-menger-from-flow]], [[exr:a02-vertex-capacities]]; def:d-flow = 0/1 [[def:flow]]); pitfalls (k-connected is a lower bound, κ vs λ; cut vertex vs bridge; minimum vs inclusion-minimal cut, local vs global; set version paths disjoint incl. ends); links to [[alg:ford-fulkerson]], [[def:augmenting-path]]; Q_3 explained inline in exr:t05-hypercube-connectivity. Lint t01–t05: 0.
+
+Open questions:
+- W a02 must mirror: link [[thm:menger-directed]] (B = unit capacities) and [[def:d-flow]] from thm:maxflow-mincut / cor:integrality; Menger A from exr:a02-vertex-capacities; possibly [[thm:menger]] from def:unit-capacity / prop:matching-flow.
+- "B = max-flow min-cut" is stated loosely: Menger allows parallel arcs; def:unit-capacity assumes no antiparallel edges.
+- def:cut-vertex-bridge has no lecture source; t04 uses "cut vertices" (plural, not matched by the lint).
 
 ## Report

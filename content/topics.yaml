@@ -52,7 +52,7 @@
 - slug: menger
   title: k-connectivity and Menger's theorem
   intro: Vertex and edge connectivity, Menger's theorem in its variants, 2-connected graphs and ear decompositions.
-  ids: [def:k-connected, def:st-cut, thm:menger, thm:menger-directed, def:d-flow, thm:total-menger,
+  ids: [def:k-connected, def:cut-vertex-bridge, def:st-cut, thm:menger, thm:menger-directed, def:d-flow, thm:total-menger,
     thm:two-connected-cycles, thm:ear-decomposition]
 - slug: flows
   title: Flows and cuts
