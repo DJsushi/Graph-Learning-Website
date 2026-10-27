@@ -123,7 +123,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M t03 `content/theory/03-trees.md`
 - [x] W t03
 - [x] M t04 `content/theory/04-chordal-hamiltonian.md`
-- [ ] W t04
+- [x] W t04
 - [ ] M t05 `content/theory/05-connectivity-menger.md`
 - [ ] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [ ] M a01 `content/algorithms/01-minimum-spanning-trees.md`
@@ -281,5 +281,18 @@ Open questions:
 - "closure" is in defines of def:hamiltonian-completion but explained only in the remark; order-independence of the closure is unproved. W: move or add a short argument.
 - W: "interval graph" and "minimum degree δ(G)" defined only in prose; add to some `defines` so search finds them.
 - `t04-hamiltonian-switch` has d(x)+d(y) = 6 < n = 7; illustrates only the switch, caption makes no degree claim.
+
+### t04 (W) Chordal and Hamiltonian graphs
+
+**Math fixes (W):** none to checked statements/proofs. Additions (REVIEW-marked, not in lecture): `def:hamiltonian-completion` now defines the **closure** (completion admitting no further step); the Bondy–Chvátal remark proves order-independence of the closure (induction on the additions of one maximal sequence, symmetry).
+
+Entries as in M, except:
+- New `def:minimum-degree` — δ(G) = min_v d_G(v), G non-empty — `defines="minimum degree, δ(G)"`, source p5 (where δ is used; separate definition in lecture not checked); before `thm:dirac-ore`; topics.yaml: hamiltonian, after def:hamiltonian. Later t04 definition numbers shift; ids unchanged.
+- "interval graph": no new entry; `prop:interval-chordal` links [[ex:interval-graphs|interval graph]].
+- Statements gained links only (def:chordal, obs:chordal-induced, def:simplicial, def:minimal-cut, thm:chordal-decomposition, def:hamiltonian, lem:hamiltonian-completion).
+
+Added: intuitions for all 17 entries; pitfalls (chordal ≠ "no C_4"; minimal vs minimum cut; v_n simplicial, reverse order not a decomposition; Hamiltonian vs Euler; Dirac/Ore sufficient not necessary, Ore only non-adjacent pairs; completions use current degrees); figure `t04-minimal-not-minimum`; links to [[def:mst]] (tour ≥ MST) and [[alg:bfs]] (lexicographic BFS). Lint t01–t04: 0.
+
+Open questions: whether the lecture defines δ(G) separately (source p5 cited). W t05: lint hits for "minimum degree" (line ~383) and "degree" (line ~376).
 
 ## Report

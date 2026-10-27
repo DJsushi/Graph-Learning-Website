@@ -48,7 +48,7 @@
 - slug: hamiltonian
   title: Hamiltonian graphs
   intro: Cycles through every vertex, the degree conditions of Dirac and Ore, and Hamiltonian completions.
-  ids: [def:hamiltonian, thm:dirac-ore, def:hamiltonian-completion, lem:hamiltonian-completion]
+  ids: [def:hamiltonian, def:minimum-degree, thm:dirac-ore, def:hamiltonian-completion, lem:hamiltonian-completion]
 - slug: menger
   title: k-connectivity and Menger's theorem
   intro: Vertex and edge connectivity, Menger's theorem in its variants, 2-connected graphs and ear decompositions.

@@ -20,13 +20,26 @@ Ore.
 ## Chordal graphs
 
 ::: definition {#def:chordal title="Chord, chordal graph" defines="chord, chordal graph" source="theory/2026-10-06 p1"}
-A **chord** of a cycle $C \subseteq G$ is an edge of $G$ between two vertices of $C$ that are not consecutive on
-$C$. A graph $G$ is **chordal** if every cycle $C \subseteq G$ of length at least $4$ has a chord.
+A **chord** of a [[def:cycle-graph|cycle]] $C \subseteq G$ is an edge of $G$ between two vertices of $C$ that are not consecutive on
+$C$. A graph $G$ is **chordal** if every cycle $C \subseteq G$ of [[def:path-graph|length]] at least $4$ has a chord.
 <!-- REVIEW: lecture writes "every cycle C ⊆ G has a chord"; "of length at least 4" added, since a triangle can never have a chord. -->
+:::
+
+::: intuition
+A chord is a shortcut across a cycle: it splits the cycle into two shorter ones. In a chordal graph you can keep
+cutting until only triangles are left, so every long cycle is "triangulated". Example: $K_4$ contains $4$-cycles,
+but each of them has both diagonals as chords, so $K_4$ is chordal. Non-example: $C_4$, a $4$-cycle with no
+diagonal.
 :::
 
 (A triangle has no pair of non-consecutive vertices, so the condition is only about cycles of length at least $4$.)
 Equivalently: $G$ is chordal iff it has no **induced** cycle of length at least $4$.
+
+::: pitfall
+Chordal does not mean "contains no $4$-cycle": $K_4$ is full of $4$-cycles and is chordal. What is forbidden is a
+long cycle **without** a chord, i.e. an induced $C_k$ with $k \ge 4$. Also, one chord is enough: in $C_6$ with the single
+chord $14$ the $6$-cycle has a chord, but the two $4$-cycles $1\,2\,3\,4$ and $1\,4\,5\,6$ have none, so that graph is not chordal.
+:::
 
 ```graph id=t04-chord widget=figure
 caption: The cycle $C_6$ has the chord $14$. The graph on the right is not chordal: the 4-cycle $1\,2\,3\,4$ has no chord.
@@ -39,11 +52,18 @@ panel: $C_4$, not chordal
 use: C(4)
 ```
 
-Every complete graph and every forest is chordal (forests have no cycles at all). Removing vertices keeps a
+Every [[def:complete-graph|complete graph]] and every [[def:forest-tree|forest]] is chordal (forests have no cycles at all). Removing vertices keeps a
 graph chordal:
 
 ::: observation {#obs:chordal-induced title="Induced subgraphs of chordal graphs" extra=true}
-Every induced subgraph of a chordal graph is chordal.
+Every [[def:subgraph|induced subgraph]] of a chordal graph is chordal.
+:::
+
+::: intuition
+Deleting vertices cannot create a cycle, and an induced subgraph keeps every edge among the remaining
+vertices, so every chord of a surviving cycle survives too. This is what makes induction on chordal graphs
+work: delete a vertex, and the rest is still chordal. Non-example: for **non-induced** subgraphs it fails;
+deleting the diagonal of $K_4 - e$ (a $4$-cycle plus one chord) leaves $C_4$.
 :::
 
 ::: proof
@@ -66,7 +86,14 @@ a -- b; b -- c; b -- d; c -- d; c -- f; d -- f; d -- e; f -- e
 ```
 
 ::: proposition {#prop:interval-chordal title="Interval graphs are chordal" extra=true}
-Every interval graph is chordal.
+Every [[ex:interval-graphs|interval graph]] is chordal.
+:::
+
+::: intuition
+Intervals live on a line, and a line has no room for a long "ring" of intervals in which only neighbours overlap.
+Go around such a ring, starting at the interval that ends first: both of its ring neighbours must reach back to its
+right end, so they overlap each other, which gives a chord. Example: the interval graph in the figure above has
+the cycle $b\,c\,f\,d$, and it has the chord $cd$. Non-example: $C_4$ is not an interval graph, since it is not chordal.
 :::
 
 ::: proof
@@ -81,7 +108,14 @@ contradiction.
 ### Simplicial vertices
 
 ::: definition {#def:simplicial title="Simplicial vertex" defines="simplicial vertex" source="theory/2026-10-06 p1"}
-A vertex $x \in V(G)$ is **simplicial** if the neighbours of $x$ in $G$ form a clique.
+A vertex $x \in V(G)$ is **simplicial** if the neighbours of $x$ in $G$ form a [[def:clique|clique]].
+:::
+
+::: intuition
+A simplicial vertex sits in a single "corner" of the graph: all of its neighbours already know each other, so $x$
+lies on no chordless cycle, and deleting it never destroys a shortcut that another cycle needs. Examples: every
+vertex of $K_n$ is simplicial, and so is every vertex of [[def:degree|degree]] $0$ or $1$ (the empty set and a single vertex are
+cliques). Non-example: no vertex of $C_n$, $n \ge 4$, is simplicial.
 :::
 
 ```graph id=t04-simplicial widget=figure
@@ -96,32 +130,69 @@ x -- a; x -- b; x -- c; a -- b [class=highlight]; b -- c [class=highlight]; a --
 Every chordal graph (with at least one vertex) contains a simplicial vertex.
 :::
 
+::: intuition
+This is the chordal analogue of "every tree has a [[def:leaf|leaf]]": there is always a vertex that can be peeled off
+cleanly, and peeling it keeps the graph chordal, so the process can be repeated ([[thm:chordal-decomposition]]).
+Example: a tree on at least $2$ vertices is chordal, and its leaves are simplicial. Non-example: $C_5$ has no
+simplicial vertex, and indeed it is not chordal.
+:::
+
 The proof needs two lemmas. The first one is about how chordal graphs can be cut apart.
 
 ::: definition {#def:minimal-cut title="Minimal vertex cut between two vertices" defines="vertex cut, separator, minimal cut" source="theory/2026-10-06 p2"}
 Let $u \ne v$ be vertices of $G$. A set $X \subseteq V(G) \setminus \set{u, v}$ is a **cut between $u$ and $v$** if $u$ and
-$v$ lie in different components of $G - X$. It is a **minimal cut** if no proper subset of $X$ is a cut
+$v$ lie in different [[def:component|components]] of $G - X$. It is a **minimal cut** if no proper subset of $X$ is a cut
 between $u$ and $v$.
+:::
+
+::: intuition
+A cut between $u$ and $v$ is a set of "checkpoints": every way from $u$ to $v$ passes through one of them. It is
+minimal if every checkpoint is needed, so putting any single one back reopens a way. Example: in $C_4 = (u, a, v, b)$
+the set $\set{a, b}$ is a minimal cut between $u$ and $v$, while $\set{a}$ is not a cut at all. Adjacent $u, v$ have no cut,
+since deleting other vertices never removes the edge $uv$.
 :::
 
 If $u, v$ are non-adjacent, then $V(G) \setminus \set{u, v}$ is a cut between them, so a minimal cut exists (take an
 inclusion-minimal subset that is still a cut).
+
+::: pitfall
+**Minimal** (no proper subset is a cut) is not **minimum** (smallest possible size). In the graph below,
+$\set{y}$ is a minimum cut between $u$ and $v$, but $\set{x_1, x_2}$ is also a minimal cut: removing only $x_1$ or only $x_2$
+leaves a $u$–$v$ path. The lemmas below are about **all** minimal cuts, not only the smallest ones.
+:::
+
+```graph id=t04-minimal-not-minimum widget=figure
+caption: Both $\set{x_1, x_2}$ and $\set{y}$ are minimal cuts between $u$ and $v$; only $\set{y}$ is a minimum one.
+intent: Minimal versus minimum vertex cuts.
+height: small
+layout: fixed
+u @(0, 0); x1 [label="$x_1$" class=highlight] @(1, 0.6); x2 [label="$x_2$" class=highlight] @(1, -0.6); y [class=current] @(2, 0); v @(3, 0)
+u -- x1; u -- x2; x1 -- y; x2 -- y; y -- v
+```
 
 ::: lemma {#lem:minimal-cut-clique title="Minimal cuts in chordal graphs are cliques" source="theory/2026-10-06 p2"}
 Let $G$ be a graph, $u \ne v \in V(G)$, and $X \subseteq V(G)$ a minimal cut between $u$ and $v$. If $G$ is chordal, then
 $X$ is a clique.
 :::
 
+::: intuition
+Each vertex of a minimal cut is reachable from both sides. If two of them, $x$ and $y$, were non-adjacent, you could go
+from $x$ to $y$ through the $u$-side and come back through the $v$-side, and the shortest such round trip would be a
+long cycle with no shortcut. Chordality forbids this, so the cut vertices must be pairwise adjacent. Example: $C_6 = (1, \dots, 6)$ with the
+chords $13, 14, 15$ is chordal, and the only minimal cut between $2$ and $4$ is $\set{1, 3}$, an edge. Non-example: in $C_4 = (u, a, v, b)$ the minimal cut
+$\set{a, b}$ is not a clique.
+:::
+
 :::: proof
 Let $C_u$ and $C_v$ be the components of $G - X$ containing $u$ and $v$.
 
 First, **every $x \in X$ has a neighbour in $C_u$ and a neighbour in $C_v$.** Indeed, by minimality $X \setminus \set{x}$
-is not a cut, so there is a $u$–$v$ path $P$ in $G - (X \setminus \set{x})$. As $X$ is a cut, $P$ passes through $x$. Follow
+is not a cut, so there is a $u$–$v$ [[def:path-graph|path]] $P$ in $G - (X \setminus \set{x})$. As $X$ is a cut, $P$ passes through $x$. Follow
 $P$ from $u$ to its first vertex in $X$, which must be $x$; the part before $x$ lies in $G - X$ and starts at $u$,
 hence in $C_u$, so the predecessor of $x$ on $P$ is a neighbour of $x$ in $C_u$. Symmetrically (follow $P$ from $v$)
 $x$ has a neighbour in $C_v$.
 
-Now suppose, for a contradiction, that $x \ne y \in X$ with $xy \notin E(G)$. Since $C_u$ is connected and both $x$ and
+Now suppose, for a contradiction, that $x \ne y \in X$ with $xy \notin E(G)$. Since $C_u$ is [[def:component|connected]] and both $x$ and
 $y$ have neighbours in $C_u$, there are $x$–$y$ paths whose inner vertices all lie in $C_u$. Let $Q_u$ be a
 **shortest** such path, and similarly $Q_v$ a shortest $x$–$y$ path with all inner vertices in $C_v$. Then
 $C := Q_u \cup Q_v$ is a cycle (the two paths share only $x$ and $y$, since $C_u \cap C_v = \emptyset$).
@@ -153,6 +224,14 @@ group Cv: v q1 q2 [label="$C_v$"]
 
 ::: lemma {#lem:two-simplicial title="Two non-adjacent simplicial vertices" source="theory/2026-10-06 p3"}
 If $G$ is chordal, then $G$ is complete or $G$ contains two non-adjacent simplicial vertices.
+:::
+
+::: intuition
+Asking for **two non-adjacent** simplicial vertices is a stronger statement than [[thm:chordal-simplicial]], and that is what makes the
+induction work. A clique cut $X$ splits $G$ into two sides; each side, together with $X$, is smaller and chordal, so it has a
+simplicial vertex away from $X$. Because $X$ is a clique, at most one of the two vertices promised for a side can lie in $X$,
+so the other lies off $X$, and it stays simplicial in $G$. Example: a path $P_n$ ($n \ge 2$) has its two ends.
+Non-example: $K_n$ is the exception, as any two vertices are adjacent.
 :::
 
 :::: proof
@@ -189,11 +268,31 @@ A **simplicial decomposition** of $G$ is an ordering $V(G) = (v_1, v_2, \dots, v
 $1 < i \le n$, the neighbours of $v_i$ in $\set{v_1, \dots, v_{i-1}}$ induce a clique.
 :::
 
+::: intuition
+Think of building $G$ by adding $v_1, v_2, \dots$ one at a time, each new vertex attached to a clique of the vertices already
+present. Equivalently, take $G$ apart from the end, removing a vertex that is simplicial in what is left. Example: for the path
+$1 - 2 - 3$, the ordering $(1, 2, 3)$ works, as each new vertex has one earlier neighbour. Non-example: $C_4$ has none,
+because whichever vertex comes last has two non-adjacent earlier neighbours.
+:::
+
 In other words, $v_n$ is simplicial in $G$, $v_{n-1}$ is simplicial in $G - v_n$, and so on. (Read backwards, this
 ordering is known as a **perfect elimination ordering**.)
 
+::: pitfall
+The condition looks only at **earlier** neighbours, and it is $v_n$ (the last vertex) that is simplicial in $G$, not $v_1$.
+In the decomposition $(2, 3, 4, 1, 5, 6)$ of the stepper below, $v_1 = 2$ has the non-adjacent neighbours $1$ and $4$
+in $G$. Reversing a simplicial decomposition does not give a simplicial decomposition in general.
+:::
+
 ::: theorem {#thm:chordal-decomposition title="Chordal graphs and simplicial decompositions" source="theory/2026-10-06 p4"}
-A graph $G$ is chordal if and only if $G$ has a simplicial decomposition.
+A graph $G$ is chordal if and only if $G$ has a [[def:simplicial-decomposition|simplicial decomposition]].
+:::
+
+::: intuition
+Chordal graphs are exactly the graphs that can be dismantled one simplicial vertex at a time. One direction repeats
+[[thm:chordal-simplicial]]; for the other, the last vertex of any long cycle sees two earlier cycle neighbours, which
+must be adjacent, giving a chord. This is why chordal graphs are algorithmically easy: many problems can be solved by
+processing the vertices along the ordering. Example: every tree has one (remove leaves). Non-example: $C_n$, $n \ge 4$.
 :::
 
 ::: proof
@@ -228,7 +327,7 @@ remove 1
 ```
 
 ::: remark
-Simplicial decompositions can be found in linear time (e.g. by lexicographic breadth-first search), which gives
+Simplicial decompositions can be found in linear time (e.g. by lexicographic [[alg:bfs|breadth-first search]]), which gives
 a linear-time recognition algorithm for chordal graphs. Along a simplicial decomposition, problems such as
 maximum clique or optimal colouring, NP-hard in general, become easy for chordal graphs.
 :::
@@ -236,13 +335,38 @@ maximum clique or optimal colouring, NP-hard in general, become easy for chordal
 ## Hamiltonian graphs
 
 ::: definition {#def:hamiltonian title="Hamiltonian cycle, path and graph" defines="Hamiltonian cycle, Hamiltonian path, Hamiltonian graph" source="theory/2026-10-06 p5"}
-A cycle $C \subseteq G$ is **Hamiltonian** if $V(C) = V(G)$. A path $P \subseteq G$ is **Hamiltonian** if
+A [[def:cycle-graph|cycle]] $C \subseteq G$ is **Hamiltonian** if $V(C) = V(G)$. A [[def:path-graph|path]] $P \subseteq G$ is **Hamiltonian** if
 $V(P) = V(G)$. A graph $G$ is **Hamiltonian** if $G$ contains a Hamiltonian cycle.
+:::
+
+::: intuition
+A Hamiltonian cycle is a round trip that visits every vertex exactly once, the shape of a travelling salesman's
+tour. Examples: $C_n$ and $K_n$ ($n \ge 3$) are Hamiltonian; the cube $Q_3$ is too (see the exercises). Non-examples: a [[def:forest-tree|tree]]
+on at least $2$ vertices has no cycle at all, though a path $P_n$ has a Hamiltonian path; $K_{1,3}$ has neither. Deleting one
+edge from a Hamiltonian cycle gives a Hamiltonian path, which is a [[def:spanning-tree|spanning tree]]; so with non-negative weights an optimal
+tour costs at least a [[def:mst|minimum spanning tree]].
+:::
+
+::: pitfall
+Do not confuse Hamiltonian cycles with Euler tours: a Hamiltonian cycle visits every **vertex** once and may skip
+edges; an Euler tour uses every **edge** once and may revisit vertices. $K_4$ is Hamiltonian but has no Euler tour
+(all degrees are odd), and two triangles sharing a vertex have an Euler tour but no Hamiltonian cycle.
 :::
 
 Unlike Euler tours (which traverse every *edge* once and have a simple characterisation), deciding whether a
 graph is Hamiltonian is NP-complete. So we look for **sufficient** conditions. Intuitively, a graph with many
-edges should be Hamiltonian. We write $\delta(G)$ for the **minimum degree** of $G$.
+edges should be Hamiltonian.
+
+::: definition {#def:minimum-degree title="Minimum degree" defines="minimum degree, δ(G)" source="theory/2026-10-06 p5"}
+The **minimum degree** of a graph $G$ with at least one vertex is $\delta(G) := \min_{v \in V(G)} d_G(v)$.
+<!-- REVIEW: was prose ("We write δ(G) for the minimum degree of G"); made a definition so that search finds it. -->
+:::
+
+::: intuition
+$\delta(G) \ge k$ says that **every** vertex has at least $k$ [[def:adjacent|neighbours]], a uniform lower bound on the
+[[def:degree|degrees]]. Examples: $\delta(C_n) = 2$, $\delta(K_n) = n - 1$, $\delta(K_{m,n}) = \min(m, n)$. A graph with an
+isolated vertex has $\delta = 0$, however many edges the rest has.
+:::
 
 ::: theorem {#thm:dirac-ore title="Dirac's and Ore's theorem" source="theory/2026-10-06 p5"}
 Let $G$ be a graph with $n = \abs{V(G)} \ge 3$ vertices, and assume
@@ -254,13 +378,27 @@ b) **(Ore)** for all $u \ne v \in V(G)$: $uv \notin E(G) \implies d_G(u) + d_G(v
 Then $G$ is Hamiltonian.
 :::
 
+::: intuition
+If every vertex has many neighbours, there is no bottleneck that a round trip could get stuck at. The proof keeps adding
+edges between non-adjacent pairs whose degrees sum to at least $n$; such an edge can always be "rerouted" around
+([[lem:hamiltonian-completion]]), until the graph is $K_n$. Example: $K_{k,k}$ ($k \ge 2$) has $\delta = k = n/2$, so it is
+Hamiltonian by Dirac. Ore is more flexible: add to $K_4$ a vertex $w$ adjacent to two of its vertices. Then $n = 5$ and $d_G(w) = 2 < 5/2$, so
+Dirac fails, but each non-adjacent pair is $w$ and a vertex of degree $3$, with degree sum $5 \ge n$.
+:::
+
+::: pitfall
+Both conditions are **sufficient, not necessary**. The cycle $C_n$ ($n \ge 5$) is Hamiltonian although $\delta(C_n) = 2 < n/2$
+and non-adjacent degree sums are $4 < n$. So failing Dirac's or Ore's condition says nothing (see also the Petersen quiz below).
+Ore's condition is required only for **non-adjacent** pairs.
+:::
+
 The assumption $n \ge 3$ is needed: $K_2$ satisfies both conditions but has no cycle at all. Dirac's condition
-implies Ore's (if every degree is at least $n/2$, every two degrees sum to at least $n$), so it suffices to prove
+implies Ore's (if every [[def:degree|degree]] is at least $n/2$, every two degrees sum to at least $n$), so it suffices to prove
 b). The bound is **tight**:
 
 ::: example {#ex:dirac-tight title="The bound $n/2$ is tight" source="theory/2026-10-06 p5"}
 $K_{k, k+1}$ has $n = 2k + 1$ vertices and minimum degree $k = \frac{n-1}{2}$, just below $\frac{n}{2}$. It is not
-Hamiltonian: a cycle in a bipartite graph alternates between the two sides, so it has as many vertices on each
+Hamiltonian: a cycle in a [[def:bipartite|bipartite]] graph alternates between the two sides, so it has as many vertices on each
 side, while a Hamiltonian cycle would have to contain all $k$ vertices of one side and all $k + 1$ of the other.
 :::
 
@@ -276,13 +414,35 @@ The proof works by adding edges that do not change Hamiltonicity.
 ::: definition {#def:hamiltonian-completion title="Hamiltonian completion" defines="Hamiltonian completion, closure" source="theory/2026-10-06 p6"}
 If $u \ne v \in V(G)$, $uv \notin E(G)$, and $d_G(u) + d_G(v) \ge \abs{V(G)}$, then the graph $G + uv$ is called a
 **(one-step) Hamiltonian completion** of $G$. In general, $H$ is a **Hamiltonian completion** of $G$ if $H$ is
-obtained from $G$ by any sequence of one-step Hamiltonian completions.
+obtained from $G$ by any sequence of one-step Hamiltonian completions. A Hamiltonian completion to which no further
+one-step completion applies is called the **closure** of $G$.
+<!-- REVIEW: closure sentence added (it is in `defines`; not in the lecture). It is well defined by the argument in the remark at the end of this section. -->
+:::
+
+::: intuition
+A completion step adds only edges that are "safe": an edge whose endpoints have degree sum at least $n$
+can be rerouted out of any Hamiltonian cycle ([[lem:hamiltonian-completion]]). Example: in the path $P_3 = (a, b, c, d)$ with
+$n = 4$, the pair $a, d$ has degree sum $2 < 4$, so $ad$ may **not** be added, and rightly so: $P_3$ is not Hamiltonian, while $P_3 + ad = C_4$ is.
 :::
 
 Note that each step uses the degrees in the *current* graph, which only grow as edges are added.
 
+::: pitfall
+The threshold is $n = \abs{V(G)}$, the number of vertices, not $n - 1$ or the number of edges, and the degrees are those of
+the current graph. A pair that fails the test now may pass later, after other steps have raised its degrees; so to
+compute the closure, keep re-checking all non-adjacent pairs until none qualifies.
+:::
+
 ::: lemma {#lem:hamiltonian-completion title="Completions preserve Hamiltonicity" source="theory/2026-10-06 p6, p5"}
-If $H$ is a Hamiltonian completion of $G$, then $H$ is Hamiltonian $\iff$ $G$ is Hamiltonian.
+If $H$ is a [[def:hamiltonian-completion|Hamiltonian completion]] of $G$, then $H$ is Hamiltonian $\iff$ $G$ is Hamiltonian.
+:::
+
+::: intuition
+Adding edges can only help, so one direction is free. For the other, suppose the new edge $xy$ is used by a Hamiltonian cycle.
+Removing it leaves a Hamiltonian path from $x$ to $y$, and since the degrees of $x$ and $y$ sum to at least $n$ on a path of
+$n$ vertices, by pigeonhole some neighbour of $y$ is followed on the path by a neighbour of $x$; that lets us close the path into a cycle
+without $xy$ (the figure below). Example: $C_4 = (a, b, c, d)$ plus the [[def:chordal|chord]] $ac$ is a completion of $C_4$ (as $d_{C_4}(a) + d_{C_4}(c) = 4$),
+and both are Hamiltonian.
 :::
 
 :::: proof
@@ -307,7 +467,7 @@ So the vertex $y = w_n$ has no colour, and the $d_{H_1}(x) + d_{H_1}(y) \ge n$ c
 vertices $w_1, \dots, w_{n-1}$. By the pigeonhole principle **some vertex is black and red**, say $w_j$. That means
 $w_j y \in E(H_1)$ and $x w_{j+1} \in E(H_1)$. Now
 $$(x = w_1, w_2, \dots, w_j, \; y = w_n, w_{n-1}, \dots, w_{j+1}, \; x)$$
-is a Hamiltonian cycle in $H_1$: it walks along the path from $x$ to $w_j$, jumps to $y$, walks back along the path to
+is a Hamiltonian cycle in $H_1$: it follows the path from $x$ to $w_j$, jumps to $y$, goes back along the path to
 $w_{j+1}$, and jumps back to $x$.
 ::::
 
@@ -345,17 +505,24 @@ The graph obtained by adding edges as long as possible (it does not depend on th
 are special cases in which the closure is complete; the closure can be complete also when neither condition holds.
 <!-- REVIEW: "Dirac and Ore are the cases where the closure is complete" overstated it (complete closure is strictly more general). -->
 
+*Why the order does not matter* (not in the lecture). Let $H$ and $H'$ be obtained from $G$ by two sequences of one-step
+completions that cannot be continued, and let $e_1, \dots, e_s$ be the edges added on the way to $H'$, in order. We show
+$e_i \in E(H)$ by induction on $i$. If $e_1, \dots, e_{i-1} \in E(H)$, then the graph $G + e_1 + \dots + e_{i-1}$, in which
+$e_i = uv$ was added, is a [[def:subgraph|subgraph]] of $H$ on the same vertices, so $d_H(u) + d_H(v) \ge n$. If $uv \notin E(H)$, then $H + uv$
+would be a further one-step completion of $H$, which is impossible. Hence $E(H') \subseteq E(H)$, and by symmetry $H = H'$.
+<!-- REVIEW: added the standard order-independence argument for the closure (W t04). -->
+
 :::
 
 ## Summary
 
-- $G$ is chordal if every cycle of length $\ge 4$ has a chord ([[def:chordal]]); interval graphs are chordal
+- $G$ is chordal if every [[def:cycle-graph|cycle]] of [[def:path-graph|length]] $\ge 4$ has a chord ([[def:chordal]]); interval graphs are chordal
   ([[prop:interval-chordal]]).
-- In a chordal graph, minimal vertex cuts are cliques ([[lem:minimal-cut-clique]]); hence a chordal graph is complete
+- In a chordal graph, [[def:minimal-cut|minimal vertex cuts]] are [[def:clique|cliques]] ([[lem:minimal-cut-clique]]); hence a chordal graph is complete
   or has two non-adjacent simplicial vertices ([[lem:two-simplicial]]).
-- $G$ is chordal iff it has a simplicial decomposition ([[thm:chordal-decomposition]]).
-- Dirac: $\delta \ge n/2$, Ore: $d(u) + d(v) \ge n$ for non-adjacent $u, v$; each implies Hamiltonian for $n \ge 3$
-  ([[thm:dirac-ore]]), proved via Hamiltonian completions ([[lem:hamiltonian-completion]]). $K_{k,k+1}$ shows
+- $G$ is chordal iff it has a [[def:simplicial-decomposition|simplicial decomposition]] ([[thm:chordal-decomposition]]).
+- Dirac: $\delta \ge n/2$ ([[def:minimum-degree]]), Ore: $d(u) + d(v) \ge n$ for non-adjacent $u, v$; each implies Hamiltonian for $n \ge 3$
+  ([[thm:dirac-ore]]), proved via [[def:hamiltonian-completion|Hamiltonian completions]] ([[lem:hamiltonian-completion]]). $K_{k,k+1}$ shows
   tightness.
 
 ## Exercises
@@ -381,15 +548,15 @@ use: Q(3)
 For which $m, n \ge 1$ is $K_{m,n}$ Hamiltonian?
 
 ::: solution
-Exactly when $m = n \ge 2$. A cycle alternates between the sides, so a Hamiltonian cycle requires $m = n$, and a cycle
-has at least $3$ vertices, hence at least $4$ in a bipartite graph, so $m = n \ge 2$. Conversely, for $m = n \ge 2$ the cycle
+Exactly when $m = n \ge 2$. A [[def:cycle-graph|cycle]] alternates between the sides, so a [[def:hamiltonian|Hamiltonian cycle]] requires $m = n$, and a cycle
+has at least $3$ vertices, hence at least $4$ in a [[def:bipartite|bipartite]] graph, so $m = n \ge 2$. Conversely, for $m = n \ge 2$ the cycle
 $1, 1', 2, 2', \dots, n, n', 1$ is Hamiltonian.
 :::
 ::::
 
 :::: exercise {#exr:t04-ore-path title="Hamiltonian paths" difficulty=2}
 Let $G$ be a graph on $n \ge 2$ vertices such that $d_G(u) + d_G(v) \ge n - 1$ for all non-adjacent $u \ne v$. Show that $G$ has a
-Hamiltonian path.
+[[def:hamiltonian|Hamiltonian path]].
 <!-- REVIEW: d(u) → d_G(u) (course notation). -->
 
 ::: hint
@@ -404,18 +571,18 @@ $G'$ is a non-adjacent pair $u, v$ of $G$ (as $z$ is adjacent to everything), an
 ::::
 
 :::: exercise {#exr:t04-chordal-tree-like title="Cut vertices and chordality" difficulty=2}
-Let $G_1, G_2$ be chordal graphs that share exactly one vertex (and no edges). Show that $G_1 \cup G_2$ is chordal. More
-generally: gluing two chordal graphs along a common clique gives a chordal graph.
+Let $G_1, G_2$ be [[def:chordal|chordal graphs]] that share exactly one vertex (and no edges). Show that $G_1 \cup G_2$ is chordal. More
+generally: gluing two chordal graphs along a common [[def:clique|clique]] gives a chordal graph.
 
 ::: solution
 Let $G = G_1 \cup G_2$ and $K = V(G_1) \cap V(G_2)$, a clique. There are no edges between $V(G_1) \setminus K$ and
-$V(G_2) \setminus K$. Let $C$ be a cycle of length $\ge 4$ in $G$. If $C \subseteq G_1$ or $C \subseteq G_2$, it has a chord because
+$V(G_2) \setminus K$. Let $C$ be a cycle of [[def:path-graph|length]] $\ge 4$ in $G$. If $C \subseteq G_1$ or $C \subseteq G_2$, it has a [[def:chordal|chord]] because
 $G_1, G_2$ are chordal. Otherwise $C$ contains a vertex $a \in V(G_1) \setminus K$ and a vertex $b \in V(G_2) \setminus K$
 (if $C \not\subseteq G_2$, then $C$ has a vertex outside $V(G_2)$, or an edge of $G_1$ not in $G_2$, which has an endpoint
-outside $K$ because $K$ is a clique in $G_2$; symmetrically for $b$). The vertices $a$ and $b$ split $C$ into two $a$–$b$ arcs. Walking along either arc from $a$ to $b$ we must leave
-$V(G_1) \setminus K$, and the only way to do so is to step into $K$; so each arc contains an inner vertex in $K$. Pick
-$k_1 \in K$ on the first arc and $k_2 \in K$ on the second; $k_1 \ne k_2$. Going around $C$ we meet $a, k_1, b, k_2$ in this
-order, so each of the two $k_1$–$k_2$ arcs of $C$ has an inner vertex ($b$, respectively $a$). Hence $k_1, k_2$ are not
+outside $K$ because $K$ is a clique in $G_2$; symmetrically for $b$). The vertices $a$ and $b$ split $C$ into two $a$–$b$ paths. Walking along either path from $a$ to $b$ we must leave
+$V(G_1) \setminus K$, and the only way to do so is to step into $K$; so each path contains an inner vertex in $K$. Pick
+$k_1 \in K$ on the first path and $k_2 \in K$ on the second; $k_1 \ne k_2$. Going around $C$ we meet $a, k_1, b, k_2$ in this
+order, so each of the two $k_1$–$k_2$ paths of $C$ has an inner vertex ($b$, respectively $a$). Hence $k_1, k_2$ are not
 consecutive on $C$, and the edge $k_1k_2$ (present, as $K$ is a clique) is a chord. (If $\abs{K} = 1$, this shows that
 no cycle can leave $G_1$ or $G_2$ at all.)
 <!-- REVIEW: filled the gap why a and b exist (C ⊄ G_1 could a priori be due to an edge only). -->
@@ -423,7 +590,7 @@ no cycle can leave $G_1$ or $G_2$ at all.)
 ::::
 
 :::: quiz {#q:t04-tree-chordal}
-Is every tree chordal?
+Is every [[def:forest-tree|tree]] chordal?
 
 - [x] Yes
 - [ ] No
@@ -446,11 +613,11 @@ $C_n$ itself is a cycle without chords; for $n \ge 4$ this violates the definiti
 ::::
 
 :::: quiz {#q:t04-dirac}
-A graph on 10 vertices has minimum degree 5. Must it be Hamiltonian?
+A graph on 10 vertices has [[def:minimum-degree|minimum degree]] 5. Must it be Hamiltonian?
 
 - [x] Yes
 - [ ] No
-- [ ] Only if it is connected
+- [ ] Only if it is [[def:component|connected]]
 
 ::: explanation
 $\delta = 5 \ge 10/2$, so Dirac's theorem applies ([[thm:dirac-ore]]). (Connectivity follows automatically.)
@@ -464,7 +631,7 @@ The Petersen graph has 10 vertices and is 3-regular. Does Ore's theorem show tha
 - [x] No
 
 ::: explanation
-Non-adjacent vertices have degree sum $6 < 10$, so the condition fails. (In fact the Petersen graph is not Hamiltonian;
+Non-adjacent vertices have [[def:degree|degree]] sum $6 < 10$, so the condition fails. (In fact the Petersen graph is not Hamiltonian;
 the theorems give only sufficient conditions.)
 :::
 ::::
