@@ -33,6 +33,12 @@ const residual = computed(() => new FlowState(graph.value).residualGraph())
 function fit() { editor.value?.resetView(); residualView.value?.resetView() }
 watch(showResidual, () => nextTick(fit))
 
+const fullscreen = ref(false)
+function toggleFullscreen() {
+  if (document.fullscreenElement) document.exitFullscreen()
+  else document.querySelector('.ga-playground')?.requestFullscreen().catch(() => { message.value = 'Full screen is not available here.' })
+}
+
 // ---------- pane sizes (persisted) ----------
 const LAYOUT_STORE = 'graph-atlas-playground-layout-v1'
 const DEFAULTS = { left: 250, right: 320, split: 0.5 }
@@ -56,6 +62,7 @@ onMounted(() => {
   const mq = matchMedia('(max-width: 900px)')
   narrow.value = mq.matches
   mq.addEventListener('change', e => { narrow.value = e.matches })
+  document.addEventListener('fullscreenchange', () => { fullscreen.value = !!document.fullscreenElement; nextTick(fit) })
 })
 
 // ---------- load / save ----------
@@ -366,12 +373,15 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
         </div>
         <span class="ga-pg-algo">{{ mode === 'run' ? algo?.name : '' }}</span>
       </div>
-      <div v-show="mode === 'edit'" class="ga-playground-canvas" :style="splitStyle">
+      <div v-show="mode === 'edit'" class="ga-playground-canvas" :style="showResidual && isDirected ? splitStyle : undefined">
         <EditableGraph ref="editor" v-model="graph" fill @select="(s) => (sel = s)">
           <template #toolbar>
             <button v-if="isDirected" type="button" class="ga-btn" :class="{ active: showResidual }" :aria-pressed="showResidual"
               title="Show the residual network of the current flow f next to the graph" @click="showResidual = !showResidual">Residual</button>
             <button type="button" class="ga-btn" title="Fit the drawing to the canvas" @click="fit">Fit</button>
+            <button type="button" class="ga-btn ga-icon-btn" :aria-pressed="fullscreen" :title="fullscreen ? 'Exit full screen' : 'Full screen'" :aria-label="fullscreen ? 'Exit full screen' : 'Full screen'" @click="toggleFullscreen">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="fullscreen ? 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5' : 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5'" /></svg>
+            </button>
           </template>
           <template v-if="showResidual && isDirected" #side>
             <Splitter :vertical="narrow" label="Split between graph and residual network" :value="Math.round(sizes.split * 100)"
@@ -399,7 +409,7 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
       </div>
 
       <section v-if="tab === 'inspect'" class="ga-tabpanel">
-        <p v-if="!selVertex && !selEdge" class="ga-muted">Click a vertex or an edge to edit it.</p>
+        <p v-if="!selVertex && !selEdge" class="ga-muted">{{ sel.vertices.length + sel.edges.length > 1 ? `${sel.vertices.length} vertices and ${sel.edges.length} edges selected.` : 'Click a vertex or an edge to edit it.' }}</p>
         <template v-if="selVertex">
           <h3>Vertex {{ selVertex.id }}</h3>
           <label class="ga-field">Label (math in $…$)
@@ -429,7 +439,9 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
             <li><strong>Left button</strong>: drag a vertex to move it, click to select, drag the background to pan, scroll to zoom.</li>
             <li><strong>Right button</strong>: click empty space (or double-click) to add a vertex; drag from one vertex to another to add an edge, or into empty space to add both. Right-click two vertices also works (the same vertex twice for a loop).</li>
             <li><strong>Middle button</strong>: click a vertex or an edge to delete it; drag to pan. Or select and press Delete. Undo with Ctrl+Z.</li>
-            <li>On touch screens, pick the action with the tool buttons above the canvas.</li>
+            <li><strong>Several items</strong>: Shift-click or Shift-drag a box; then drag, nudge with the arrow keys, copy (Ctrl+C), paste (Ctrl+V) or duplicate (Ctrl+D).</li>
+            <li><strong>Labels and weights</strong>: double-click a vertex or an edge, or select it and press F2.</li>
+            <li>Press <kbd>?</kbd> on the canvas for every shortcut. On touch screens, pick the action with the tool buttons above the canvas.</li>
             <li>For flow networks, <strong>Residual</strong> shows the residual network of the current flow next to the graph.</li>
           </ul>
         </details>

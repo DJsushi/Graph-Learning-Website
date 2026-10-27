@@ -15,6 +15,8 @@ const props = withDefaults(defineProps<{
   selectable?: 'none' | 'vertices' | 'edges' | 'both'
   editable?: boolean
   preview?: { from: Id; to: Pt } | null
+  /** box selection rectangle, model coordinates */
+  marquee?: { a: Pt; b: Pt } | null
   maxHeight?: number
   fill?: boolean
   zoomable?: boolean
@@ -168,7 +170,23 @@ function resetView() {
   const b = bbox.value
   frozen.value = props.fill ? { x: b.x - b.w * 0.15, y: b.y - b.h * 0.15, w: b.w * 1.3, h: b.h * 1.3 } : null
 }
-defineExpose({ resetView, svg })
+/** client (screen) position of a vertex centre or an edge label point, for overlays such as inline editors */
+function clientPoint(kind: 'vertex' | 'edge', id: Id): Pt | undefined {
+  const p = kind === 'vertex' ? pos.value.get(id) : geoms.value.get(id)?.label
+  const m = root.value?.getScreenCTM()
+  if (!p || !m) return undefined
+  const q = new DOMPoint(p.x, p.y).matrixTransform(m)
+  return { x: q.x, y: q.y }
+}
+function zoomBy(f: number) {
+  const r = svg.value?.getBoundingClientRect()
+  if (!r) return
+  const p = svgPoint({ clientX: r.x + r.width / 2, clientY: r.y + r.height / 2 })
+  const k0 = view.value.k, k = Math.min(6, Math.max(0.2, k0 * f))
+  view.value = { k, tx: p.x - ((p.x - view.value.tx) * k) / k0, ty: p.y - ((p.y - view.value.ty) * k) / k0 }
+}
+const zoom = computed(() => view.value.k)
+defineExpose({ resetView, svg, clientPoint, zoomBy, zoom })
 watch(() => props.graph.vertices.length === 0, () => { if (props.fill) resetView() })
 onMounted(() => { if (props.fill) resetView() })
 
@@ -218,7 +236,7 @@ function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id
   else if (kind === 'edge' && id !== undefined) emit('edge-down', id, ev)
   else {
     emit('background-down', p, ev)
-    if (props.zoomable && (ev.button === 1 || (ev.button === 0 && props.backgroundPan))) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
+    if (props.zoomable && (ev.button === 1 || (ev.button === 0 && props.backgroundPan && !ev.shiftKey))) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
   }
 }
 
@@ -356,6 +374,8 @@ const describe = computed(() => {
         </g>
         <line v-if="preview && pos.get(preview.from)" class="gv-preview" :x1="pos.get(preview.from)!.x" :y1="pos.get(preview.from)!.y"
           :x2="preview.to.x * UNIT" :y2="-preview.to.y * UNIT" />
+        <rect v-if="marquee" class="gv-marquee" :x="Math.min(marquee.a.x, marquee.b.x) * UNIT" :y="-Math.max(marquee.a.y, marquee.b.y) * UNIT"
+          :width="Math.abs(marquee.a.x - marquee.b.x) * UNIT" :height="Math.abs(marquee.a.y - marquee.b.y) * UNIT" />
       </g>
       <!-- edge labels -->
       <g class="gv-edge-labels">
