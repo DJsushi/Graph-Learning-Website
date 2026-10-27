@@ -32,6 +32,14 @@ The elements of $V$ are the **vertices** of $G$ and the elements of $E$ are its 
 write $V(G)$ and $E(G)$ for the vertex set and the edge set of a graph $G$.
 :::
 
+::: intuition
+A graph records only *which pairs* of objects are related. An edge is an unordered pair, so $uv$
+and $vu$ are the same edge, and a pair $\set{v, v}$ is not a 2-element set, so no edge joins a
+vertex to itself. Example: $V = \set{1, 2, 3}$ and $E = \set{12, 23}$ is a [[def:path-graph|path]] through $1, 2, 3$;
+the vertices $1$ and $3$ are not related. Weighted graphs and flow networks
+([[def:flow-network]]) in the algorithms course are graphs with extra numbers on the edges.
+:::
+
 Throughout, graphs are **finite** ($V$ is a finite set), and we use the notation of the lectures:
 
 - $n = \abs{V(G)}$ is the number of vertices and $m = \abs{E(G)}$ the number of edges;
@@ -42,6 +50,12 @@ Let $G$ be a graph and $e = uv \in E(G)$. The vertices $u$ and $v$ are the **end
 we say that $u$ and $v$ are **adjacent** (or **neighbours**), and that $e$ is **incident** with
 $u$ and with $v$. The **neighbourhood** of a vertex $v$ is the set
 $N_G(v) = \set{u \in V(G) : uv \in E(G)}$.
+:::
+
+::: intuition
+Adjacency relates two vertices; incidence relates a vertex and an edge. In the graph with edges
+$12$ and $23$, the vertex $2$ has neighbourhood $N(2) = \set{1, 3}$, while $N(1) = \set{2}$. The
+edge $12$ is incident with $1$ and $2$ but not with $3$, and $1$ and $3$ are not adjacent.
 :::
 
 Because $E \subseteq \binom{V}{2}$, a simple graph cannot have an edge from a vertex to itself
@@ -75,7 +89,8 @@ Special cases of a mixed multigraph $G = (V, E, \varepsilon)$:
 2. If $\varepsilon$ maps $E$ injectively into $V \times V$, we get a **directed graph**
    (**digraph**) $D = (V, E)$ with $E \subseteq V \times V$: every edge is an ordered pair. (Note
    that $V \times V$ contains the pairs $(v, v)$, so this definition allows directed loops; the
-   algorithms course works with *simple* digraphs, which exclude them.)
+   algorithms course works with *simple* digraphs, which exclude them, for example in
+   [[def:flow-network|flow networks]].)
 3. If $\varepsilon$ maps into $\binom{V}{2} \cup V$ but is not necessarily injective, we get an
    (undirected) **multigraph**, which may have loops and parallel edges.
 :::
@@ -111,15 +126,35 @@ $$V(P_n) = \set{0, 1, \dots, n}, \qquad E(P_n) = \set{\set{i-1, i} : 1 \le i \le
 So $P_n$ has $n + 1$ vertices and $n$ edges. The **length** of a path is the number of its edges.
 :::
 
+::: intuition
+$P_n$ is a chain of $n$ edges, $0 - 1 - 2 - \dots - n$. Indexing by the number of edges makes
+"path of length $n$" and "$P_n$" say the same thing. Examples: $P_0$ is a single vertex, $P_1$ is a
+single edge ($P_1 = K_2$), and $P_2$ has three vertices, the middle one with two neighbours.
+:::
+
 ::: definition {#def:cycle-graph title="Cycle $C_n$" defines="cycle, C_n" source="theory/2026-09-15 p2"}
 For $n \ge 3$, the **cycle of length $n$**, denoted $C_n$, is the graph with
 $$V(C_n) = \set{1, 2, \dots, n}, \qquad E(C_n) = \set{\set{i, i+1} : 1 \le i < n} \cup \set{\set{n, 1}}.$$
 So $C_n$ has $n$ vertices and $n$ edges.
 :::
 
+::: intuition
+$C_n$ is $n$ vertices around a circle, each joined to its two neighbours on the circle: take the
+path $P_{n-1}$ on $n$ vertices and join its two ends. The bound $n \ge 3$ comes from simplicity:
+a "$C_2$" would need two [[def:mixed-multigraph|parallel edges]] and a "$C_1$" a loop.
+Example: $C_3 = K_3$ is the triangle, and $C_4$ is the square.
+:::
+
 ::: definition {#def:complete-graph title="Complete graph $K_n$" defines="complete graph, K_n, clique" source="theory/2026-09-15 p2"}
 The **complete graph on $n$ vertices**, denoted $K_n$, has $\abs{V(K_n)} = n$ and
 $E(K_n) = \binom{V(K_n)}{2}$: every two distinct vertices are adjacent.
+:::
+
+::: intuition
+$K_n$ has every edge a simple graph on $n$ vertices can have, so every simple graph on $n$
+vertices is $K_n$ with some edges deleted. Examples: $K_1$ is a single vertex, $K_2$ an edge, $K_3$
+a triangle, $K_4$ the tetrahedron. A copy of $K_k$ inside a larger graph, a set of $k$ pairwise
+adjacent vertices, is a clique ([[def:clique]]).
 :::
 
 ::: definition {#def:complete-bipartite title="Complete bipartite graph $K_{m,n}$" defines="complete bipartite graph, K_{m,n}" source="theory/2026-09-15 p3"}
@@ -129,6 +164,14 @@ $$E(K_{m,n}) = \set{\set{u, v} : u \in V_m,\ v \in V_n}.$$
 Every vertex of $V_m$ is adjacent to every vertex of $V_n$, and there are no other edges. The
 lecture writes this briefly as $E(K_{m,n}) = V_m \times V_n$, identifying the ordered pair
 $(u, v)$ with the edge $\set{u, v}$.
+:::
+
+::: intuition
+Two teams, where everyone meets everyone of the other team and nobody of their own. $K_{m,n}$ is
+the [[def:bipartite|bipartite]] graph with sides of sizes $m$ and $n$ that has all possible edges.
+Examples: $K_{1,n}$ is a star (one centre, $n$ leaves), $K_{2,2} \cong C_4$, and $K_{3,3}$ is the
+"three houses, three utilities" graph. Non-example: $K_3$ is not of this form, since a triangle
+always has two vertices on the same side.
 :::
 
 ```graph id=t01-graph-classes widget=figure
@@ -159,6 +202,13 @@ endpoint in $V_m$ ($m$ ways) and its endpoint in $V_n$ ($n$ ways), independently
 choices give different edges, so there are $mn$ edges.
 :::
 
+::: intuition
+Each count is a count of pairs: $K_n$ has an edge for every pair of vertices, and $K_{m,n}$ one
+for every choice of one vertex from each side. Examples: $K_4$ has $6$ edges, $K_{3,3}$ has $9$,
+$K_6$ has $15$. A quick sanity check: $K_{m,n}$ is $K_{m+n}$ minus the edges inside the two sides,
+and indeed $\binom{m+n}{2} - \binom{m}{2} - \binom{n}{2} = mn$.
+:::
+
 ::: pitfall
 $P_n$ has $n + 1$ vertices, but $C_n$ and $K_n$ have $n$ vertices. Some textbooks use $P_n$ for
 the path on $n$ vertices; in this course the index of $P_n$ is always the **length**.
@@ -166,7 +216,7 @@ the path on $n$ vertices; in this course the index of $P_n$ is always the **leng
 
 ## Isomorphism
 
-The two drawings below look different, but they describe the same structure: a cycle of four
+The two drawings below look different, but they describe the same structure: a [[def:cycle-graph|cycle]] of four
 vertices. What matters about a graph is *which vertices are adjacent*, not how the graph is drawn
 or what its vertices are called.
 
@@ -189,6 +239,14 @@ $$\set{u, v} \in E(G) \iff \set{f(u), f(v)} \in E(H).$$
 Such a bijection $f$ is called an **isomorphism** of $G$ and $H$.
 :::
 
+::: intuition
+An isomorphism is a renaming of the vertices: $G$ and $H$ differ only in the names of the vertices
+and in how they are drawn. Example: the [[def:path-graph|path]] with edges $ab, bc$ and the path
+with edges $13, 32$ are isomorphic via $a \mapsto 1$, $b \mapsto 3$, $c \mapsto 2$. Non-example:
+the graph on two vertices without edges is not isomorphic to $K_2$, because every bijection maps
+the non-edge to the edge.
+:::
+
 Note the "$\iff$": an isomorphism must map edges to edges **and** non-edges to non-edges. A
 bijection that only maps edges to edges is not enough (think of $f$ from the empty graph on two
 vertices to $K_2$).
@@ -201,7 +259,7 @@ that graph, that is, the structure without regard to vertex names. For example, 
 graph isomorphic to the cycle on $\set{1,2,3,4}$.
 :::
 
-For multigraphs, edges are separate objects, so an isomorphism must also say where each edge
+For [[def:mixed-multigraph|multigraphs]], edges are separate objects, so an isomorphism must also say where each edge
 goes:
 
 ::: definition {#def:isomorphism-multigraph title="Isomorphism of mixed multigraphs" source="theory/2026-09-15 p4"}
@@ -210,6 +268,14 @@ Mixed multigraphs $G = (V_1, E_1, \varepsilon_1)$ and $H = (V_2, E_2, \varepsilo
 $$\forall e \in E_1 : \quad f\bigl(\varepsilon_1(e)\bigr) = \varepsilon_2\bigl(g(e)\bigr),$$
 where $f$ is applied to the endpoints: $f(v)$ for a loop, $(f(u), f(v))$ for an arc $(u, v)$, and
 $\set{f(u), f(v)}$ for an undirected edge $\set{u, v}$.
+:::
+
+::: intuition
+With parallel edges, knowing where the vertices go no longer says where each edge goes, so the
+edge map $g$ is part of the isomorphism. Example: two vertices joined by two parallel edges have
+two isomorphisms to themselves with $f = \mathrm{id}$, one keeping the edges and one swapping
+them. Non-example: an arc $(u, v)$ can be mapped neither to an undirected edge nor to the
+reversed arc $(f(v), f(u))$.
 :::
 
 The condition says: the edge $g(e)$ of $H$ has exactly the images of the endpoints of $e$ as its
@@ -237,7 +303,7 @@ graphs do not share.
 
 ::: proposition {#prop:iso-invariants title="Simple isomorphism invariants" extra=true}
 If $G \cong H$, then $G$ and $H$ have the same number of vertices, the same number of edges, and
-the same degree sequence up to reordering (degrees are defined in the next section; in fact an
+the same [[def:degree-sequence|degree sequence]] up to reordering ([[def:degree|degrees]] are defined in the next section; in fact an
 isomorphism $f$ satisfies $d_G(v) = d_H(f(v))$ for every vertex $v$).
 :::
 
@@ -252,10 +318,18 @@ $v$ shows that $f$ maps the edges at $v$ bijectively onto the edges at $f(v)$, s
 $d_G(v) = d_H(f(v))$.
 :::
 
+::: intuition
+An isomorphism only renames vertices, and renaming cannot change anything that is counted
+without looking at names. So comparing $n$, $m$ and the degrees is the first test when two graphs
+are suspected to be non-isomorphic. Example: $P_3$ and the star $K_{1,3}$ both have $4$ vertices
+and $3$ edges, but their degrees are $2, 2, 1, 1$ and $3, 1, 1, 1$, so
+$P_3 \not\cong K_{1,3}$.
+:::
+
 ::: pitfall
 These invariants are **necessary but not sufficient**. The cycle $C_6$ and two disjoint
 triangles both have 6 vertices, 6 edges and all degrees equal to 2, but they are not isomorphic:
-one is connected and the other is not.
+one is [[def:component|connected]] and the other is not.
 :::
 
 ```graph id=t01-same-degrees-not-iso widget=figure
@@ -277,12 +351,19 @@ $$d_G(v) := \text{the number of edges incident with } v,$$
 where **loops are counted twice**. A vertex of degree $0$ is **isolated**.
 :::
 
+::: intuition
+The degree counts the *ends* of edges at $v$. In a simple graph this is just the number of
+neighbours. Examples: every vertex of $C_n$ has degree $2$, every vertex of $K_n$ has degree
+$n - 1$, and in $K_{m,n}$ the vertices on the side of size $m$ have degree $n$. In $P_n$ with
+$n \ge 1$, the two ends have degree $1$ and the inner vertices degree $2$.
+:::
+
 In a simple graph, $d_G(v) = \abs{N_G(v)}$. Many texts write $\deg(v)$ or $\deg_G(v)$; the lectures
 use $d_G(v)$, and we drop the index $G$ when the graph is clear.
 
-Why count a loop twice? Because a loop has *two ends* at $v$: if you walk around a small circle
+Why count a loop twice? Because a loop has *two ends* at $v$: if you go around a small circle
 centred at $v$, you cross the loop twice. With this convention the next statement holds for all
-multigraphs, not only for simple graphs.
+[[def:mixed-multigraph|multigraphs]], not only for simple graphs.
 
 ```graph id=t01-loop-degree widget=figure
 caption: $d(a) = 4$: the loop contributes $2$, the edges $ab$ and $ac$ contribute $1$ each. Also $d(b) = d(c) = 3$.
@@ -290,6 +371,12 @@ intent: Show that a loop contributes 2 to the degree, and that parallel edges ea
 height: small
 a -- a; a -- b; a -- c; b -- c; b -- c
 ```
+
+::: pitfall
+In a multigraph the degree is **not** the number of neighbours. In the figure above, $a$ has
+two neighbours but degree $4$, and $b$ has two neighbours but degree $3$. The formula
+$d_G(v) = \abs{N_G(v)}$ holds only in simple graphs.
+:::
 
 ::: lemma {#lem:handshake title="Handshake lemma" aka="degree sum formula" source="theory/2026-09-15 p5"}
 For every (multi)graph $G$:
@@ -307,8 +394,12 @@ In the words of the lecture: going over all edges of $G$, every edge contributes
 the degree sum.
 :::
 
-The name comes from the situation at a party: if every handshake involves two hands, then the
-total number of hands shaken is twice the number of handshakes.
+::: intuition
+Summing the degrees counts every edge once from each end, so every edge is counted twice. The
+name comes from the situation at a party: if every handshake involves two hands, then the total
+number of hands shaken is twice the number of handshakes. Example: $K_4$ has degree sum
+$4 \cdot 3 = 12 = 2 \cdot 6$, and a single loop has degree sum $2 = 2 \cdot 1$.
+:::
 
 ::: corollary {#cor:odd-degree-count title="Odd-degree vertices" extra=true}
 Every (multi)graph has an even number of vertices of odd degree.
@@ -319,6 +410,13 @@ Split the degree sum into the vertices of even degree and those of odd degree:
 $$2\abs{E(G)} = \sum_{d(v) \text{ even}} d(v) + \sum_{d(v) \text{ odd}} d(v).$$
 The left-hand side and the first sum on the right are even, hence the second sum is even. A sum
 of odd numbers is even exactly when the number of summands is even.
+:::
+
+::: intuition
+The degree sum is even, and a sum of integers is even exactly when it has an even number of odd
+terms. This gives a quick impossibility test: there is no graph with degrees $3, 2, 2$, and no
+graph on $5$ vertices in which every vertex has degree $3$. Example: the star $K_{1,3}$ has four
+odd-degree vertices, an even number.
 :::
 
 ::: remark
@@ -341,8 +439,15 @@ The **degree sequence** of a graph $G$ with $V(G) = \set{v_1, v_2, \dots, v_n}$ 
 $$\bigl(d_G(v_1), d_G(v_2), \dots, d_G(v_n)\bigr).$$
 :::
 
+::: intuition
+The degree sequence lists the [[def:degree|degrees]] and forgets who is adjacent to whom.
+Examples: the star $K_{1,3}$ has degree sequence $(3, 1, 1, 1)$, the [[def:cycle-graph|cycle]] $C_4$ has
+$(2, 2, 2, 2)$. Different graphs can share a degree sequence: $C_6$ and two disjoint triangles
+both have $(2, 2, 2, 2, 2, 2)$.
+:::
+
 The sequence depends on the order of the vertices; usually we list it **non-increasingly**. Then
-it is an isomorphism invariant ([[prop:iso-invariants]]).
+it is an [[def:isomorphism|isomorphism]] invariant ([[prop:iso-invariants]]).
 
 ```graph id=t01-degree-sequence-example widget=figure
 caption: A graph with degree sequence $(4, 4, 3, 3, 1, 1, 0)$. Vertex labels show the degrees.
@@ -363,6 +468,14 @@ $G$ with $V(G) = \set{v_1, \dots, v_n}$ and $d_G(v_i) = d_i$ for all $i$. Such a
 **realisation** of the sequence.
 :::
 
+::: intuition
+A graph gives a degree sequence; "graphic" asks the reverse question, whether some simple graph
+has exactly the prescribed degrees. Realisations are usually far from unique: $(2, 2, 2, 2, 2, 2)$
+is realised by $C_6$ and by two disjoint triangles ([[fig:t01-same-degrees-not-iso]]).
+Non-examples: $(1, 1, 1)$ has an odd sum, and $(2, 0)$ asks for two neighbours with only one
+other vertex available.
+:::
+
 Two necessary conditions are immediate: the sum $d_1 + \dots + d_n$ must be even
 ([[lem:handshake]]), and every $d_i \le n - 1$ (a vertex of a simple graph has at most $n-1$
 neighbours). They are not sufficient: $(3, 3, 1, 1)$ has an even sum and all entries are at most
@@ -371,8 +484,8 @@ vertices, so each vertex of "degree 1" would get two neighbours.
 
 ### The Havel–Hakimi theorem
 
-The following theorem reduces the question for a sequence of length $n$ to the same question for a
-sequence of length $n - 1$. Applying it repeatedly gives an efficient algorithm.
+The following theorem reduces the question for a sequence of $n$ numbers to the same question for
+a sequence of $n - 1$ numbers. Applying it repeatedly gives an efficient algorithm.
 
 ::: theorem {#thm:havel-hakimi title="Havel–Hakimi" source="theory/2026-09-15 p7; theory/2026-09-22 p1–2"}
 Let $(d_1, d_2, \dots, d_n)$ be a non-increasing sequence of non-negative integers with
@@ -385,6 +498,22 @@ In words: remove the largest entry $d_1$ and subtract $1$ from the next $d_1$ en
 sequence $\varphi_1$ need not be non-increasing; that does not matter, because whether a sequence
 is graphic does not depend on the order of its entries (simply rename the vertices). Before the
 next step we sort it again.
+
+::: intuition
+The vertex with the largest demand $d_1$ should take its neighbours among the vertices with the
+largest remaining demands, because those are the hardest to satisfy later. The theorem says that
+this greedy choice never hurts: if the sequence has any realisation, it has one in which $v_1$ is
+adjacent exactly to $v_2, \dots, v_{d_1+1}$. Examples: $(3, 3, 2, 2, 2) \to (2, 1, 1, 2)$, which is
+graphic, so $(3, 3, 2, 2, 2)$ is graphic too; $(3, 3, 1, 1) \to (2, 0, 0)$, which is not graphic,
+so neither is $(3, 3, 1, 1)$.
+:::
+
+::: remark
+The lecture states the theorem without the hypothesis $d_1 \le n - 1$. It is needed for
+$\varphi_1$ to make sense: there must be $d_1$ entries after $d_1$ to decrease. It costs nothing,
+since a sequence with $d_1 > n - 1$ is never graphic (a vertex has at most $n - 1$ neighbours);
+the test below rejects such sequences in line `@too-big`.
+:::
 
 ```graph id=t01-havel-hakimi-idea widget=figure
 caption: The idea of the theorem: the vertex $v_1$ of the largest degree $d_1$ is joined to the $d_1$ vertices of the next largest degrees.
@@ -488,6 +617,21 @@ repeat:                                                    // @loop
 ```
 :::
 
+::: intuition
+Each round settles one vertex for good: it is given its neighbours, and the remaining sequence
+records what the other vertices still need. So the test is [[thm:havel-hakimi]] applied at most
+$n$ times, each round a sort and at most $n$ subtractions. Example:
+$(2, 2, 2) \to (1, 1) \to (0)$, so the sequence is graphic, and running the rounds backwards gives
+the triangle. Non-example: $(4, 4, 2, 2, 0) \to (3, 1, 1, -1)$ stops at `@negative`.
+:::
+
+::: pitfall
+Always **re-sort** before the next round, and always remove the **largest** entry. Working on
+an unsorted sequence gives wrong answers: treating $(1, 1, 2, 2)$ as if $1$ were the largest
+entry gives $(0, 2, 2)$, which is not graphic, although $(2, 2, 1, 1)$ is realised by $P_3$
+(compare [[exr:t01-havel-hakimi-ties]]).
+:::
+
 Each round shortens the sequence by one, so the test finishes after at most $n$ rounds. By
 [[thm:havel-hakimi]], every round preserves graphicness (the conditions in lines `@too-big` and
 `@negative` detect sequences that are obviously not graphic), and the all-zero sequence is
@@ -506,7 +650,7 @@ $$
 \end{aligned}
 $$
 
-The last sequence is obviously graphic: a path with degrees $1, 2, 1$, one more edge (degrees
+The last sequence is obviously graphic: a [[def:path-graph|path]] with degrees $1, 2, 1$, one more edge (degrees
 $1, 1$) and three isolated vertices. So the original sequence is graphic, and adding the removed
 vertices back gives a realisation.
 :::
@@ -565,6 +709,13 @@ by edges inside $A$ (at most $k(k-1)$ in total, since each of the $k$ vertices h
 neighbours in $A$) and by edges going to the other vertices. A vertex $v_i$ outside $A$ can
 "absorb" at most $\min(d_i, k)$ of those edges: at most $d_i$ because that is its degree, and at
 most $k$ because it can be adjacent to each vertex of $A$ only once.
+:::
+
+::: pitfall
+The inequalities are for the **non-increasing** order, and they must hold for **every** $k$.
+For $(3, 3, 1, 1)$ the case $k = 1$ holds ($3 \le 0 + 1 + 1 + 1$), but $k = 2$ fails
+($6 > 2 + 1 + 1$), so the sequence is not graphic. Written in the wrong order as $(1, 1, 3, 3)$,
+the same numbers pass all four inequalities.
 :::
 
 The lecture states this theorem without proof. Necessity is exactly the intuition above;
@@ -656,20 +807,23 @@ $\abs{N(v_k) \cap A} < d_k$.
   $v_k v_r$. ($v_k$ unchanged, $x \in B$ loses one, which is allowed since $x$ has index $> r$;
   $v_r$ gains one.)
 - If $v_k \in N(v_r)$: let $v_i \in A$ be a vertex not adjacent to $v_k$; then $i < r$. Pick
-  $u \in X_{v_i}$ as in Case 3a; $u \ne v_k$ since $v_k \in N(v_r)$. If $v_k$ is deficient, remove
-  $v_i u$, add $v_i v_k$ and $u v_r$ ($v_i, u$ unchanged; $v_k, v_r$ gain one). If $v_k$ is full, it
-  has a neighbour $x \in B$ as before; remove $v_i u$ and $v_k x$, add $v_i v_k$ and $u v_r$
-  ($v_i, v_k$ unchanged; $u$ unchanged, or if $u = x$ it loses one; $x \in B$ loses one; $v_r$ gains
-  one).
+  $u \in X_{v_i}$ as in Case 3a; $u \ne v_k$ since $v_k \in N(v_r)$, and $u \in B$ since $v_r$ is
+  adjacent to all other vertices of $A$.
+  - If $v_k$ is deficient: remove $v_i u$, add $v_i v_k$ and $u v_r$. ($v_i, u$ unchanged;
+    $v_k, v_r$ gain one.)
+  - If $v_k$ is full: it has a neighbour $x \in B$ as before. Remove $v_i u$ and $v_k x$, add
+    $v_i v_k$ and $u v_r$. ($v_i$ and $v_k$ unchanged; $v_r$ gains one.) If $u \ne x$, then $u$ is
+    unchanged and $x$ loses one. If $u = x$, this vertex loses two edges and gains one, so it
+    loses one. Either way the only vertex that loses degree lies in $B$.
 
 In every case the degree of $v_r$ grows, the first $r - 1$ vertices stay full, and no target is
 exceeded. This completes the proof.
 ::::
 
 ::: remark
-In Case 3b with $u = x$, the vertex $x$ loses two edges and gains one, so its degree drops by one.
-This is allowed: $x$ lies in $B$, so its index is larger than $r$, and only the vertices before
-$v_r$ must stay full.
+Some operations in Case 3b lower the degree of a vertex of $B$. This
+is allowed: a vertex of $B$ has index larger than $r$, a subrealisation only bounds degrees from
+above, and only the vertices before $v_r$ must stay full.
 :::
 
 ## Summary
@@ -681,7 +835,7 @@ $v_r$ must stay full.
 - Isomorphism is a bijection preserving adjacency *and* non-adjacency ([[def:isomorphism]]); a
   "graph" usually means an isomorphism class. Equal vertex counts, edge counts and degree
   sequences are necessary for isomorphism, but not sufficient ([[prop:iso-invariants]]).
-- $\sum_v d(v) = 2\abs{E}$ ([[lem:handshake]]), so the number of odd-degree vertices is even
+- The [[def:degree|degree]] sum is $\sum_v d(v) = 2\abs{E}$ ([[lem:handshake]]), so the number of odd-degree vertices is even
   ([[cor:odd-degree-count]]).
 - Havel–Hakimi: $(d_1, \dots, d_n)$ is graphic iff the sequence obtained by deleting $d_1$ and
   decreasing the next $d_1$ entries is graphic ([[thm:havel-hakimi]]). The proof uses 2-switches.
@@ -710,7 +864,8 @@ a -- b; a -- d; a -- e; b -- d; c -- d; e -- f
 ```
 
 :::: exercise {#exr:t01-equal-degrees title="Two vertices of the same degree" difficulty=2}
-Prove that every simple graph with at least two vertices has two vertices of the same degree.
+Prove that every simple graph with at least two vertices has two vertices of the same
+[[def:degree|degree]].
 
 ::: hint
 What values can the degrees take? Can the values $0$ and $n-1$ both occur?
@@ -725,7 +880,8 @@ and by the pigeonhole principle two vertices have the same degree.
 ::::
 
 :::: exercise {#exr:t01-graphic-check title="Graphic or not?" difficulty=1}
-Decide which of the following sequences are graphic. For the graphic ones, draw a realisation.
+Decide which of the following sequences are [[def:graphic-sequence|graphic]]. For the graphic
+ones, draw a realisation.
 
 1. $(3, 3, 3, 3, 3, 3)$
 2. $(5, 5, 4, 3, 2, 1)$
@@ -749,11 +905,11 @@ In $\ol{C_5}$, the vertex $i$ is adjacent to $i + 2$ and $i - 2$ (modulo 5).
 :::
 
 ::: solution
-The non-edges of $C_5$ on $\set{1, \dots, 5}$ are $13, 35, 52, 24, 41$, so $\ol{C_5}$ is the cycle
+The non-edges of $C_5$ on $\set{1, \dots, 5}$ are $13, 35, 52, 24, 41$, so $\ol{C_5}$ is the [[def:cycle-graph|cycle]]
 $1\,3\,5\,2\,4\,1$. The bijection $f(1) = 1$, $f(2) = 3$, $f(3) = 5$, $f(4) = 2$, $f(5) = 4$ maps the
 edges $12, 23, 34, 45, 51$ of $C_5$ to $13, 35, 52, 24, 41$, the edges of $\ol{C_5}$. Both graphs have
 5 edges, and $f$ maps edges onto edges bijectively, so it also maps non-edges onto non-edges. Hence
-$f$ is an isomorphism.
+$f$ is an [[def:isomorphism|isomorphism]].
 :::
 ::::
 
@@ -820,7 +976,8 @@ $3 \cdot 4 = 12$ ([[obs:edge-counts-classes]]).
 ::::
 
 :::: quiz {#q:t01-iso-degree}
-Two graphs have the same degree sequence. Are they necessarily isomorphic?
+Two graphs have the same [[def:degree-sequence|degree sequence]]. Are they necessarily
+isomorphic?
 
 - [ ] Yes
 - [x] No

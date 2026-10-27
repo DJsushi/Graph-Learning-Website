@@ -117,7 +117,7 @@ there is no topic layer, and there are no dependency links.
 
 ### Content (lesson order matters: the ledger accumulates)
 - [x] M t01 `content/theory/01-basic-notions.md`
-- [ ] W t01
+- [x] W t01
 - [ ] M t02 `content/theory/02-walks-connectivity-bipartite.md`
 - [ ] W t02
 - [ ] M t03 `content/theory/03-trees.md`
@@ -171,5 +171,13 @@ Open questions:
 - Lecture H drawing in the multigraph isomorphism example: SOURCE UNCLEAR stays (could check the recording).
 - W: Erdős–Gallai Case 3b bookkeeping (v_k full, u=x) is clumsy and repeated in the remark after the proof.
 - 2-switch connectivity claim in a remark is stated without proof (standard).
+
+### t01 (W) Basic notions
+
+**Math fixes (W):** none. Wording only in the Erdős–Gallai proof: Case 3b (v_k ∈ N(v_r)) split into v_k deficient / full, with the u = x bookkeeping written out and u ∈ B stated; the remark after the proof no longer repeats it.
+
+Entries as in M (`prop:iso-invariants` now links [[def:degree-sequence]], [[def:degree]]). Added: intuitions for all entries; pitfalls (multigraph degree ≠ neighbour count; Havel–Hakimi re-sort each round; Erdős–Gallai needs all k and the sorted order); remark after `thm:havel-hakimi` on the hypothesis d_1 ≤ n−1; links to t02 (def:bipartite, def:clique, def:component) and a02 (def:flow-network). Lint for t01: 0.
+
+Open questions: SOURCE UNCLEAR on `t01-iso-multigraph` (check the recording); the 2-switch connectivity claim in a remark is unproved (standard).
 
 ## Report
