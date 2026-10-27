@@ -9,6 +9,11 @@ export interface Tweened {
 
 const visible = (el: Vertex | Edge) => !el.classes.includes('hidden')
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x))
+const smooth = (x: number) => { const k = clamp01(x); return k * k * (3 - 2 * k) }
+// Choreography: leaving edges fade first, vertices slide over the whole span, arrivals fade in last
+const out = (u: number, early = 0.4) => 1 - smooth(u / early)
+const inn = (u: number, late = 0.4) => smooth((u - (1 - late)) / late)
 
 /**
  * The scene at progress t (0 = a, 1 = b). Shared vertices slide; vertices only in b fade in, vertices only in a fade out.
@@ -17,7 +22,7 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 export function interpolate(a: GraphData, b: GraphData, t: number, merges: Merge[] = [], reverse = false): Tweened {
   if (t <= 0) return { graph: a, fade: {} }
   if (t >= 1) return { graph: b, fade: {} }
-  return reverse ? forward(b, a, 1 - t, merges, a) : forward(a, b, t, merges, b)
+  return reverse ? forward(b, a, 1 - t, merges, b) : forward(a, b, t, merges, b)
 }
 
 /** s -> d at progress u; `dest` is the graph the viewer is really heading to (its classes win for shared elements). */
@@ -43,29 +48,44 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
   for (const [id, v] of sv) {
     const to = target.get(id)
     const dt = to && dv.get(to)
-    if (dt) place(v, { x: lerp(v.x ?? 0, dt.x ?? 0, u), y: lerp(v.y ?? 0, dt.y ?? 0, u) }, 1 - u)
+    if (dt) place(v, { x: lerp(v.x ?? 0, dt.x ?? 0, u), y: lerp(v.y ?? 0, dt.y ?? 0, u) }, 1 - inn(u, 0.3))
     else if (dv.has(id)) {
       const w = dv.get(id)!
       place(destOf(id, w), { x: lerp(v.x ?? 0, w.x ?? 0, u), y: lerp(v.y ?? 0, w.y ?? 0, u) }, 1)
-    } else place(v, pt(v), 1 - u)
+    } else place(v, pt(v), out(u, 0.5))
   }
   for (const [id, w] of dv) {
     if (sv.has(id)) continue
     const from = (sources.get(id) ?? []).map(f => sv.get(f)!)
     // a merged vertex grows out of the centroid of its members
     const c = from.length ? { x: from.reduce((n, v) => n + (v.x ?? 0), 0) / from.length, y: from.reduce((n, v) => n + (v.y ?? 0), 0) / from.length } : pt(w)
-    place(w, from.length ? { x: lerp(c.x, w.x ?? 0, u), y: lerp(c.y, w.y ?? 0, u) } : pt(w), u)
+    place(w, from.length ? { x: lerp(c.x, w.x ?? 0, u), y: lerp(c.y, w.y ?? 0, u) } : pt(w), from.length ? inn(u, 0.3) : inn(u, 0.5))
   }
 
   const se = new Map(s.edges.filter(visible).map(e => [e.id, e]))
   const de = new Map(d.edges.filter(visible).map(e => [e.id, e]))
   const edges: Edge[] = []
-  for (const [id, e] of se) {
-    // shared edge: dest classes, but s endpoints, so it follows the sliding vertices
-    if (de.has(id)) edges.push({ ...(dest.edges.find(x => x.id === id) ?? de.get(id)!), tail: e.tail, head: e.head })
-    else { edges.push(e); fade[`e:${id}`] = 1 - u }
+  const lone = [...de.values()].filter(f => !se.has(f.id))
+  const key = (e: Edge, map: (x: Id) => Id) => {
+    const ends = [...e.tail, ...e.head].map(map)
+    return (e.directed ? ends : [...ends].sort()).join('>')
   }
-  for (const [id, e] of de) if (!se.has(id)) { edges.push(e); fade[`e:${id}`] = u }
+  // arcs renamed by the step (e.g. after a contraction) still slide: pair them up by their (merged) endpoints
+  const waiting = new Map<string, Edge[]>()
+  for (const f of lone) { const k = key(f, x => x); waiting.set(k, [...(waiting.get(k) ?? []), f]) }
+  const paired = new Set<Id>()
+  for (const [id, e] of se) {
+    if (de.has(id)) {
+      // shared edge: dest classes, but s endpoints, so it follows the sliding vertices
+      edges.push({ ...(dest.edges.find(x => x.id === id) ?? de.get(id)!), tail: e.tail, head: e.head })
+      continue
+    }
+    const f = waiting.get(key(e, x => target.get(x) ?? x))?.shift()
+    if (f) { paired.add(f.id); edges.push({ ...(dest === d ? f : e), id: e.id, tail: e.tail, head: e.head }); continue }
+    edges.push(e)
+    fade[`e:${id}`] = out(u)
+  }
+  for (const f of lone) if (!paired.has(f.id)) { edges.push(f); fade[`e:${f.id}`] = inn(u) }
   const base = u < 0.5 ? s : d
   return { graph: { ...base, vertices, edges }, fade }
 }

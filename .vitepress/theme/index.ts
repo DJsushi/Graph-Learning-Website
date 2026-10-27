@@ -19,6 +19,7 @@ import RandomDrills from './components/RandomDrills.vue'
 import QuizSession from './components/QuizSession.vue'
 import Playground from './components/Playground.vue'
 import ReferenceSearch from './components/ReferenceSearch.vue'
+import Settings from './components/Settings.vue'
 
 export default {
   extends: DefaultTheme,
@@ -31,6 +32,6 @@ export default {
   enhanceApp({ app }) {
     app.component('GraphBlock', GraphBlock)
     app.component('QuizBlock', QuizBlock)
-    for (const [name, c] of Object.entries({ HomePage, CourseIndex, PracticeOverview, FlashcardDeck, Flashcard, RandomDrills, QuizSession, Playground, ReferenceSearch })) app.component(name, c)
+    for (const [name, c] of Object.entries({ HomePage, CourseIndex, PracticeOverview, FlashcardDeck, Flashcard, RandomDrills, QuizSession, Playground, ReferenceSearch, Settings })) app.component(name, c)
   },
 } satisfies Theme

@@ -2,6 +2,7 @@
 import { onBeforeUnmount, shallowRef, watch } from 'vue'
 import type { GraphData, Merge } from '@core/model'
 import { interpolate } from './tween'
+import { tweenMs } from './settings'
 
 export interface TweenTarget {
   graph: GraphData
@@ -9,10 +10,9 @@ export interface TweenTarget {
   reverse?: boolean
 }
 
-const ease = (p: number) => (p < 0.5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2)
-const reduced = () => typeof window !== 'undefined' && !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+const ease = (p: number) => p * p * (3 - 2 * p) // smoothstep: gentle start and stop
 
-export function useTweened(source: () => TweenTarget, duration: () => number = () => 450) {
+export function useTweened(source: () => TweenTarget, duration: () => number = tweenMs) {
   const graph = shallowRef<GraphData>(source().graph)
   const fade = shallowRef<Record<string, number>>({})
   let raf = 0
@@ -28,8 +28,8 @@ export function useTweened(source: () => TweenTarget, duration: () => number = (
       a = { ...a, vertices: a.vertices.filter(v => !gone(`v:${v.id}`)), edges: a.edges.filter(e => !gone(`e:${e.id}`)) }
     }
     stop()
-    if (tgt.graph === a || reduced() || typeof requestAnimationFrame === 'undefined') { graph.value = tgt.graph; fade.value = {}; return }
     const ms = duration()
+    if (tgt.graph === a || ms <= 0 || typeof requestAnimationFrame === 'undefined') { graph.value = tgt.graph; fade.value = {}; return }
     const t0 = performance.now()
     const frame = (now: number) => {
       const p = Math.min(1, (now - t0) / ms)

@@ -62,6 +62,7 @@ export default defineConfig({
       { text: 'Practice', link: '/practice/', activeMatch: '^/practice/' },
       { text: 'Exam prep', link: '/exam/', activeMatch: '^/exam/' },
       { text: 'Playground', link: '/playground', activeMatch: '^/playground' },
+      { text: 'Settings', link: '/settings', activeMatch: '^/settings' },
     ],
     sidebar: {
       '/theory/': courseSidebar('theory'),

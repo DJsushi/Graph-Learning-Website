@@ -40,15 +40,30 @@ describe('interpolate', () => {
     const r = interpolate(s0.graph, s1.graph, 0.5, s1.merges)
     const u = r.graph.vertices.find(v => v.id === 'u')!
     expect(u.x).toBeCloseTo(0.5)
-    expect(r.fade['v:u']).toBeCloseTo(0.5)
-    expect(r.fade['v:w']).toBeCloseTo(0.5)
-    expect(r.fade['e:uv']).toBeCloseTo(0.5)
+    // slide first, cross-fade at the end
+    expect(r.fade['v:u']).toBeUndefined()
+    expect(r.fade['v:w']).toBeCloseTo(0)
+    expect(r.fade['e:uv']).toBeCloseTo(0) // the contracted edge is already gone
+    const late = interpolate(s0.graph, s1.graph, 0.85, s1.merges)
+    expect(late.fade['v:u']).toBeCloseTo(0.5)
+    expect(late.fade['v:w']).toBeCloseTo(0.5)
     expect(r.graph.edges.find(e => e.id === 'ux')!.tail[0]).toBe('u') // still on the sliding vertex
   })
   it('reverse plays the merge backwards', () => {
     const r = interpolate(s1.graph, s0.graph, 0.25, s1.merges, true)
     const u = r.graph.vertices.find(v => v.id === 'u')!
     expect(u.x).toBeCloseTo(0.75) // a quarter of the way back from w (x=1) towards u (x=0)
-    expect(r.fade['v:w']).toBeCloseTo(0.75)
+    expect(r.fade['v:w']).toBeCloseTo(0.074, 2) // time reversed: the cross-fade comes first
+  })
+})
+
+describe('renamed arcs', () => {
+  it('pair up by merged endpoints instead of fading', () => {
+    const a = parseGraph('type: directed\nlayout: fixed\na @(0,0); b @(1,0); c @(2,0)\na -> c [id=e1]').panels[0].graph
+    const b = parseGraph('type: directed\nlayout: fixed\nm @(0.5,0); c @(2,0)\nm -> c [id=e1x]').panels[0].graph
+    const r = interpolate(a, b, 0.5, [{ from: ['a', 'b'], to: 'm' }])
+    expect(r.graph.edges.map(e => e.id)).toEqual(['e1'])
+    expect(r.fade['e:e1']).toBeUndefined()
+    expect(r.fade['e:e1x']).toBeUndefined()
   })
 })

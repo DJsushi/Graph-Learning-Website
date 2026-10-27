@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref, watch } from 'vue'
+import { tweenMs } from '../settings'
 
 const props = defineProps<{ count: number; modelValue: number }>()
 const emit = defineEmits<{ 'update:modelValue': [n: number] }>()
@@ -13,13 +14,13 @@ function tick() {
   if (!playing.value) return
   if (props.modelValue >= props.count - 1) { playing.value = false; return }
   set(props.modelValue + 1)
-  timer = setTimeout(tick, 1400 / speed.value)
+  timer = setTimeout(tick, (tweenMs() + 1200) / speed.value)
 }
 function toggle() {
   if (playing.value) { playing.value = false; clearTimeout(timer); return }
   if (props.modelValue >= props.count - 1) set(0)
   playing.value = true
-  timer = setTimeout(tick, 700 / speed.value)
+  timer = setTimeout(tick, 400 / speed.value)
 }
 watch(() => props.count, () => { playing.value = false; clearTimeout(timer) })
 onBeforeUnmount(() => clearTimeout(timer))
