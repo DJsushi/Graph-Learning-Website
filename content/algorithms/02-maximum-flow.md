@@ -28,13 +28,23 @@ A **flow network** is a quadruple $(G, s, t, c)$ where
 - $c : E \to \R^+$ is a **capacity** function.
 :::
 
+::: intuition
+A flow network is a road map with one-way roads ([[def:mixed-multigraph|arcs]]), a start $s$, a destination $t$, and on every arc a
+limit $c(e)$ on how much can pass per unit of time. Example: [[fig:a02-network]], where $s$ has two outgoing pipes of capacity $10$
+each, so at most $20$ units can ever leave $s$. Nothing is said yet about what actually flows; that is the flow
+([[def:flow]]). With all capacities $1$, the maximum flow value of a network is the maximum number of arc-disjoint
+$s$–$t$ paths, as in Menger's theorem ([[thm:menger-directed]]).
+:::
+
 We assume that $G$ is connected (which implies $n + m = \O(m)$) and that there are no parallel edges. We also assume, as the
-examples do, that no edge enters $s$ and no edge leaves $t$ (such edges could carry flow that does not count towards the
-value, and they can be removed without changing the maximum flow value).
+examples do, that no edge enters $s$ and no edge leaves $t$. Such edges could carry flow that does not count towards the
+value, and they can be removed without changing the maximum flow value.
+
 <!-- REVIEW: added that for networks with edges into s or out of t (residual networks G_f always have such edges once |f| > 0, and Lemma A / thm:unit-dinic apply max-flow arguments to G_f) the value is the net flow; the two sums in def:flow then agree and lem:flow-across-cut holds with the same proof. -->
-When such edges are present (for example in a residual network $G_f$, used as a network in [[thm:unit-dinic]]), the value
-of a flow is the **net** flow out of $s$, $\sum_{(s,v) \in E} f(s, v) - \sum_{(u,s) \in E} f(u, s)$, which equals the net flow into $t$;
-[[lem:flow-across-cut]] and its proof remain valid.
+Sometimes such edges cannot be avoided: a [[def:residual-network|residual network]] $G_f$ has them as soon as $\abs{f} > 0$, and
+[[thm:unit-dinic]] uses $G_f$ as a network. Then the value of a flow is the **net** flow out of $s$,
+$\sum_{(s,v) \in E} f(s, v) - \sum_{(u,s) \in E} f(u, s)$, which equals the net flow into $t$; [[lem:flow-across-cut]] and its proof
+remain valid.
 
 ```graph id=a02-network widget=figure
 caption: A flow network. Edge labels are capacities.
@@ -54,6 +64,14 @@ A **flow** is a function $f : E \to \R^+$ satisfying
 The **value** of a flow $f$ is $\abs{f} = \sum_{(s,v) \in E} f(s, v) = \sum_{(w,t) \in E} f(w, t)$.
 :::
 
+::: intuition
+A flow says how much actually travels along each arc: never more than the capacity, and nothing is created or lost at the inner
+vertices (what enters $v$ leaves $v$). The value is what arrives at $t$. Example: in [[fig:a02-flow-example]], $8$ units go along
+$s \to a \to d \to t$ and all other arcs carry $0$; at $a$ and $d$, $8$ units enter and $8$ leave. Non-example: $f(s, a) = 8$,
+$f(a, d) = 5$ and $0$ elsewhere violates conservation at $a$ ($8$ in, $5$ out). A flow with values $0$ and $1$ only is a
+d-flow ([[def:d-flow]]).
+:::
+
 For $e = (u, v)$ we often write $f(u, v)$ instead of $f(e)$. In figures, an edge label $f/c$ shows flow and capacity.
 That the flow out of $s$ equals the flow into $t$ follows from conservation: summing (outflow $-$ inflow) over all vertices
 gives $0$ (each edge is counted once positively and once negatively), and only $s$ and $t$ contribute.
@@ -67,23 +85,41 @@ s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, 0); c @(3, 1); d @(3, 0); t [cla
 s -> a [f=8 c=10]; s -> b [f=0 c=10]; a -> b [f=0 c=2]; a -> c [f=0 c=4]; a -> d [f=8 c=8 class=saturated]; b -> d [f=0 c=9]; d -> c [f=0 c=9]; c -> t [f=0 c=10]; d -> t [f=8 c=10]
 ```
 
-**Applications of network flows** include disjoint paths and network connectivity, bipartite matchings, circulations with
-upper and lower bounds, matrix rounding (census tabulation), airline scheduling, image segmentation, project selection
-(maximum weight closure), open-pit mining, distributed computing, network intrusion detection, multi-camera scene
+**Applications of network flows** include disjoint paths and network connectivity, bipartite
+[[def:matching|matchings]], circulations with upper and lower bounds, matrix rounding (census tabulation), airline scheduling,
+image segmentation, project selection (maximum-weight closure), open-pit mining, distributed computing, network intrusion detection, multi-camera scene
 reconstruction, gene function prediction and quantitative food webs in ecology (see Ahuja, Magnanti, Orlin: *Network
 Flows*, 1993).
 
 ## Cuts and the max-flow min-cut theorem
 
 ::: definition {#def:flow-cut title="s–t cut, capacity" defines="s-t cut, capacity of a cut, MaxFlow, MinCut" source="algorithms/02 p6"}
-An **$s$–$t$ cut** in a flow network $(G, s, t, c)$ is a bipartition $S \cup T = V$ of the vertices such that $s \in S$ and $t \in T$.
+An **$s$–$t$ cut** in a [[def:flow-network|flow network]] $(G, s, t, c)$ is a bipartition $S \cup T = V$ of the vertices such that $s \in S$ and $t \in T$.
 The **capacity** of the cut is
 $$\mathrm{cap}(S, T) = \sum_{(u,v) \in E,\ u \in S,\ v \in T} c(u, v).$$
 **MaxFlow:** given a flow network, compute a maximum flow. **MinCut:** given a flow network, compute a minimum $s$–$t$ cut.
 :::
 
-Only edges from $S$ to $T$ count in the capacity; edges from $T$ back to $S$ do not. (These cuts are partitions of the vertex set,
-while the edge cuts of [[def:st-cut]] are sets of edges; the edges from $S$ to $T$ of an $s$–$t$ cut form an edge cut.)
+::: intuition
+A cut draws a line between $s$ and $t$; every unit of [[def:flow|flow]] has to cross that line from the $S$ side to the $T$ side, so the arcs
+from $S$ to $T$ form a bottleneck. Example: in [[fig:a02-network]], the cut $(\set{s}, V \setminus \set{s})$ has capacity $10 + 10 = 20$, and
+the cut $(\set{s, b}, \set{a, c, d, t})$ has capacity $c(s, a) + c(b, d) = 10 + 9 = 19$; the arc $(a, b)$ goes from $T$ to $S$ and does not count.
+It is a cut in the sense of [[def:cut]] (a vertex partition) with the extra condition that $s$ and $t$ lie on different sides.
+:::
+
+Only edges from $S$ to $T$ count in the capacity; edges from $T$ back to $S$ do not. These cuts are partitions of the vertex set,
+while the edge cuts of [[def:st-cut]] are sets of edges; the edges from $S$ to $T$ of an $s$–$t$ cut form an edge cut.
+
+::: pitfall
+Three different things are called a "cut" in these courses:
+
+- a **cut** $(S, V \setminus S)$ of [[def:cut]] and the $s$–$t$ cut $(S, T)$ here are partitions of the **vertices**; what crosses them are edges;
+- an **$s$–$t$ cut** $X$ and an **$s$–$t$ edge cut** $F$ in Menger's theorem ([[def:st-cut]]) are sets of vertices, resp. edges, whose deletion separates $s$ from $t$;
+- a **minimal cut** ([[def:minimal-cut]]) is such a separating vertex set that is minimal under inclusion.
+
+Even the name "$s$–$t$ cut" is used twice: here a vertex partition, in Menger's theorem a set of deleted vertices. An $s$–$t$ cut $(S, T)$
+gives an edge cut (its arcs from $S$ to $T$; the arcs from $T$ to $S$ need not be deleted), but it never gives a vertex cut directly.
+:::
 
 ::: lemma {#lem:flow-across-cut title="Flow across a cut" extra=true}
 For every flow $f$ and every $s$–$t$ cut $(S, T)$:
@@ -97,19 +133,45 @@ contributes $+f(e)$, and an edge from $T$ to $S$ contributes $-f(e)$. This prove
 edges from $S$ to $T$ and $f(e) \ge 0$ on the edges from $T$ to $S$.
 :::
 
+::: intuition {for=lem:flow-across-cut}
+Whatever leaves $s$ must cross from $S$ to $T$ at some point; if it crosses back from $T$ to $S$, it must cross forward once more. So the
+net crossing equals the value, and it cannot exceed what the forward arcs can carry. Example: in [[fig:a02-cut-crossing]], $\abs{f} = 4$
+and the cut $S = \set{s, a}$ is crossed forward by $f(s, b) + f(a, t) = 2 + 3 = 5$ units and backward by $f(b, a) = 1$ unit, so the net
+is $4 = \abs{f}$, while $\mathrm{cap}(S, T) = c(s, b) + c(a, t) = 2 + 3 = 5$. Taking $S = \set{s}$ gives the definition of $\abs{f}$ itself.
+:::
+
+```graph id=a02-cut-crossing widget=figure
+caption: A flow of value $4$ and the cut $S = \set{s, a}$. Forward arcs $(s, b)$, $(a, t)$ carry $5$ units, the backward arc $(b, a)$ carries $1$ unit back; net $4$. The capacity of the cut is $5$.
+intent: Illustrates lem:flow-across-cut, including an arc from T to S that carries flow.
+type: directed
+layout: fixed
+s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, -1); t [class=sink] @(3, 0)
+s -> a [f=2 c=3]; s -> b [f=2 c=2 class="saturated cut"]; b -> a [f=1 c=1]; a -> t [f=3 c=3 class="saturated cut"]; b -> t [f=1 c=2]
+group S: s a [label="$S$"]
+group T: b t [label="$T$" class=muted]
+```
+
 So **every flow value is at most every cut capacity** (weak duality). The theorem says that the bound is tight:
 
 ::: theorem {#thm:maxflow-mincut title="Max-flow min-cut theorem" aka="Ford–Fulkerson theorem" source="algorithms/02 p6"}
 **(Ford, Fulkerson 1956)** In every flow network, the value of a maximum flow equals the capacity of a minimum $s$–$t$ cut.
 :::
 
-The proof is given below, after residual networks. (Historically, the problem was studied by Harris and Ross in 1955 for the U.S. Air Force, who
+::: intuition
+Weak duality ([[lem:flow-across-cut]]) says $\abs{f} \le \mathrm{cap}(S, T)$ for every flow and every cut. The theorem says that the smallest bottleneck is
+always reached: the maximum flow fills the narrowest cut exactly. So a flow and a cut of the same value certify each other: both are optimal.
+Example: in [[fig:a02-network]], the maximum flow has value $19$ ([[ex:ford-fulkerson-demo]]) and the cut $(\set{s, b}, \set{a, c, d, t})$ has capacity $19$.
+With capacity $1$ on every arc, an integral flow is a d-flow ([[def:d-flow]]), which contains as many arc-disjoint $s$–$t$ paths as its value
+([[claim:d-flow-paths]]), and a minimum cut corresponds to a minimum edge cut. So the theorem together with integrality ([[cor:integrality]]) gives the edge version of Menger's theorem ([[thm:menger-directed]] B;
+[[exr:a02-menger-from-flow]]).
+:::
+The proof is given below, after [[def:residual-network|residual networks]]. (Historically, the problem was studied by Harris and Ross in 1955 for the U.S. Air Force, who
 wanted to find the minimum cut of the Soviet railway network to Eastern Europe; the report was declassified in 1999.)
 
 ## Residual networks and augmenting paths
 
 ::: definition {#def:residual-network title="Residual network" defines="residual graph, residual capacity, residual network" source="algorithms/02 p10"}
-The **residual network** for a flow $f$ consists of
+The **residual network** for a [[def:flow|flow]] $f$ consists of
 
 1. the **residual graph** $G_f = (V, E_f)$, where $E_f$ contains, for each edge $e = (u, v) \in E$,
    - the edge $e = (u, v)$ if $f(e) < c(e)$, and
@@ -118,11 +180,20 @@ The **residual network** for a flow $f$ consists of
 $$c_f(e) = c(e) - f(e) \ \text{ for } e \in E_f \cap E, \qquad c_f(e^R) = f(e) \ \text{ for } e^R \in E_f.$$
 :::
 
-The residual capacity says how much more flow can be pushed along $e$ (forward), or how much of the existing flow on $e$ can be cancelled
-(backward, along $e^R$).
+The residual capacity says how much more flow can be pushed along $e$ (forward) without exceeding its [[def:flow-network|capacity]], or how
+much of the existing flow on $e$ can be cancelled (backward, along $e^R$).
 <!-- REVIEW: added the antiparallel-edge remark. Slides forbid only parallel edges, so G may contain (u,v) and (v,u) (e.g. exr a02-ex-max-flow-value); then G_f may contain two copies of (v,u), which must be kept apart. -->
 If $G$ contains both $e = (u, v)$ and $e' = (v, u)$, then $G_f$ may contain two edges from $v$ to $u$: the forward edge $e'$ and the
-reverse edge $e^R$. They are kept as two distinct residual edges with their own residual capacities ($G_f$ is then a multigraph).
+reverse edge $e^R$. They are kept as two distinct residual edges with their own residual capacities ($G_f$ is then a
+[[def:mixed-multigraph|multigraph]]).
+
+::: intuition {for=def:residual-network}
+$G_f$ lists every way the current flow can still be changed by one step: push more along $e$ where it is not full, or take back some of
+what $e$ already carries by going along $e^R$. Undoing flow is essential, since an early bad choice may have to be corrected later.
+Example: an edge with $c(e) = 7$ and $f(e) = 3$ gives the residual edges $e$ with $c_f(e) = 4$ and $e^R$ with $c_f(e^R) = 3$; a saturated
+edge ($f = c$) gives only $e^R$, an unused one ($f = 0$) only $e$. In [[fig:a02-residual-example]] the saturated edge $(a, d)$ is replaced by
+$(d, a)$ with residual capacity $8$.
+:::
 
 ```graph id=a02-residual-example widget=figure
 caption: A flow of value 8 (left) and its residual network (right). Saturated edges disappear forward; edges with flow get a reverse edge.
@@ -144,11 +215,29 @@ An **augmenting path** is a path $P$ from $s$ to $t$ in $G_f$. The **bottleneck 
 edges of $P$.
 :::
 
+::: intuition
+An augmenting path is a route along which every step can take $\delta > 0$ more units: forward edges that are not full and reverse edges
+that cancel existing flow. Example: in [[fig:a02-residual-example]], $s \to a \to b \to d \to t$ is an augmenting path with residual capacities
+$2, 2, 9, 2$, so $\delta = 2$. Non-example: $s \to a \to d \to t$ is no longer one, since $(a, d)$ is saturated and not in $G_f$.
+:::
+
+::: pitfall
+Augmenting paths live in the residual graph $G_f$, not in $G$, and they may use reverse edges $e^R$. An algorithm that only looks for
+$s$–$t$ paths of unsaturated edges of $G$ can get stuck below the maximum; see the [[def:blocking-flow|blocking flow]] in [[fig:a02-blocking-flow]].
+:::
+
 For an augmenting path $P$ with bottleneck capacity $\delta$, define
 $$f'(e) = \begin{cases} f(e) + \delta & \text{if } e \in P, \\ f(e) - \delta & \text{if } e^R \in P, \\ f(e) & \text{otherwise.} \end{cases}$$
 
 ::: lemma {#lem:augment title="Augmenting increases the flow" source="algorithms/02 p12"}
 $f'$ is a flow with $\abs{f'} = \abs{f} + \delta$.
+:::
+
+::: intuition
+Along the path, each inner vertex receives $\delta$ more (or gives back $\delta$ less) on one side and passes on $\delta$ more (or takes back
+$\delta$ less) on the other, so conservation survives, and $\delta$ never exceeds what any edge allows. Only $s$ gains: $\delta$ more leaves it.
+Example: step 4 of [[ex:ford-fulkerson-demo]] goes $s \to b \to a \to c \to t$; at $b$, the $2$ units that used to go $a \to b$ are cancelled and
+replaced by $2$ units from $s$, and at $a$ those $2$ units now go to $c$ instead of $b$.
 :::
 
 ::: proof
@@ -177,6 +266,12 @@ AUGMENT(f, c, P):
 :::
 <!-- REVIEW: slide p13 line 6 reads "f(e^R) ← f(e) − b" (typo); the lesson's f(e^R) ← f(e^R) − b is the intended update. -->
 
+::: intuition {for=alg:augment}
+AUGMENT is [[lem:augment]] as code: a residual edge that exists in $G$ gets $b$ more units; a reverse edge $e^R$ stands for cancelling
+$b$ units on the original edge, so the flow of that original edge decreases. Example: with $P = s \to b \to a \to c \to t$ and $b = 2$, the edges
+$(s, b)$, $(a, c)$, $(c, t)$ gain $2$ and the edge $(a, b)$, traversed backwards as $(b, a)$, loses $2$.
+:::
+
 
 Now we can prove the main theorem, together with the correctness criterion for augmenting path algorithms.
 
@@ -186,6 +281,13 @@ For a flow $f$ the following are equivalent:
 1. $f$ is a maximum flow;
 2. $G_f$ contains no augmenting path;
 3. there is an $s$–$t$ cut $(S, T)$ with $\abs{f} = \mathrm{cap}(S, T)$.
+:::
+
+::: intuition
+This is the stopping rule of every augmenting-path algorithm: as long as some augmenting path exists we can improve, and once none exists the
+search itself produces a certificate of optimality, the cut between the vertices we can still reach from $s$ in $G_f$ and the rest. Example: at
+the end of [[ex:ford-fulkerson-demo]], only $s$ and $b$ are reachable, and the cut $(\set{s, b}, \set{a, c, d, t})$ has capacity $19 = \abs{f}$.
+Non-example: for the flow of value $8$ in [[fig:a02-residual-example]], $t$ is reachable via $s \to b \to d \to t$, so the flow is not maximum.
 :::
 
 ::: proof
@@ -221,8 +323,20 @@ FORD-FULKERSON(G, s, t, c):
 ```
 :::
 
-**Correctness:** the flow $f$ has a maximum value iff $G_f$ contains no augmenting path ([[thm:maxflow-characterisation]], which follows from the max-flow
-min-cut theorem); so if the algorithm terminates, it returns a maximum flow.
+**Correctness:** the [[def:flow|flow]] $f$ has a maximum value iff $G_f$ contains no [[def:augmenting-path|augmenting path]]
+([[thm:maxflow-characterisation]], which follows from the max-flow min-cut theorem); so if the algorithm terminates, it returns a maximum flow.
+
+::: intuition {for=alg:ford-fulkerson}
+Start with nothing and keep improving: find any route in the [[def:residual-network|residual graph]] with spare room, push as much as it allows,
+repeat. Every step keeps $f$ a flow ([[lem:augment]]) and increases its value, and when no route is left, the reachable set is a minimum cut.
+The method leaves open **which** augmenting path to take; this choice decides the running time (see below). Example: [[ex:ford-fulkerson-demo]]
+reaches the maximum $19$ after four augmentations.
+:::
+
+::: pitfall
+Ford–Fulkerson may increase the flow on an edge and later decrease it again (step 4 of the demo cancels the flow on $(a, b)$). A greedy method
+that never uses reverse edges is not Ford–Fulkerson and does not always find a maximum flow.
+:::
 
 ```graph id=a02-ford-fulkerson-player widget=player
 caption: Ford–Fulkerson on the lecture network. The residual network is shown next to the flow; at the end, the reachable set gives a minimum cut. (The player finds paths by depth-first search, so its sequence of augmentations may differ from the demo below; the final value 19 is the same.)
@@ -254,6 +368,12 @@ Assume that all capacities are integers, and let $C$ be the highest capacity. Th
 $\O(nm \cdot C)$ (pseudo-polynomial). Moreover, the maximum flow it returns is **integral** (all $f(e)$ are integers).
 :::
 
+::: intuition
+With integer [[def:flow-network|capacities]], every bottleneck is a positive integer, so each round gains at least $1$, and the value cannot pass
+the capacity of the cut around $s$. The bound is in terms of the size of the numbers, not just of $n$ and $m$: $C = 10^6$ is written with about $20$ bits,
+yet with bad choices costs $2 \cdot 10^6$ rounds ([[fig:a02-bad-example]]). Integrality comes for free: integers in, integers out.
+:::
+
 ::: proof
 By induction, all flow values and residual capacities stay integers (they start at $0$ and change by integral bottlenecks). Hence each iteration increases $\abs{f}$
 by at least $1$. The maximum flow is bounded by the capacity of the cut $(\set{s}, V \setminus \set{s})$, which is at most $(n - 1) \cdot C$. So there are at most $n \cdot C$
@@ -263,6 +383,19 @@ each iteration takes $\O(m)$, and the total time is $\O(nm \cdot C)$.
 
 ::: corollary {#cor:integrality title="Integrality theorem" extra=true}
 If all capacities are integers, there is a maximum flow in which every $f(e)$ is an integer.
+:::
+
+::: intuition
+Run Ford–Fulkerson ([[thm:ford-fulkerson-analysis]]): it only ever adds and subtracts integers. This is what turns flows into combinatorics. With
+capacity $1$ on every arc, an integral flow puts $0$ or $1$ on each arc, i.e. it is a d-flow ([[def:d-flow]]), and its arcs of value $1$ contain
+$\abs{f}$ arc-disjoint $s$–$t$ paths ([[claim:d-flow-paths]]); with max-flow min-cut this is the edge version of Menger's theorem
+([[thm:menger-directed]] B, [[exr:a02-menger-from-flow]]). In the same way, integral flows in the network of [[prop:matching-flow]] are [[def:matching|matchings]].
+:::
+
+::: pitfall
+The corollary says that **some** maximum flow is integral, not that every one is. In the network with edges $(s, a)$, $(s, b)$, $(a, c)$, $(b, c)$, $(c, t)$,
+all of capacity $1$, the flow with $\tfrac12$ on the first four edges and $1$ on $(c, t)$ is maximum (value $1$, the capacity of the cut $(V \setminus \set{t}, \set{t})$)
+but not integral.
 :::
 
 ### How to choose augmenting paths
@@ -282,7 +415,8 @@ non-maximum value). **Goal:** find an efficient way of choosing good augmenting 
 
 ## The Edmonds–Karp algorithm
 
-Edmonds and Karp (1972) limit the number of steps of Ford–Fulkerson with a simple rule: **always choose a shortest augmenting path**, where the length of every edge is $1$.
+Edmonds and Karp (1972) limit the number of steps of Ford–Fulkerson with a simple rule: **always choose a shortest
+[[def:augmenting-path|augmenting path]]**, where the length of every edge is $1$.
 
 ::: algorithm {#alg:edmonds-karp title="Edmonds–Karp algorithm" source="algorithms/02 p26"}
 ```pseudo
@@ -298,6 +432,17 @@ EDMONDS-KARP(G, s, t, c):
 :::
 
 Such a path can be found by BFS in $\O(m)$ ([[alg:bfs]]), and the remaining steps of an iteration take $\O(n)$, so each iteration takes $\O(m)$. **How many iterations are needed?**
+
+::: intuition {for=alg:edmonds-karp}
+Edmonds–Karp is Ford–Fulkerson with one fixed rule: take the augmenting path with the fewest edges, found by BFS from $s$ in $G_f$. Short paths
+avoid the zigzag of [[fig:a02-bad-example]]: there the shortest augmenting paths are $s \to a \to t$ and $s \to b \to t$ (two edges each), so
+Edmonds–Karp finishes after $2$ augmentations instead of $2 \cdot 10^6$, and it never uses the edge $(a, b)$.
+:::
+
+::: pitfall
+"Shortest" counts **edges**, not capacities: Edmonds–Karp does not look for the path with the largest bottleneck, and the edge lengths have nothing to do with
+the capacities.
+:::
 
 ```graph id=a02-edmonds-karp-player widget=player
 caption: Edmonds–Karp: every augmenting path is a shortest path in the residual graph (found by BFS).
@@ -316,6 +461,13 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 ::: definition {#def:level-graph title="Level graph" defines="level graph, layer" source="algorithms/02 p29–30"}
 Let $L_i = \set{v \in V \mid \mathrm{dist}(s, v) = i}$ be the set of vertices at distance $i$ from $s$. The **level graph** $L_G = (V, E_G)$ is the subgraph of $G$ with
 $$E_G = \set{(u, v) \in E \mid \exists i \in \N : u \in L_i \land v \in L_{i+1}}.$$
+:::
+
+::: intuition
+Sort the vertices into layers by their [[def:distance|distance]] from $s$, exactly as BFS does ([[alg:bfs]]), and keep only the edges that
+step one layer further. What remains is precisely the union of all shortest paths from $s$. Example: in [[fig:a02-level-graph]],
+$L_0 = \set{s}$, $L_1 = \set{a, c}$, $L_2 = \set{b, d}$, $L_3 = \set{t}$; the edge $(a, c)$ stays inside $L_1$ and $(b, c)$ goes back from
+$L_2$ to $L_1$, so both are dropped, as is $(d, b)$ inside $L_2$.
 :::
 
 ```graph id=a02-level-graph widget=figure
@@ -348,6 +500,12 @@ Write $d_f(v)$ for the distance from $s$ to $v$ in $G_f$.
 $d_{f'}(v) \ge d_f(v)$ for all $v$.
 :::
 
+::: intuition
+Augmenting along a shortest path removes some edges that go one level up and adds only edges that go one level **down** (the reverses of path
+edges). Deleting edges cannot make distances shorter, and edges pointing back towards $s$ cannot create a shortcut away from it. Example: in
+[[ex:ford-fulkerson-demo]], after augmenting along $s \to a \to d \to t$ the new edges are $(a, s)$, $(d, a)$, $(t, d)$, all pointing towards $s$.
+:::
+
 ::: proof
 Consider $G_f$ and its level graph $L$, with levels given by $d_f$. How does augmenting along a shortest path $P$ change $G_f$?
 
@@ -362,6 +520,13 @@ backwards in the level graph and cannot create shortcuts.)
 
 ::: lemma {#lem:ek-phase title="Augmentations of the same length" source="algorithms/02 p32"}
 **(Lemma 2)** After at most $m$ shortest-path augmentations of length $k$, the length of the shortest augmenting path must increase.
+:::
+
+::: intuition
+While the distance stays $k$, all augmenting paths of length $k$ use edges of one fixed level graph, and every augmentation removes at least one of its
+edges for good (the bottleneck edge, which cannot come back, as new edges point down). A level graph has at most $m$ edges, so these augmentations
+run out after at most $m$ rounds. Example: in [[fig:a02-bad-example]], the two shortest paths of length $2$ are used up by $2$ augmentations, each saturating
+both of its edges; afterwards no augmenting path is left at all.
 :::
 
 ::: proof
@@ -379,6 +544,12 @@ of $e, e^R$ goes up a level), so after at most $m$ such augmentations no path of
 The Edmonds–Karp algorithm runs in time $\O(m^2 n)$.
 :::
 
+::: intuition
+Count in two layers: the shortest-path length takes at most $n - 1$ values and never decreases ([[lem:ek-monotone]]), and each value is used by at most $m$
+augmentations ([[lem:ek-phase]]); each augmentation is a BFS. The capacities do not appear anywhere, which is the point: on [[fig:a02-bad-example]] the bound
+does not grow with $C = 10^6$, unlike that of [[thm:ford-fulkerson-analysis]].
+:::
+
 ::: proof
 There are $\O(m)$ augmentations for paths of each length $k$ (Lemma 2), and the length of an augmenting path is at most $n - 1$ and never decreases (Lemma 1). So there are
 $\O(mn)$ iterations, each taking $\O(m)$. Note that this bound does not depend on the capacities, which may even be real numbers.
@@ -387,14 +558,25 @@ $\O(mn)$ iterations, each taking $\O(m)$. Note that this bound does not depend o
 ## Dinic's algorithm
 
 **Idea (Dinitz 1970):** saturate **all** shortest $s$–$t$ paths of $G_f$ at once. The algorithm actually predates Edmonds–Karp; the version presented here is due to Even (1974).
-We need to find all shortest $s$–$t$ paths efficiently, and the level graph does exactly that.
+We need to find all shortest $s$–$t$ paths efficiently, and the [[def:level-graph|level graph]] does exactly that.
 
 ::: definition {#def:blocking-flow title="Blocking flow" defines="blocking flow" source="algorithms/02 p36"}
-A flow $f$ is **blocking** iff every $s$–$t$ path in $G$ contains at least one saturated edge.
+A [[def:flow|flow]] $f$ is **blocking** iff every $s$–$t$ path in $G$ contains at least one saturated edge.
 :::
 
-Every maximum flow is a blocking flow (otherwise some path has residual capacity on all its edges and is augmenting), but not every blocking flow is a maximum flow: a blocking
-flow never "pushes flow back", so it may get stuck.
+::: intuition
+A blocking flow is one that cannot be increased **without undoing** anything: every route from $s$ to $t$ in $G$ is full somewhere. It is what a greedy
+procedure that only pushes forward ends with. Example: in [[fig:a02-blocking-flow]], the paths $s\,p\,r\,t$, $s\,p\,r\,q\,x\,t$ and $s\,q\,x\,t$ each contain
+$(p, r)$ or $(q, x)$, both saturated, so the flow of value $5$ is blocking; yet the maximum is $8$.
+:::
+
+Every maximum flow is a blocking flow (otherwise some path has [[def:residual-network|residual capacity]] on all its edges and is augmenting), but not
+every blocking flow is a maximum flow: a blocking flow never "pushes flow back", so it may get stuck.
+
+::: pitfall
+Blocking does not mean maximum: a blocking flow may still admit augmenting paths, which then use reverse edges. In Dinic's algorithm, a
+blocking flow is computed in the level graph $L$, and "every path" means every $s$–$t$ path **of $L$**, not of $G_f$.
+:::
 
 ```graph id=a02-blocking-flow widget=figure
 caption: A blocking flow of value 5 that is not maximum: every $s$–$t$ path contains a saturated edge, but the maximum flow is 8.
@@ -419,10 +601,24 @@ DINIC(G, s, t, c):
 ```
 :::
 
+::: intuition {for=alg:dinic}
+Edmonds–Karp augments along shortest paths one at a time and recomputes BFS after each. Dinic computes the level graph once per phase and then saturates
+**all** shortest augmenting paths together with one blocking flow, so one phase does the work of many Edmonds–Karp rounds of the same length. Example: on
+the lecture network ([[fig:a02-dinic-player]]), two phases suffice, giving values $14$ and $19$.
+:::
+
 ::: lemma {#lem:dinic-phases title="Each phase increases the distance" extra=true}
-After a phase of Dinic's algorithm, the length of the shortest augmenting path strictly increases. Hence there are at most $n - 1$ (in particular at most $n$) phases.
+After a phase of Dinic's algorithm, the length of the shortest [[def:augmenting-path|augmenting path]] strictly increases. Hence there are at most $n - 1$ (in particular at most $n$) phases.
 :::
 <!-- REVIEW: n − 1 added (distance takes values 1..n−1); lecture states n. -->
+
+::: intuition
+The blocking flow kills every shortest augmenting path of the current length $k$, and as in Edmonds–Karp, augmenting creates only edges going down a level, so
+no new path of length $\le k$ can appear. Each phase therefore pushes the distance from $s$ to $t$ up by at least one, and the distance lies between $1$
+and $n - 1$. Example: in [[fig:a02-blocking-flow]], with $f = 0$ the only shortest paths are $s\,p\,r\,t$ and $s\,q\,x\,t$ (length $3$); the
+blocking flow of the first phase sends $3$ and $4$ units along them and saturates $(r, t)$ and $(s, q)$, and the second phase uses the longer
+path $s\,p\,r\,q\,x\,t$ (length $5$, $1$ more unit), reaching the maximum $8$.
+:::
 
 ::: proof
 Let $k$ be the distance from $s$ to $t$ at the start of the phase, $L$ the level graph, and $f'$ the blocking flow in $L$. Augmenting $f$ by $f'$ changes $G_f$ only by
@@ -445,7 +641,7 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 
 ### Finding a blocking flow
 
-The **input** is the residual graph $G_f$ and its level graph $L$. The **idea** is a modified depth-first search: start at $s$ and advance along edges of $L$ until either
+The **input** is the [[def:residual-network|residual graph]] $G_f$ and its level graph $L$. The **idea** is a modified depth-first search: start at $s$ and advance along edges of $L$ until either
 
 - (a) we reach $t$: augment along the path found, update $L$ (remove saturated edges), and start advancing from $s$ again; or
 - (b) we get stuck at some vertex $v$ (no outgoing edges in $L$): remove $v$ from $L$ and **retreat** to the previous vertex.
@@ -468,8 +664,21 @@ while true do                                           // @loop
 ```
 :::
 
+::: intuition {for=alg:dinic-blocking}
+A depth-first search that never looks at anything twice in vain: a full edge is deleted when it is saturated, and a dead end is deleted when we retreat from it,
+so later searches skip both. Since $L$ only has edges going one level up, every advance gets one step closer to $t$ and the search cannot run in circles.
+Example: in the first phase on [[fig:a02-blocking-flow]], the search advances $s \to p \to r \to t$, augments by $3$, deletes $(r, t)$, then advances
+$s \to p \to r$, finds no edge of $L$ leaving $r$, deletes $r$ and retreats to $p$, deletes $p$ as well, and finally finds $s \to q \to x \to t$.
+:::
+
 ::: proposition {#prop:dinic-blocking-time title="A blocking flow in time $\O(mn)$" source="algorithms/02 p44"}
 The procedure finds a blocking flow in $L$ in time $\O(mn)$.
+:::
+
+::: intuition
+Charge every step to something that disappears: each augmentation deletes an edge, each retreat deletes a vertex, and between two such events there are at
+most $n$ advances, because a path in $L$ has at most $n - 1$ edges. So the total work is about $(m + n) \cdot n$. Compare: running a fresh search from $s$
+for every path would cost $\O(m)$ per path instead of $\O(n)$.
 :::
 
 ::: proof
@@ -485,6 +694,11 @@ implemented in $\O(n)$ (the path has at most $n$ edges), advance in $\O(1)$. In 
 Dinic's algorithm runs in time $\O(mn^2)$.
 :::
 
+::: intuition
+At most $n$ phases times $\O(mn)$ per blocking flow. Compared with Edmonds–Karp's $\O(m^2 n)$, a factor $m$ becomes a factor $n$, which matters for dense
+networks where $m$ is close to $n^2$. Like Edmonds–Karp, the bound does not depend on the capacities.
+:::
+
 ::: proof
 Finding a blocking flow takes $\O(mn)$, all other operations of a phase take $\O(m)$, and by [[lem:dinic-phases]] there are at most $n$ phases.
 :::
@@ -492,11 +706,16 @@ Finding a blocking flow takes $\O(mn)$, all other operations of a phase take $\O
 ## The MPM algorithm
 
 ::: theorem {#thm:mpm title="MPM" source="algorithms/02 p47"}
-**(Malhotra, Pramodh-Kumar, Maheshwari 1978)** There is an algorithm which solves the MaxFlow problem in time $\O(n^3)$.
+**(Malhotra, Pramodh-Kumar, Maheshwari 1978)** There is an algorithm which solves the [[def:flow-cut|MaxFlow]] problem in time $\O(n^3)$.
 :::
 
-Dinic needs time $\O(mn)$ per phase to construct a blocking flow. The "three Indians" algorithm keeps the phase structure of Dinic (at most $n$ phases, each computing a blocking
-flow in the level graph), but computes the blocking flow in $\O(n^2)$, using Fibonacci heaps.
+::: intuition
+$\O(n^3)$ beats Dinic's $\O(mn^2)$ whenever $m$ is much larger than $n$, and it does not depend on $m$ at all: for a dense network with $m \approx n^2$ edges, Dinic's bound
+is $\O(n^4)$. The improvement is entirely in the inner step, the blocking flow; the outer loop is Dinic's.
+:::
+
+Dinic needs time $\O(mn)$ per phase to construct a [[def:blocking-flow|blocking flow]]. The "three Indians" algorithm keeps the phase structure of Dinic (at most $n$
+phases, each computing a blocking [[def:flow|flow]] in the [[def:level-graph|level graph]]), but computes the blocking flow in $\O(n^2)$, using Fibonacci heaps.
 
 ::: definition {#def:vertex-capacity title="Vertex capacity" defines="vertex capacity, throughput" source="algorithms/02 p49"}
 The **capacity of a vertex** $v$ is
@@ -504,8 +723,20 @@ $$c(v) = \min\Bigl(\sum_{(u,v) \in E} c(u, v),\ \sum_{(v,w) \in E} c(v, w)\Bigr)
 the maximum flow that can pass through $v$. (For $s$ and $t$ only the outgoing, resp. incoming, sum is used.) The same definition applies to residual capacities $c_f$.
 :::
 
+::: intuition
+A vertex is a junction: it cannot pass on more than arrives through its incoming edges, nor more than its outgoing edges can take away. The smaller of the two
+sums is its throughput. Example: in [[fig:a02-network]], $a$ has incoming capacity $10$ and outgoing capacity $2 + 4 + 8 = 14$, so $c(a) = 10$; $d$ has
+incoming $8 + 9 = 17$ and outgoing $9 + 10 = 19$, so $c(d) = 17$.
+:::
+
+::: pitfall
+Here $c(v)$ is **computed** from the [[def:flow-network|edge capacities]]; it is not an extra constraint. A network in which vertices have their own prescribed
+capacities is a different problem ([[exr:a02-vertex-capacities]]). It is reduced to edge capacities by splitting each vertex $v$ into $v^-$ and $v^+$, the
+same trick that derives the vertex version A of Menger's theorem from the edge version B ([[thm:menger-directed]]).
+:::
+
 ::: algorithm {#alg:mpm title="Finding a blocking flow (MPM)" source="algorithms/02 p50"}
-**Input:** the residual graph $G_f$ and its level graph $L$. **Initialization:** if $t$ does not appear in $L$, we are finished; remove all vertices that are not on an $s$–$t$ path in
+**Input:** the [[def:residual-network|residual graph]] $G_f$ and its level graph $L$. **Initialization:** if $t$ does not appear in $L$, we are finished; remove all vertices that are not on an $s$–$t$ path in
 $L$; compute the vertex capacities.
 
 ```pseudo
@@ -527,8 +758,26 @@ It is always possible to push all $d$ units through every vertex on the way, bec
 the flow moves layer by layer, each vertex receives at most $d$ units in this push. The extra flow from $v$ eventually reaches $t$. Similarly for pulling. After this, $v$ has
 either all its incoming or all its outgoing edges saturated, so it can be erased.
 
+::: intuition {for=alg:mpm}
+Instead of searching for paths, MPM works with whole vertices. The vertex $v$ with the smallest throughput $d$ is the tightest spot of the level graph, so $d$ units
+can certainly be routed through it to $t$ and from $s$ without overloading any other vertex. After that, $v$ is full and disappears, and each iteration removes
+a vertex. Example: in the level graph of [[fig:a02-network]] at $f = 0$ ($L_1 = \set{a, b}$, $L_2 = \set{c, d}$; the edges $(a, b)$ and $(d, c)$ are dropped),
+the throughputs are $c(a) = 10$, $c(b) = 9$, $c(c) = 4$, $c(d) = \min(17, 10) = 10$ (and $20$ for $s$ and $t$); MPM starts with $c$ and sends $4$ units along $s \to a \to c \to t$.
+:::
+
+::: pitfall
+The vertex of minimal throughput must be chosen afresh in every iteration, with the throughputs **updated**: pushing and pulling lowers the throughput of
+other vertices. Starting with a vertex that is not of minimal throughput can get stuck, as a later vertex on the way may not be able to pass all $d$ units.
+:::
+
 ::: proposition {#prop:mpm-time title="A blocking flow in time $\O(n^2)$" source="algorithms/02 p52"}
 MPM finds a blocking flow in time $\O(n^2)$ (with Fibonacci heaps storing vertices by capacity).
+:::
+
+::: intuition
+There are fewer than $n$ iterations, one per erased vertex. A fully saturated edge is deleted once and for all, so those cost $\O(m)$ altogether; the remaining work
+per iteration is at most one partially used edge per vertex, $\O(n)$ per iteration and $\O(n^2)$ in total. Dinic's search instead may walk the same path prefix
+again for every augmentation, which is where its extra factor comes from.
 :::
 
 ::: proof
@@ -540,6 +789,11 @@ and the resulting capacity decreases are handled by $\O(1)$ `DECREASE-KEY` opera
 
 ::: theorem {#thm:mpm-time title="Running time of MPM" source="algorithms/02 p53"}
 The MPM algorithm runs in time $\O(n^3)$.
+:::
+
+::: intuition
+The same count as for Dinic ([[thm:dinic]]) with a cheaper inner step: at most $n$ phases, each a blocking flow in $\O(n^2)$ instead of $\O(mn)$.
+This proves [[thm:mpm]].
 :::
 
 ::: proof
@@ -570,10 +824,25 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 | 1997 | binary blocking flow | Goldberg, Rao | $\tilde{\O}(\min(m^{2/3}, n^{1/2}) \cdot m)$ |
 | 2012 | compact networks | Orlin | $\O(mn)$ |
 
+The first four rows are the algorithms of this lesson: Ford–Fulkerson and Edmonds–Karp augment along single
+[[def:augmenting-path|augmenting paths]], Dinic and MPM compute [[def:blocking-flow|blocking flows]] in
+[[def:level-graph|level graphs]].
+
 ## Unit capacities and matchings
 
 ::: definition {#def:matching title="Matching" defines="matching, maximum matching" source="algorithms/02 p56"}
 A **matching** $M$ of a graph $G$ is a subset of edges such that no two edges in $M$ share a vertex. A **maximum matching** is a matching of maximum size.
+:::
+
+::: intuition
+A matching pairs up vertices, each vertex with at most one partner: workers with jobs, students with projects. Example: in the path $a\,b\,c\,d$, the set
+$\set{ab, cd}$ is a maximum matching, of size $2$. Non-example: $\set{ab, bc}$, since both edges contain $b$. Matchings are most often studied in
+[[def:bipartite|bipartite graphs]], where the two sides are the two kinds of objects being paired.
+:::
+
+::: pitfall
+A matching to which no edge can be added (**maximal**) need not be **maximum**. In the path $a\,b\,c\,d$, the matching $\set{bc}$ is maximal, but $\set{ab, cd}$ is
+larger. Greedy choices give maximal matchings; finding a maximum one needs augmenting paths, e.g. via flows.
 :::
 
 ```graph id=a02-bipartite-matching-flow widget=figure
@@ -588,8 +857,15 @@ r1 -> t [c=1]; r2 -> t [c=1]; r3 -> t [c=1]; r4 -> t [c=1]
 ```
 
 ::: proposition {#prop:matching-flow title="Bipartite matchings are flows" extra=true}
-Let $G$ be a bipartite graph with bipartition $(A, B)$, and let $N$ be the network with vertices $V(G) \cup \set{s, t}$, edges $(s, a)$ for $a \in A$, $(a, b)$ for every edge $ab$ of $G$
-($a \in A$, $b \in B$), and $(b, t)$ for $b \in B$, all of capacity $1$. Then the maximum size of a matching in $G$ equals the maximum flow value in $N$.
+Let $G$ be a [[def:bipartite|bipartite graph]] with bipartition $(A, B)$, and let $N$ be the network with vertices $V(G) \cup \set{s, t}$, edges $(s, a)$ for $a \in A$, $(a, b)$ for every edge $ab$ of $G$
+($a \in A$, $b \in B$), and $(b, t)$ for $b \in B$, all of [[def:flow-network|capacity]] $1$. Then the maximum size of a matching in $G$ equals the maximum [[def:flow|flow]] value in $N$.
+:::
+
+::: intuition
+The capacity $1$ on $(s, a)$ lets each $a \in A$ be used once, the capacity $1$ on $(b, t)$ lets each $b \in B$ be used once, and the direction from $A$ to $B$ makes each unit
+choose one edge $ab$. So integral flows and matchings are the same thing. Example: in [[fig:a02-bipartite-matching-flow]], the matching $l_1 r_1$, $l_3 r_2$, $l_4 r_3$
+gives a flow of value $3$; the maximum is $4$ (e.g. $l_1 r_2$, $l_2 r_1$, $l_3 r_3$, $l_4 r_4$). Since every vertex of $A$ and $B$ carries at most one unit, the flow paths
+are also internally disjoint, so this is the vertex version of Menger ([[thm:menger-directed]] A) in disguise.
 :::
 
 ::: proof
@@ -603,12 +879,31 @@ the flow value.
 A network is a **unit-capacity network** (also **type 1 network**) if each edge has capacity $1$. As a technical assumption, there are no antiparallel edges (no pair $(u, v)$, $(v, u)$).
 :::
 
-In a unit-capacity network, the flow along each edge is $0$ or $1$ (for integral flows), every edge on an augmenting path is a bottleneck edge, and the residual network is again a
-unit-capacity network (thanks to the technical assumption). So in Dinic's blocking-flow procedure we delete **all** edges of the path when augmenting, and an edge when retreating:
+::: intuition
+Unit capacities turn flow into counting: an integral flow of value $k$ is a set of arcs carrying one unit each, containing $k$ arc-disjoint $s$–$t$ paths
+([[def:d-flow]], [[claim:d-flow-paths]]), and a cut capacity is a number of arcs. So the maximum flow value is the maximum number of arc-disjoint $s$–$t$ paths, and
+max-flow min-cut becomes Menger's theorem ([[thm:menger-directed]] B; for undirected graphs [[thm:menger]] b)). The network of [[prop:matching-flow]] is a
+unit-capacity network. Without the technical assumption, $(u, v)$ and $(v, u)$ with flow $1$ on $(u, v)$ would give two residual edges from $v$ to $u$.
+:::
+
+::: pitfall
+Menger's theorem allows parallel arcs, a unit-capacity network allows neither parallel nor antiparallel edges. To apply the results below to an arbitrary
+digraph, first reduce it as in [[exr:a02-menger-from-flow]] (parallel arcs become one arc of higher capacity, so the network is then no longer of unit capacity), or
+subdivide every parallel or antiparallel arc by a new vertex, which keeps all capacities $1$ and does not change the number of arc-disjoint $s$–$t$ paths.
+:::
+
+In a unit-capacity network, the flow along each edge is $0$ or $1$ (for integral flows), every edge on an [[def:augmenting-path|augmenting path]] is a bottleneck
+edge, and the [[def:residual-network|residual network]] is again a unit-capacity network (thanks to the technical assumption). So in Dinic's blocking-flow procedure we delete **all** edges of the path when augmenting, and an edge when retreating:
 **at most $\O(m)$ steps per phase.** With at most $n$ phases this gives a **total time of $\O(mn)$**. We can do better.
 
 ::: lemma {#lem:unit-distance title="Short distance or small flow" source="algorithms/02 p59"}
 **(Lemma A)** In a network $G$ with unit capacities, the distance $l$ between $s$ and $t$ is at most $\abs{E}/\abs{f^*}$, where $f^*$ is a maximum flow.
+:::
+
+::: intuition
+Long distance and large flow do not go together. A large maximum flow means every cut has many arcs; between consecutive layers of the
+[[def:level-graph|level graph]] there are $l$ disjoint cuts, so the network needs at least $l \cdot \abs{f^*}$ arcs. Example: $k$ disjoint $s$–$t$ paths of
+length $l$ have $\abs{E} = kl$, $\abs{f^*} = k$ and distance $l = \abs{E}/\abs{f^*}$, so the bound is tight.
 :::
 
 ::: proof
@@ -620,6 +915,12 @@ $$l \cdot \abs{f^*} \le \abs{E}.$$
 
 ::: theorem {#thm:unit-dinic title="Dinic on unit-capacity networks" source="algorithms/02 p60"}
 For a network with unit edge capacities, Dinic's algorithm requires at most $\O(m^{1/2})$ phases, and runs in time $\O(m^{3/2})$.
+:::
+
+::: intuition
+Balance two bounds. Each phase raises the distance from $s$ to $t$, so after $\sqrt{m}$ phases the distance exceeds $\sqrt{m}$; by Lemma A the flow still
+missing is then at most $m / \sqrt{m} = \sqrt{m}$, and each further phase adds at least one unit. So $\sqrt{m} + \sqrt{m}$ phases of $\O(m)$ each. Example: for
+$m = 10^6$ arcs, at most $2000$ phases instead of the general bound $n$.
 :::
 
 ::: proof
@@ -641,12 +942,14 @@ this is the **Hopcroft–Karp** algorithm.
 ## Summary
 
 - A flow respects capacities and conservation; its value is the net flow out of $s$ ([[def:flow]]). For every cut, $\abs{f} \le \mathrm{cap}(S, T)$ ([[lem:flow-across-cut]]).
-- Max-flow min-cut: maximum flow value $=$ minimum cut capacity ([[thm:maxflow-mincut]]); $f$ is maximum iff $G_f$ has no augmenting path, and then the vertices reachable from
+- Max-flow min-cut: maximum flow value $=$ minimum cut capacity ([[thm:maxflow-mincut]]); $f$ is maximum iff $G_f$ has no
+  [[def:augmenting-path|augmenting path]], and then the vertices reachable from
   $s$ in $G_f$ form a minimum cut ([[thm:maxflow-characterisation]]).
-- Ford–Fulkerson: augment along any path, $\O(nmC)$ for integer capacities; integral maximum flows exist ([[thm:ford-fulkerson-analysis]], [[cor:integrality]]).
+- Ford–Fulkerson: augment along any path, $\O(nmC)$ for integer [[def:flow-network|capacities]]; integral maximum flows exist ([[thm:ford-fulkerson-analysis]], [[cor:integrality]]).
 - Edmonds–Karp: shortest augmenting paths, $\O(m^2 n)$ ([[thm:edmonds-karp]]), via level graphs ([[def:level-graph]]).
-- Dinic: blocking flows in level graphs, at most $n$ phases, $\O(mn^2)$ ([[thm:dinic]]); MPM: blocking flows in $\O(n^2)$, $\O(n^3)$ total ([[thm:mpm-time]]).
-- Unit capacities: Dinic in $\O(m^{3/2})$ ([[thm:unit-dinic]]); bipartite matching reduces to flow ([[prop:matching-flow]]).
+- Dinic: [[def:blocking-flow|blocking flows]] in level graphs, at most $n$ phases, $\O(mn^2)$ ([[thm:dinic]]); MPM: blocking flows in $\O(n^2)$, $\O(n^3)$ total ([[thm:mpm-time]]).
+- Unit capacities: Dinic in $\O(m^{3/2})$ ([[thm:unit-dinic]]); bipartite [[def:matching|matching]] reduces to flow ([[prop:matching-flow]]).
+- With unit capacities and integrality, max-flow min-cut gives Menger's theorem ([[thm:menger-directed]]; [[exr:a02-menger-from-flow]]).
 
 ## Exercises
 
@@ -691,9 +994,9 @@ Derive the edge version of Menger's theorem for directed graphs ([[thm:menger-di
 ::: solution
 <!-- REVIEW: added the reduction to a flow network (Menger's digraphs may have parallel arcs and arcs into s / out of t, which def:flow-network excludes); the 0/1 flow below then becomes an integral flow whose value on a merged arc is split among its copies. -->
 First delete the arcs entering $s$ and leaving $t$: they lie on no $s$–$t$ path, and an edge cut stays an edge cut without them. Parallel arcs
-are merged into one arc whose capacity is their number; every other arc gets capacity $1$. An $s$–$t$ edge cut $F$ of size $k$ yields an $s$–$t$ cut of capacity at most $k$: take $S$ as the set of vertices reachable from $s$ in $G - F$; all arcs
+are merged into one arc whose [[def:flow-network|capacity]] is their number; every other arc gets capacity $1$. An $s$–$t$ edge cut $F$ of size $k$ yields an $s$–$t$ cut of capacity at most $k$: take $S$ as the set of vertices reachable from $s$ in $G - F$; all arcs
 from $S$ to $T$ lie in $F$. Conversely, the arcs from $S$ to $T$ of any cut $(S, T)$ form an edge cut of size $\mathrm{cap}(S, T)$. So the minimum cut capacity equals the minimum size of an
-edge cut. By max-flow min-cut and integrality, there is an integral flow of that value. Take every arc with flow $1$ and, for a merged arc with
+edge cut. By max-flow min-cut and integrality, there is an integral [[def:flow|flow]] of that value. Take every arc with flow $1$ and, for a merged arc with
 flow $j$, $j$ of its parallel copies: these arcs form a d-flow in the sense of [[def:d-flow]], which decomposes into that many
 edge-disjoint paths ([[claim:d-flow-paths]]).
 :::
@@ -704,8 +1007,9 @@ Suppose that, in addition to edge capacities, every vertex $v \ne s, t$ has a ca
 
 ::: solution
 Split every vertex $v \ne s, t$ into $v^-$ and $v^+$ joined by an edge $(v^-, v^+)$ of capacity $c(v)$; edges entering $v$ now enter $v^-$, edges leaving $v$ leave $v^+$ (this is the
-construction from the proof of Menger's theorem, see [[fig:t05-vertex-splitting]]). Flows in the new network correspond to flows in the old one respecting the vertex capacities, with
-the same value.
+construction from the proof of Menger's theorem, part A of [[thm:menger-directed]], see [[fig:t05-vertex-splitting]]). Flows in the new network correspond to flows in the old one respecting the vertex capacities, with
+the same value. With all edge and vertex capacities $1$, internally disjoint $s$–$t$ paths of the old graph become arc-disjoint paths of the new one:
+this is how part A of Menger's theorem follows from part B.
 :::
 ::::
 
@@ -739,7 +1043,7 @@ Is every blocking flow a maximum flow?
 - [x] No
 
 ::: explanation
-Every maximum flow is blocking, but not conversely: see the example with a blocking flow of value 5 and maximum flow 8.
+Every maximum flow is blocking ([[def:blocking-flow]]), but not conversely: see the example with a blocking flow of value 5 and maximum flow 8.
 :::
 ::::
 

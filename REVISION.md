@@ -129,7 +129,7 @@ there is no topic layer, and there are no dependency links.
 - [x] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [x] W a01 (link to the tree theory in t03: cut and cycle properties)
 - [x] M a02 `content/algorithms/02-maximum-flow.md`
-- [ ] W a02 (Menger ↔ max-flow min-cut, both directions)
+- [x] W a02 (Menger ↔ max-flow min-cut, both directions)
 - [ ] F Final pass:
   - re-check `content/topics.yaml` against the final containers;
   - get validate to 0 warnings;
@@ -461,5 +461,15 @@ Open questions:
 - Departures from the lecture: n−1 phases and quiz answer 49 (lecture n / 50); net value, antiparallel note, Menger reduction are additions.
 - Not on slides (standard): FF may converge to a non-maximum value for real capacities; Harris–Ross story; integrality as a separate corollary.
 - W a02: mirror t05 links ([[thm:menger-directed]] B from thm:maxflow-mincut / cor:integrality; [[def:d-flow]]); check the new net-value paragraph reads well.
+
+### a02 (W) Maximum flow
+
+**Math fixes (W):** none; statements gained links only. Prose: net-value paragraph split and motivated (residual networks have edges into s once |f| > 0); `exr:a02-vertex-capacities` solution names Menger A and notes that with capacities 1 internally disjoint paths become arc-disjoint after splitting; "maximum-weight closure" (lint false positive, correct spelling).
+
+Entries as in M; no topics.yaml or other-lesson changes.
+
+Added: intuitions for all 34 entries; Menger links on the flow side (thm:maxflow-mincut and cor:integrality → [[def:d-flow]], [[claim:d-flow-paths]], [[thm:menger-directed]] B, [[exr:a02-menger-from-flow]]; def:unit-capacity → Menger B and [[thm:menger]] b); vertex splitting → Menger A; prop:matching-flow as Menger A in disguise); links to [[def:cut]], [[def:minimal-cut]], [[def:st-cut]], [[alg:bfs]], [[def:distance]], [[def:bipartite]], [[def:mixed-multigraph]]; figure `a02-cut-crossing` (|f| = 4 = 5 − 1, cap 5); pitfalls (three "cut" notions; augmenting paths in G_f with reverse edges; FF cancels flow; integrality gives some integral max flow; EK shortest = fewest edges; blocking ≠ maximum, relative to L; throughput computed vs prescribed vertex capacities; MPM recomputes minima; maximal vs maximum matching; Menger parallel arcs vs no antiparallel edges). Lint: 0 in all lessons.
+
+Open questions: unproved standard facts in intuitions (subdividing arcs keeps arc-disjoint path counts; Lemma A tight on k paths of length l; informal Dinic prefix re-walk); no König–Egerváry entry exists to link; `a02-cut-crossing` uses two edge classes, render unchecked.
 
 ## Report
