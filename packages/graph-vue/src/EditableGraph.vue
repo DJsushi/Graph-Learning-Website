@@ -1,5 +1,6 @@
 <script setup lang="ts">
-// Graph editor: GraphView plus tools (move, add vertex, add edge, delete), selection and undo/redo.
+// Graph editor: GraphView plus mouse gestures (left select/move, right add, middle delete/pan), selection and undo/redo.
+// `tools` lists the allowed actions; the tool buttons are a fallback for touch screens, which have no right/middle button.
 // Used by the sandbox widget, build exercises and the playground.
 import { computed, ref, watch } from 'vue'
 import { cloneGraph, type GraphData, type Id } from '@core/model'
@@ -32,6 +33,13 @@ const view = ref<InstanceType<typeof GraphView>>()
 const status = ref('')
 
 const g = computed(() => props.modelValue)
+const can = (t: Tool) => props.tools.includes(t)
+const hint = computed(() => [
+  can('vertex') && 'right-click: add vertex',
+  can('edge') && 'right-drag between vertices: add edge',
+  can('delete') && 'middle-click: delete',
+  'left-drag: move',
+].filter(Boolean).join(' · '))
 
 function commit(next: GraphData, before?: string) {
   undoStack.push(before ?? JSON.stringify(props.modelValue))
@@ -115,18 +123,19 @@ const preview = ref<{ from: Id; to: Pt } | null>(null)
 const pendingFrom = ref<Id | null>(null)
 
 function onVertexDown(id: Id, p: Pt, ev: PointerEvent) {
-  if (tool.value === 'delete') { removeVertex(id); return }
+  if (ev.button === 1 || tool.value === 'delete') { if (can('delete')) removeVertex(id); return }
   if (pendingFrom.value !== null) {
     addEdge(pendingFrom.value, id)
     pendingFrom.value = null
     preview.value = null
     return
   }
-  if (tool.value === 'edge' || (tool.value === 'move' && ev.shiftKey)) {
+  if (can('edge') && (ev.button === 2 || tool.value === 'edge' || (tool.value === 'move' && ev.shiftKey))) {
     edgeDrag.value = { from: id, start: p, moved: false }
     preview.value = { from: id, to: p }
     return
   }
+  if (ev.button !== 0) return
   drag = { id, start: p, before: JSON.stringify(g.value), moved: false }
   if (tool.value === 'move') setSelection({ vertices: [id], edges: [] })
 }
@@ -163,7 +172,7 @@ function onUp(p: Pt, vertex: Id | undefined) {
     // click-click mode: wait for the second vertex
     pendingFrom.value = ed.from
     status.value = `Edge from ${ed.from}: now click the other end (or the same vertex for a loop).`
-  } else if (ed.moved) {
+  } else if (ed.moved && can('vertex')) {
     const before = JSON.stringify(g.value)
     const n = cloneGraph(g.value)
     const id = nextVertexId(n)
@@ -173,14 +182,14 @@ function onUp(p: Pt, vertex: Id | undefined) {
     preview.value = null
   } else preview.value = null
 }
-function onBackgroundDown(p: Pt) {
+function onBackgroundDown(p: Pt, ev: PointerEvent) {
   if (pendingFrom.value !== null) { pendingFrom.value = null; preview.value = null; status.value = ''; return }
-  if (tool.value === 'vertex') addVertex(p)
-  else if (tool.value === 'move') setSelection({ vertices: [], edges: [] })
+  if (ev.button === 2 || tool.value === 'vertex') { if (can('vertex')) addVertex(p) }
+  else if (ev.button === 0) setSelection({ vertices: [], edges: [] })
 }
-function onEdgeDown(id: Id) {
-  if (tool.value === 'delete') removeEdge(id)
-  else if (tool.value === 'move') setSelection({ vertices: [], edges: [id] })
+function onEdgeDown(id: Id, ev: PointerEvent) {
+  if (ev.button === 1 || tool.value === 'delete') { if (can('delete')) removeEdge(id) }
+  else if (ev.button === 0) setSelection({ vertices: [], edges: [id] })
 }
 function onKey(ev: KeyboardEvent) {
   const mod = ev.ctrlKey || ev.metaKey
@@ -188,26 +197,22 @@ function onKey(ev: KeyboardEvent) {
   if (mod && ev.key.toLowerCase() === 'y') { ev.preventDefault(); redo(); return }
   if (ev.key === 'Delete' || ev.key === 'Backspace') { ev.preventDefault(); removeSelection(); return }
   if (ev.key === 'Escape') { pendingFrom.value = null; preview.value = null; edgeDrag.value = null }
-  if (!mod && !(ev.target instanceof HTMLInputElement)) {
-    const map: Record<string, Tool> = { m: 'move', v: 'vertex', e: 'edge', d: 'delete' }
-    const t = map[ev.key.toLowerCase()]
-    if (t && props.tools.includes(t)) tool.value = t
-  }
 }
 watch(tool, () => { pendingFrom.value = null; preview.value = null })
 
 const TOOL_INFO: Record<Tool, { label: string; hint: string; icon: string }> = {
-  move: { label: 'Move', hint: 'Drag vertices; click to select; Shift-drag from a vertex adds an edge (M)', icon: 'M5 12h14M12 5v14M5 12l3-3M5 12l3 3M19 12l-3-3M19 12l-3 3M12 5l-3 3M12 5l3 3M12 19l-3-3M12 19l3-3' },
-  vertex: { label: 'Vertex', hint: 'Click empty space to add a vertex (V)', icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 3v2M12 19v2M3 12h2M19 12h2' },
-  edge: { label: 'Edge', hint: 'Drag from one vertex to another, or click two vertices (E)', icon: 'M6 18L18 6M6 18a2.5 2.5 0 1 1 0-.01M18 6a2.5 2.5 0 1 1 0-.01' },
-  delete: { label: 'Delete', hint: 'Click a vertex or edge to delete it (D)', icon: 'M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12' },
+  move: { label: 'Move', hint: 'Drag vertices; tap to select', icon: 'M5 12h14M12 5v14M5 12l3-3M5 12l3 3M19 12l-3-3M19 12l-3 3M12 5l-3 3M12 5l3 3M12 19l-3-3M12 19l3-3' },
+  vertex: { label: 'Vertex', hint: 'Tap empty space to add a vertex', icon: 'M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zM12 3v2M12 19v2M3 12h2M19 12h2' },
+  edge: { label: 'Edge', hint: 'Drag from one vertex to another, or tap two vertices', icon: 'M6 18L18 6M6 18a2.5 2.5 0 1 1 0-.01M18 6a2.5 2.5 0 1 1 0-.01' },
+  delete: { label: 'Delete', hint: 'Tap a vertex or edge to delete it', icon: 'M6 7h12M9 7V5h6v2M8 7l1 12h6l1-12' },
 }
 </script>
 
 <template>
   <div class="ga-editor" :class="{ 'ga-editor-fill': fill }" tabindex="-1" @keydown="onKey">
     <div class="ga-toolbar" role="toolbar" aria-label="Editing tools">
-      <div class="ga-tool-group" role="radiogroup" aria-label="Tool">
+      <p class="ga-editor-hint">{{ hint }}</p>
+      <div class="ga-tool-group ga-touch-tools" role="radiogroup" aria-label="Tool">
         <button v-for="t in tools" :key="t" type="button" class="ga-btn ga-tool" :class="{ active: tool === t }" role="radio" :aria-checked="tool === t"
           :title="TOOL_INFO[t].hint" @click="tool = t">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="TOOL_INFO[t].icon" /></svg>
@@ -225,10 +230,10 @@ const TOOL_INFO: Record<Tool, { label: string; hint: string; icon: string }> = {
         <slot name="toolbar" />
       </div>
     </div>
-    <GraphView ref="view" :graph="g" :overlay="overlay" :selection="selection" editable :fill="fill" :zoomable="fill" :background-pan="fill && tool === 'move'"
+    <GraphView ref="view" :graph="g" :overlay="overlay" :selection="selection" editable :fill="fill" :zoomable="fill" :background-pan="fill"
       :max-height="height" :preview="preview" aria-label="Editable graph"
       @vertex-down="onVertexDown" @move="onMove" @up="onUp" @background-down="onBackgroundDown" @edge-down="onEdgeDown"
-      @background-dblclick="(p) => tool !== 'delete' && tool !== 'vertex' && addVertex(p)" @key="onKey" />
+      @background-dblclick="(p) => can('vertex') && tool === 'move' && addVertex(p)" @key="onKey" />
     <div class="ga-sr-only" aria-live="polite">{{ status }}</div>
   </div>
 </template>

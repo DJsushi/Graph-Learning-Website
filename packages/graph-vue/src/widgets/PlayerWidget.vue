@@ -61,12 +61,16 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
       <div class="ga-player-head">
         <span class="ga-player-name">{{ def?.name }}</span>
       </div>
-      <div class="ga-player-body" :class="{ 'ga-has-side': codeHtml || stateEntries.length }">
-        <div class="ga-player-main">
-          <GraphView :graph="shownGraph" :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
+      <!-- with side panels (residual network) the graphs take the full width, side by side; code and state go below -->
+      <div class="ga-player-body" :class="{ 'ga-has-side': (codeHtml || stateEntries.length) && !panels.length }">
+        <div class="ga-player-main" :class="{ 'ga-player-graphs': panels.length }">
+          <div class="ga-side-graph">
+            <div v-if="panels.length" class="ga-panel-title"><RichText text="network $G$" /></div>
+            <GraphView :graph="shownGraph" :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
+          </div>
           <div v-for="(p, i) in panels" :key="i" class="ga-side-graph">
             <div class="ga-panel-title"><RichText :text="p.title" /></div>
-            <GraphView :graph="p.graph" :overlay="p.overlay" :max-height="Math.min(height, 260)" :aria-label="p.title.replace(/\$/g, '')" />
+            <GraphView :graph="p.graph" :overlay="p.overlay" :max-height="height" :aria-label="p.title.replace(/\$/g, '')" />
           </div>
         </div>
         <div v-if="codeHtml || stateEntries.length" class="ga-player-side">

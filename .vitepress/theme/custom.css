@@ -163,6 +163,8 @@
 .gv-line { fill: none; stroke: var(--gv-ink); stroke-width: 1.6; stroke-linecap: round; transition: stroke 0.25s, stroke-width 0.25s; }
 .gv-arrow { fill: var(--gv-ink); transition: fill 0.25s; }
 .gv-hit { fill: none; stroke: transparent; stroke-width: 18; stroke-linecap: round; }
+/* the drawn line sits above the wide hit path; let clicks fall through to it */
+.gv-edge .gv-line, .gv-edge .gv-arrow { pointer-events: none; }
 .gv-selectable .gv-hit, .gv-editable .gv-hit { cursor: pointer; }
 .gv-hit:focus-visible { outline: none; stroke: var(--gv-select-soft); }
 
@@ -273,8 +275,11 @@
 .ga-player-side { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8em; align-items: start; min-width: 0; }
 @container (min-width: 560px) and (max-width: 899px) { .ga-player-side { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); } }
 .ga-player-code { min-width: 0; overflow-x: auto; }
+@container (min-width: 560px) { .ga-player-body:not(.ga-has-side) .ga-player-side { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); margin-top: 0.6em; } }
 .ga-player-main { min-width: 0; }
-.ga-side-graph { margin-top: 0.5em; border-top: 1px dashed var(--vp-c-divider); padding-top: 0.4em; }
+.ga-player-graphs { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.8em; align-items: start; }
+@container (min-width: 640px) { .ga-player-graphs { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); } }
+.ga-side-graph { min-width: 0; }
 .ga-player-code .ga-pseudo { margin: 0; font-size: 0.8em; }
 .ga-state { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 0.25em 0.8em; font-size: 0.88em; }
 .ga-state dt { color: var(--vp-c-text-2); }
@@ -284,6 +289,10 @@
 .ga-toolbar { display: flex; flex-wrap: wrap; gap: 0.4em 0.8em; justify-content: space-between; margin-bottom: 0.4em; }
 .ga-tool-group { display: flex; flex-wrap: wrap; gap: 0.3em; }
 .ga-tool { padding: 0 0.6em; }
+.ga-editor-hint { margin: 0; align-self: center; font-size: 0.8em; color: var(--vp-c-text-3); }
+/* touch screens have no right/middle button: show tool buttons there instead of the hint */
+.ga-touch-tools { display: none; }
+@media (hover: none) { .ga-touch-tools { display: flex; } .ga-editor-hint { display: none; } }
 .ga-editor:focus { outline: none; }
 .ga-live { display: flex; flex-wrap: wrap; gap: 0.4em 1.4em; margin: 0.6em 0 0.1em; font-size: 0.9em; }
 .ga-live-item { display: flex; gap: 0.4em; }
@@ -420,6 +429,10 @@
 .ga-mode { margin-bottom: 8px; }
 .ga-playground-canvas { flex: 1; min-height: 0; display: flex; }
 .ga-playground-canvas .ga-editor { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.ga-playground-canvas.ga-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.6em; }
+@media (max-width: 900px) { .ga-playground-canvas.ga-split { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); } }
+.ga-pg-residual { display: flex; flex-direction: column; min-height: 0; }
+.ga-pg-residual .gv-root { flex: 1 1 0; height: 0 !important; min-height: 0; border: 1px solid var(--vp-c-divider); border-radius: var(--ga-radius); background: var(--vp-c-bg); }
 .ga-editor-fill .gv-root { flex: 1 1 0; height: 0 !important; min-height: 0; border: 1px solid var(--vp-c-divider); border-radius: var(--ga-radius); background: var(--vp-c-bg); }
 .ga-pg-run { flex: 1; overflow-y: auto; overflow-x: hidden; }
 .ga-pg-message { min-height: 1.4em; margin: 4px 0 0; font-size: 0.85rem; color: var(--vp-c-text-2); }

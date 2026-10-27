@@ -1,17 +1,18 @@
 <script setup lang="ts">
 // Full-screen graph playground: editor canvas, generators, layouts, inspector, properties, algorithms, DSL text, import/export.
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { data as pseudo } from '../../data/pseudo.data'
 import { parseGraph } from '@core/dsl/parser'
 import { cloneGraph, emptyGraph, GraphIndex, type GraphData, type Id } from '@core/model'
 import { applyLayout } from '@core/layout'
 import { PROPERTIES } from '@core/properties'
-import { ALGORITHMS } from '@core/algorithms'
+import { ALGORITHMS, FlowState } from '@core/algorithms'
 import { GENERATORS } from '@core/dsl/generators'
 import {
   serialize, toJSON, toTikZ, adjacencyMatrixText, adjacencyListText, importAny, encodeShare, decodeShare,
 } from '@core/io'
 import EditableGraph from '@gv/EditableGraph.vue'
+import GraphView from '@gv/GraphView.vue'
 import PlayerWidget from '@gv/widgets/PlayerWidget.vue'
 import RichText from '@gv/RichText.vue'
 import { positioned } from '@gv/positions'
@@ -25,6 +26,11 @@ const mode = ref<'edit' | 'run'>('edit')
 const tab = ref<'inspect' | 'properties' | 'algorithms' | 'text' | 'io'>('inspect')
 const sel = ref<{ vertices: Id[]; edges: Id[] }>({ vertices: [], edges: [] })
 const message = ref('')
+const showResidual = ref(false)
+const residualView = ref<InstanceType<typeof GraphView>>()
+const residual = computed(() => new FlowState(graph.value).residualGraph())
+function fit() { editor.value?.resetView(); residualView.value?.resetView() }
+watch(showResidual, () => nextTick(fit))
 
 // ---------- load / save ----------
 function fromText(text: string): GraphData | undefined {
@@ -66,7 +72,7 @@ function setType(t: 'undirected' | 'directed') {
 function clearGraph() {
   const g = emptyGraph(graph.value.type)
   graph.value = g
-  message.value = 'Canvas cleared. Click with the Vertex tool or double-click to add vertices.'
+  message.value = 'Canvas cleared. Right-click or double-click to add vertices.'
 }
 
 const genIndex = ref(9)
@@ -330,12 +336,18 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
         <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'edit'" :class="{ active: mode === 'edit' }" @click="mode = 'edit'">Edit</button>
         <button type="button" role="tab" class="ga-btn" :aria-selected="mode === 'run'" :class="{ active: mode === 'run' }" @click="mode = 'run'">Run {{ algo?.name }}</button>
       </div>
-      <div v-show="mode === 'edit'" class="ga-playground-canvas">
+      <div v-show="mode === 'edit'" class="ga-playground-canvas" :class="{ 'ga-split': showResidual && isDirected }">
         <EditableGraph ref="editor" v-model="graph" fill @select="(s) => (sel = s)">
           <template #toolbar>
-            <button type="button" class="ga-btn" title="Fit the drawing to the canvas" @click="editor?.resetView()">Fit</button>
+            <button v-if="isDirected" type="button" class="ga-btn" :class="{ active: showResidual }" :aria-pressed="showResidual"
+              title="Show the residual network of the current flow f next to the graph" @click="showResidual = !showResidual">Residual</button>
+            <button type="button" class="ga-btn" title="Fit the drawing to the canvas" @click="fit">Fit</button>
           </template>
         </EditableGraph>
+        <div v-if="showResidual && isDirected" class="ga-pg-residual">
+          <div class="ga-panel-title"><RichText text="residual network $G_f$ (capacities $c - f$ forward, $f$ backward)" /></div>
+          <GraphView ref="residualView" :graph="residual" fill zoomable background-pan aria-label="Residual network" />
+        </div>
       </div>
       <div v-if="mode === 'run'" class="ga-pg-run">
         <PlayerWidget :key="algoId + JSON.stringify(algoParams)" :doc="parseGraph('show: pseudocode state residual')" :graph="runGraph" :algo="algoId" :params="algoParams" :height="420" :pseudocode="runPseudo" />
@@ -352,7 +364,7 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
       </div>
 
       <section v-if="tab === 'inspect'" class="ga-tabpanel">
-        <p v-if="!selVertex && !selEdge" class="ga-muted">Select a vertex or an edge with the Move tool to edit it.</p>
+        <p v-if="!selVertex && !selEdge" class="ga-muted">Click a vertex or an edge to edit it.</p>
         <template v-if="selVertex">
           <h3>Vertex {{ selVertex.id }}</h3>
           <label class="ga-field">Label (math in $…$)
@@ -379,10 +391,11 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
         <details class="ga-help">
           <summary>How to edit</summary>
           <ul>
-            <li><strong>Move</strong> (M): drag vertices, click to select, drag the background to pan, scroll to zoom. Shift-drag from a vertex draws an edge.</li>
-            <li><strong>Vertex</strong> (V): click empty space. Double-click also adds a vertex in Move mode.</li>
-            <li><strong>Edge</strong> (E): drag between vertices, or click two vertices (the same vertex twice for a loop).</li>
-            <li><strong>Delete</strong> (D), or select and press Delete. Undo with Ctrl+Z.</li>
+            <li><strong>Left button</strong>: drag a vertex to move it, click to select, drag the background to pan, scroll to zoom.</li>
+            <li><strong>Right button</strong>: click empty space (or double-click) to add a vertex; drag from one vertex to another to add an edge, or into empty space to add both. Right-click two vertices also works (the same vertex twice for a loop).</li>
+            <li><strong>Middle button</strong>: click a vertex or an edge to delete it; drag to pan. Or select and press Delete. Undo with Ctrl+Z.</li>
+            <li>On touch screens, pick the action with the tool buttons above the canvas.</li>
+            <li>For flow networks, <strong>Residual</strong> shows the residual network of the current flow next to the graph.</li>
           </ul>
         </details>
       </section>

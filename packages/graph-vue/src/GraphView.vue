@@ -218,7 +218,7 @@ function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id
   else if (kind === 'edge' && id !== undefined) emit('edge-down', id, ev)
   else {
     emit('background-down', p, ev)
-    if (props.zoomable && props.backgroundPan) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
+    if (props.zoomable && (ev.button === 1 || (ev.button === 0 && props.backgroundPan))) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
   }
 }
 
@@ -309,6 +309,9 @@ const describe = computed(() => {
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
     @pointercancel="onPointerUp"
+    @contextmenu="editable && $event.preventDefault()"
+    @mousedown="editable && $event.button === 1 && $event.preventDefault()"
+    @auxclick="editable && $event.button === 1 && $event.preventDefault()"
   >
     <desc>{{ describe }}</desc>
     <rect class="gv-bg" :x="box.x - 4000" :y="box.y - 4000" :width="box.w + 8000" :height="box.h + 8000"
