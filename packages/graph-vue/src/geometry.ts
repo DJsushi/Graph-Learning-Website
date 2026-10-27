@@ -25,7 +25,11 @@ const unit = (a: Pt): Pt => mul(a, 1 / len(a))
 const perp = (a: Pt): Pt => ({ x: -a.y, y: a.x })
 const f = (n: number) => Math.round(n * 10) / 10
 
-function arrowHead(tip: Pt, dir: Pt, size = 9): string {
+const ARROW = 9
+// the line of an arrowed edge stops under the arrowhead; otherwise it shows beside the thin tip
+const TUCK = ARROW * 0.6
+
+function arrowHead(tip: Pt, dir: Pt, size = ARROW): string {
   const u = unit(dir), n = perp(u)
   const base = sub(tip, mul(u, size))
   const a = add(base, mul(n, size * 0.45)), b = sub(base, mul(n, size * 0.45))
@@ -60,8 +64,9 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
         const u = unit(v)
         const start = add(P, mul(u, e.directed ? rad(a) * 0.2 : 0))
         const end = e.directed ? sub(Q, mul(u, rad(b) + 1)) : Q
+        const lineEnd = e.directed && !opts.midArrows ? sub(end, mul(u, TUCK)) : end
         const mid = mul(add(P, Q), 0.5)
-        const geom: EdgeGeom = { id: e.id, d: `M${f(start.x)},${f(start.y)} L${f(end.x)},${f(end.y)}`, label: add(mid, mul(n, -11)) }
+        const geom: EdgeGeom = { id: e.id, d: `M${f(start.x)},${f(start.y)} L${f(lineEnd.x)},${f(lineEnd.y)}`, label: add(mid, mul(n, -11)) }
         if (e.directed) {
           if (opts.midArrows) geom.midArrow = arrowHead(add(mid, mul(u, 5)), u)
           else geom.arrow = arrowHead(end, u)
@@ -72,11 +77,12 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
       const C = add(mul(add(P, Q), 0.5), mul(n, -bend * L))
       const tEnd = unit(sub(Q, C)), tStart = unit(sub(C, P))
       const end = e.directed ? sub(Q, mul(tEnd, rad(b) + 1)) : Q
+      const lineEnd = e.directed && !opts.midArrows ? sub(end, mul(tEnd, TUCK)) : end
       const start = P
       const mid = add(add(mul(P, 0.25), mul(C, 0.5)), mul(Q, 0.25))
       const geom: EdgeGeom = {
         id: e.id,
-        d: `M${f(start.x)},${f(start.y)} Q${f(C.x)},${f(C.y)} ${f(end.x)},${f(end.y)}`,
+        d: `M${f(start.x)},${f(start.y)} Q${f(C.x)},${f(C.y)} ${f(lineEnd.x)},${f(lineEnd.y)}`,
         label: add(mid, mul(unit(sub(mid, mul(add(P, Q), 0.5))), 11)),
       }
       if (e.directed) {
@@ -113,9 +119,10 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
       const c1 = add(P, mul(add(d, mul(perp(d), spread)), size))
       const c2 = add(P, mul(sub(d, mul(perp(d), spread)), size))
       const tip = add(P, mul(unit(sub(c2, P)), rad(v) + 1))
+      const lineEnd = add(tip, mul(unit(sub(c2, tip)), TUCK))
       const geom: EdgeGeom = {
         id: e.id, loop: true,
-        d: `M${f(P.x)},${f(P.y)} C${f(c1.x)},${f(c1.y)} ${f(c2.x)},${f(c2.y)} ${f(e.directed ? tip.x : P.x)},${f(e.directed ? tip.y : P.y)}`,
+        d: `M${f(P.x)},${f(P.y)} C${f(c1.x)},${f(c1.y)} ${f(c2.x)},${f(c2.y)} ${f(e.directed ? lineEnd.x : P.x)},${f(e.directed ? lineEnd.y : P.y)}`,
         label: add(P, mul(d, size * 0.85 + 8)),
       }
       if (e.directed) geom.arrow = arrowHead(tip, sub(tip, c2))
