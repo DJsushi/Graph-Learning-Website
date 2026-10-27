@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue'
 import { withBase } from 'vitepress'
+import { lastVisited, loadProgress, progress } from '@gv/progress'
 import { parseGraph } from '@core/dsl/parser'
 import FigureWidget from '@gv/widgets/FigureWidget.vue'
 import { data } from '../../data/site.data'
@@ -10,6 +12,9 @@ class cycle: 0--1 1--2 2--3 3--4 4--0
 class tree: 0--5 1--6 2--7 3--8 4--9`)
 const theory = data.lessons.filter(l => l.course === 'theory')
 const algorithms = data.lessons.filter(l => l.course === 'algorithms')
+onMounted(loadProgress)
+// reads progress.visited so it updates once loadProgress has run
+const resume = computed(() => (Object.keys(progress.visited).length ? data.lessons.find(l => l.path === lastVisited()) : undefined))
 </script>
 
 <template>
@@ -23,7 +28,8 @@ const algorithms = data.lessons.filter(l => l.course === 'algorithms')
           and a picture you can play with wherever a picture helps.
         </p>
         <div class="ga-hero-actions">
-          <a class="ga-btn ga-btn-primary ga-btn-lg" :href="withBase('/theory/')">Start with Graph Theory</a>
+          <a v-if="resume" class="ga-btn ga-btn-primary ga-btn-lg" :href="withBase(`/${resume.path}`)">Continue: {{ resume.course === 'theory' ? 'T' : 'A' }}{{ resume.lecture }} · {{ resume.title }}</a>
+          <a class="ga-btn ga-btn-lg" :class="{ 'ga-btn-primary': !resume }" :href="withBase('/theory/')">{{ resume ? 'Graph Theory' : 'Start with Graph Theory' }}</a>
           <a class="ga-btn ga-btn-lg" :href="withBase('/algorithms/')">Graph Algorithms</a>
         </div>
       </div>

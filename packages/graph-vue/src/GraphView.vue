@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The single SVG graph renderer. Pure view + pointer/keyboard event translation; editing logic lives in the widgets.
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
@@ -163,8 +163,11 @@ watch(box, b => {
 const viewBox = computed(() => `${box.value.x} ${box.value.y} ${box.value.w} ${box.value.h}`)
 
 // ---- zoom / pan ----
+// an enlarged-figure dialog provides 'ga-zoomable' so every graph inside it can zoom and pan
+const zoomAll = inject('ga-zoomable', false)
+const canZoom = computed(() => props.zoomable || zoomAll)
 const view = ref({ tx: 0, ty: 0, k: 1 })
-const transform = computed(() => (props.zoomable ? `translate(${view.value.tx},${view.value.ty}) scale(${view.value.k})` : undefined))
+const transform = computed(() => (canZoom.value ? `translate(${view.value.tx},${view.value.ty}) scale(${view.value.k})` : undefined))
 function resetView() {
   view.value = { tx: 0, ty: 0, k: 1 }
   const b = bbox.value
@@ -208,7 +211,7 @@ function svgPoint(ev: { clientX: number; clientY: number }): Pt {
 }
 
 function onWheel(ev: WheelEvent) {
-  if (!props.zoomable) return
+  if (!canZoom.value) return
   ev.preventDefault()
   const p = svgPoint(ev)
   const k0 = view.value.k
@@ -221,7 +224,7 @@ let pan: { start: Pt; tx: number; ty: number } | null = null
 let pinch: { d: number; k: number; mid: Pt; tx: number; ty: number } | null = null
 
 function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id) {
-  if (props.zoomable) {
+  if (canZoom.value) {
     pointers.set(ev.pointerId, svgPoint(ev))
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()]
@@ -236,12 +239,12 @@ function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id
   else if (kind === 'edge' && id !== undefined) emit('edge-down', id, ev)
   else {
     emit('background-down', p, ev)
-    if (props.zoomable && (ev.button === 1 || (ev.button === 0 && props.backgroundPan && !ev.shiftKey))) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
+    if (canZoom.value && (ev.button === 1 || (ev.button === 0 && (props.backgroundPan || zoomAll) && !ev.shiftKey))) pan = { start: svgPoint(ev), tx: view.value.tx, ty: view.value.ty }
   }
 }
 
 function onPointerMove(ev: PointerEvent) {
-  if (props.zoomable && pointers.has(ev.pointerId)) {
+  if (canZoom.value && pointers.has(ev.pointerId)) {
     pointers.set(ev.pointerId, svgPoint(ev))
     if (pinch && pointers.size === 2) {
       const [a, b] = [...pointers.values()]

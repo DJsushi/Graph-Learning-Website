@@ -13,10 +13,10 @@ const done = (ids: string[]) => ids.filter(id => progress.solved[id]).length
 <template>
   <ol class="ga-lesson-list">
     <li v-for="l in lessons" :key="l.path" class="ga-lesson-card">
-      <a :href="withBase(`/${l.path}`)" class="ga-lesson-link">
+      <a :href="withBase(`/${l.path}`)" class="ga-lesson-link" :class="{ 'is-done': progress.done[l.path] }">
         <span class="ga-lesson-num">{{ l.lecture }}</span>
         <span class="ga-lesson-text">
-          <span class="ga-lesson-name">{{ l.title }}</span>
+          <span class="ga-lesson-name">{{ l.title }}<span v-if="progress.done[l.path]" class="ga-done-mark" aria-label="done"> ✓</span></span>
           <span class="ga-lesson-sum">{{ l.summary }}</span>
           <span class="ga-lesson-meta">
             {{ l.counts.definitions }} definitions · {{ l.counts.statements }} results<template v-if="l.counts.algorithms"> · {{ l.counts.algorithms }} algorithms</template>

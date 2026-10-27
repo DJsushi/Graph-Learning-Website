@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Entry point for ```graph blocks in Markdown: decodes the payload, parses the DSL and dispatches to a widget.
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { withBase } from 'vitepress'
 import { parseGraph } from '@core/dsl/parser'
 import { encodeShare } from '@core/io'
@@ -10,6 +10,7 @@ import PlayerWidget from './widgets/PlayerWidget.vue'
 import SandboxWidget from './widgets/SandboxWidget.vue'
 import ExerciseWidget from './widgets/ExerciseWidget.vue'
 import RichText from './RichText.vue'
+import ZoomDialog from './ZoomDialog.vue'
 
 const props = defineProps<{ data: string }>()
 
@@ -27,6 +28,12 @@ const doc = computed(() => parseGraph(payload.value.source, payload.value.info))
 const widget = computed(() => payload.value.info.widget ?? 'figure')
 const caption = computed(() => doc.value.directives.caption?.[0])
 const height = computed(() => ({ small: 200, medium: 300, large: 440 } as Record<string, number>)[payload.value.info.height ?? 'medium'] ?? 300)
+const enlarged = ref(false)
+const bigHeight = ref(600)
+function enlarge() {
+  bigHeight.value = Math.max(320, Math.round(window.innerHeight * 0.62))
+  enlarged.value = true
+}
 const playgroundHref = computed(() => {
   // strip widget directives so that the playground gets a plain graph
   const plain = payload.value.source.split('\n').filter(l => !/^\s*(caption|intent|prompt|check|hint|solution|answer|task|reveal|algo|params|show|live|allow|step|tolerance):/.test(l)).join('\n')
@@ -48,9 +55,18 @@ const playgroundHref = computed(() => {
       <ExerciseWidget v-else-if="widget === 'exercise'" :doc="doc" :height="height" :fig-id="payload.id" />
       <FigureWidget v-else :doc="doc" :height="height" />
     </template>
+    <ZoomDialog v-if="enlarged" :caption="caption" @close="enlarged = false">
+      <StepperWidget v-if="widget === 'stepper'" :doc="doc" :height="bigHeight" />
+      <PlayerWidget v-else-if="widget === 'player'" :doc="doc" :height="bigHeight" :pseudocode="payload.pseudocode?.html" />
+      <SandboxWidget v-else-if="widget === 'editable'" :doc="doc" :height="bigHeight" />
+      <FigureWidget v-else :doc="doc" :height="bigHeight" />
+    </ZoomDialog>
     <figcaption v-if="caption || widget !== 'exercise'" class="ga-caption">
       <RichText v-if="caption" :text="caption" />
-      <a class="ga-open-playground" :href="playgroundHref" title="Open this graph in the playground">Open in playground</a>
+      <span class="ga-figure-actions">
+        <button v-if="!doc.errors.length" type="button" class="ga-link-btn" title="Show this figure larger, with zoom" @click="enlarge">Enlarge</button>
+        <a class="ga-open-playground" :href="playgroundHref" title="Open this graph in the playground">Open in playground</a>
+      </span>
     </figcaption>
   </figure>
 </template>
