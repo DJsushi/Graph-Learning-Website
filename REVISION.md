@@ -128,7 +128,7 @@ there is no topic layer, and there are no dependency links.
 - [x] W t05 (cut vertex and bridge are defined only in prose at line ~29: make them a definition or add them to a `defines=`, so the search finds "cut vertex")
 - [x] M a01 `content/algorithms/01-minimum-spanning-trees.md`
 - [x] W a01 (link to the tree theory in t03: cut and cycle properties)
-- [ ] M a02 `content/algorithms/02-maximum-flow.md`
+- [x] M a02 `content/algorithms/02-maximum-flow.md`
 - [ ] W a02 (Menger ↔ max-flow min-cut, both directions)
 - [ ] F Final pass:
   - re-check `content/topics.yaml` against the final containers;
@@ -407,5 +407,59 @@ Open questions:
 - def:cut, def:msf not marked extra (lecture uses the terms, never defines them).
 - Edmonds "contractions" link to the undirected def:edge-contraction; directed contraction is prose only.
 - Unproved standard facts in intuitions: contracted tree is a tree; no deterministic linear-time MST known; Borůvka parallelises; small-integer weights make Kruskal O(m α(n)).
+
+### a02 Maximum flow (`content/algorithms/02-maximum-flow.md`)
+
+**Math fixes (M):** checked against `02-flows.pdf` (60 pages; pp. 3, 29, 36, 38 as images). All figure/demo/exercise/quiz numbers recomputed (network 19; f1..f4 = 8, 10, 17, 19; cut {s,b} = 19; blocking 5 vs max 8; Dinic 14/19; CLRS 23; matching 4). REVIEW-marked:
+1. After `def:flow-network`: with edges into s / out of t the value is the net flow out of s (residual networks used as networks have such edges).
+2. `def:residual-network`: G may have antiparallel edges, so G_f can hold two distinct v→u residual edges.
+3. `alg:augment`: slide p13 typo f(e^R) ← f(e) − b; lesson's f(e^R) ← f(e^R) − b kept, with note.
+4. `thm:unit-dinic` proof: |f'| = |f*| − |f| for the max flow in G_f justified (both directions).
+5. `lem:dinic-phases`: at most n − 1 phases (lecture: n).
+6. `q:a02-dinic-phases`: answer 50 → 49 (n − 1), explanation updated.
+7. `exr:a02-menger-from-flow` solution: reduction from Menger's digraph (delete arcs into s / out of t, merge parallel arcs with capacity = multiplicity, integral flow, j copies of an arc with flow j). Settles the t05 open point on parallel/antiparallel arcs.
+8. Source pages (metadata): alg:edmonds-karp p26, def:level-graph p29–30, def:matching p56, def:unit-capacity p57.
+
+- `def:flow-network` — (G,s,t,c), directed, s ≠ t, c: E→R^+ — connected, no parallel edges, no edges into s / out of t (else net value); antiparallel allowed.
+- `def:flow` — 0 ≤ f(e) ≤ c(e), conservation on V∖{s,t}; |f| = out of s = into t — labels f/c.
+- `def:flow-cut` — s–t cut (S,T), s ∈ S, t ∈ T; cap(S,T) = Σ c over S→T edges — defines MaxFlow, MinCut; vertex partition (cf. a01 def:cut), not t05's edge cut.
+- `lem:flow-across-cut` (extra) — |f| = f(S→T) − f(T→S) ≤ cap(S,T) — weak duality.
+- `thm:maxflow-mincut` — max flow value = min s–t cut capacity — Ford–Fulkerson 1956; via characterisation + existence of a maximum flow.
+- `def:residual-network` — G_f: e with c_f = c−f if f(e)<c(e); e^R with c_f = f(e) if f(e)>0 — E_f, c_f, e^R; multigraph with antiparallel edges.
+- `def:augmenting-path` — s–t path in G_f; bottleneck δ = min residual capacity.
+- `lem:augment` — augmenting along P gives a flow of value |f| + δ.
+- `alg:augment` — AUGMENT(f,c,P) — anchors @bottleneck @loop @forward @increase @decrease @return.
+- `thm:maxflow-characterisation` (extra) — f maximum ⇔ no augmenting path ⇔ some cut has cap = |f| — min cut = vertices reachable from s in G_f.
+- `alg:ford-fulkerson` — augment along any path while one exists — anchors @init @residual @loop @path @augment @update @return.
+- `ex:ford-fulkerson-demo` — augmentations 8, 2, 7, 2; value 19; cut {s,b}.
+- `thm:ford-fulkerson-analysis` — integer capacities ≤ C: ≤ nC iterations, O(nmC), integral result — pseudo-polynomial.
+- `cor:integrality` (extra) — integer capacities ⇒ integral maximum flow exists.
+- `alg:edmonds-karp` — FF with BFS shortest augmenting path — anchors as FF.
+- `def:level-graph` — L_i = {v : dist(s,v) = i}; L_G keeps edges L_i → L_{i+1} — defines layer.
+- `lem:ek-monotone` — d_f(v) never decreases under shortest-path augmentation.
+- `lem:ek-phase` — ≤ m augmentations of a given length k.
+- `thm:edmonds-karp` — O(mn) augmentations, O(m²n).
+- `def:blocking-flow` — every s–t path has a saturated edge; maximum ⇒ blocking, not conversely.
+- `alg:dinic` — phases: level graph of G_f, blocking flow, augment — Dinitz 1970, Even's version; anchors @init @residual @phase @level @blocking @augment @update @return.
+- `lem:dinic-phases` (extra) — each phase strictly increases dist(s,t); ≤ n−1 phases.
+- `alg:dinic-blocking` — advance/retreat DFS in L — anchors @init @loop @reached @augment @remove @restart @canadvance @advance @stop @retreat @back.
+- `prop:dinic-blocking-time` — blocking flow in O(mn).
+- `thm:dinic` — O(mn²).
+- `thm:mpm` — max flow in O(n³) — Malhotra, Pramodh-Kumar, Maheshwari 1978.
+- `def:vertex-capacity` — c(v) = min(in-capacity, out-capacity); s only out, t only in — defines throughput.
+- `alg:mpm` — min-throughput v: push to t, pull from s, erase v — anchors @loop @min @push @pull @erase @update @until.
+- `prop:mpm-time` — blocking flow in O(n²).
+- `thm:mpm-time` — MPM in O(n³).
+- `def:matching` — no two edges share a vertex; maximum matching = largest.
+- `prop:matching-flow` (extra) — bipartite matching = unit-capacity flow s→A→B→t; sizes equal — uses integrality.
+- `def:unit-capacity` — all capacities 1, no antiparallel edges — "type 1 network"; G_f again unit-capacity.
+- `lem:unit-distance` — dist(s,t) ≤ |E| / |f*| — "Lemma A".
+- `thm:unit-dinic` — O(m^{1/2}) phases, O(m^{3/2}) time.
+
+Open questions:
+- Slides give only the m^{1/2} bound; Hopcroft–Karp O(√n) remark is standard, not from slides.
+- Departures from the lecture: n−1 phases and quiz answer 49 (lecture n / 50); net value, antiparallel note, Menger reduction are additions.
+- Not on slides (standard): FF may converge to a non-maximum value for real capacities; Harris–Ross story; integrality as a separate corollary.
+- W a02: mirror t05 links ([[thm:menger-directed]] B from thm:maxflow-mincut / cor:integrality; [[def:d-flow]]); check the new net-value paragraph reads well.
 
 ## Report

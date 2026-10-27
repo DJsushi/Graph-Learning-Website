@@ -31,6 +31,10 @@ A **flow network** is a quadruple $(G, s, t, c)$ where
 We assume that $G$ is connected (which implies $n + m = \O(m)$) and that there are no parallel edges. We also assume, as the
 examples do, that no edge enters $s$ and no edge leaves $t$ (such edges could carry flow that does not count towards the
 value, and they can be removed without changing the maximum flow value).
+<!-- REVIEW: added that for networks with edges into s or out of t (residual networks G_f always have such edges once |f| > 0, and Lemma A / thm:unit-dinic apply max-flow arguments to G_f) the value is the net flow; the two sums in def:flow then agree and lem:flow-across-cut holds with the same proof. -->
+When such edges are present (for example in a residual network $G_f$, used as a network in [[thm:unit-dinic]]), the value
+of a flow is the **net** flow out of $s$, $\sum_{(s,v) \in E} f(s, v) - \sum_{(u,s) \in E} f(u, s)$, which equals the net flow into $t$;
+[[lem:flow-across-cut]] and its proof remain valid.
 
 ```graph id=a02-network widget=figure
 caption: A flow network. Edge labels are capacities.
@@ -116,6 +120,9 @@ $$c_f(e) = c(e) - f(e) \ \text{ for } e \in E_f \cap E, \qquad c_f(e^R) = f(e) \
 
 The residual capacity says how much more flow can be pushed along $e$ (forward), or how much of the existing flow on $e$ can be cancelled
 (backward, along $e^R$).
+<!-- REVIEW: added the antiparallel-edge remark. Slides forbid only parallel edges, so G may contain (u,v) and (v,u) (e.g. exr a02-ex-max-flow-value); then G_f may contain two copies of (v,u), which must be kept apart. -->
+If $G$ contains both $e = (u, v)$ and $e' = (v, u)$, then $G_f$ may contain two edges from $v$ to $u$: the forward edge $e'$ and the
+reverse edge $e^R$. They are kept as two distinct residual edges with their own residual capacities ($G_f$ is then a multigraph).
 
 ```graph id=a02-residual-example widget=figure
 caption: A flow of value 8 (left) and its residual network (right). Saturated edges disappear forward; edges with flow get a reverse edge.
@@ -168,6 +175,8 @@ AUGMENT(f, c, P):
     return f                            // @return
 ```
 :::
+<!-- REVIEW: slide p13 line 6 reads "f(e^R) ← f(e) − b" (typo); the lesson's f(e^R) ← f(e^R) − b is the intended update. -->
+
 
 Now we can prove the main theorem, together with the correctness criterion for augmenting path algorithms.
 
@@ -275,7 +284,7 @@ non-maximum value). **Goal:** find an efficient way of choosing good augmenting 
 
 Edmonds and Karp (1972) limit the number of steps of Ford–Fulkerson with a simple rule: **always choose a shortest augmenting path**, where the length of every edge is $1$.
 
-::: algorithm {#alg:edmonds-karp title="Edmonds–Karp algorithm" source="algorithms/02 p25"}
+::: algorithm {#alg:edmonds-karp title="Edmonds–Karp algorithm" source="algorithms/02 p26"}
 ```pseudo
 EDMONDS-KARP(G, s, t, c):
     foreach e ∈ E do f(e) ← 0                                          // @init
@@ -304,7 +313,7 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 
 ### Level graphs
 
-::: definition {#def:level-graph title="Level graph" defines="level graph, layer" source="algorithms/02 p28–29"}
+::: definition {#def:level-graph title="Level graph" defines="level graph, layer" source="algorithms/02 p29–30"}
 Let $L_i = \set{v \in V \mid \mathrm{dist}(s, v) = i}$ be the set of vertices at distance $i$ from $s$. The **level graph** $L_G = (V, E_G)$ is the subgraph of $G$ with
 $$E_G = \set{(u, v) \in E \mid \exists i \in \N : u \in L_i \land v \in L_{i+1}}.$$
 :::
@@ -411,14 +420,15 @@ DINIC(G, s, t, c):
 :::
 
 ::: lemma {#lem:dinic-phases title="Each phase increases the distance" extra=true}
-After a phase of Dinic's algorithm, the length of the shortest augmenting path strictly increases. Hence there are at most $n$ phases.
+After a phase of Dinic's algorithm, the length of the shortest augmenting path strictly increases. Hence there are at most $n - 1$ (in particular at most $n$) phases.
 :::
+<!-- REVIEW: n − 1 added (distance takes values 1..n−1); lecture states n. -->
 
 ::: proof
 Let $k$ be the distance from $s$ to $t$ at the start of the phase, $L$ the level graph, and $f'$ the blocking flow in $L$. Augmenting $f$ by $f'$ changes $G_f$ only by
 deleting saturated edges of $L$ and adding reverses of edges of $L$, which go one level down. As in [[lem:ek-phase]], every $s$–$t$ path of length at most $k$ in the new
 residual graph would use only edges going up one level, i.e. edges of $L$ that were not saturated by $f'$. Such a path would be an $s$–$t$ path in $L$ without a saturated
-edge, contradicting that $f'$ is blocking. So the new distance is larger than $k$. Distances are at most $n - 1$, so there are at most $n$ phases.
+edge, contradicting that $f'$ is blocking. So the new distance is larger than $k$. Distances lie between $1$ and $n - 1$, so there are at most $n - 1$ phases.
 :::
 
 ```graph id=a02-dinic-player widget=player
@@ -562,7 +572,7 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 
 ## Unit capacities and matchings
 
-::: definition {#def:matching title="Matching" defines="matching, maximum matching" source="algorithms/02 p55"}
+::: definition {#def:matching title="Matching" defines="matching, maximum matching" source="algorithms/02 p56"}
 A **matching** $M$ of a graph $G$ is a subset of edges such that no two edges in $M$ share a vertex. A **maximum matching** is a matching of maximum size.
 :::
 
@@ -589,7 +599,7 @@ unit (from $s$), so at most one edge $(a, b)$ carries flow; similarly every $b \
 the flow value.
 :::
 
-::: definition {#def:unit-capacity title="Unit-capacity network" defines="unit-capacity network, type 1 network" source="algorithms/02 p56"}
+::: definition {#def:unit-capacity title="Unit-capacity network" defines="unit-capacity network, type 1 network" source="algorithms/02 p57"}
 A network is a **unit-capacity network** (also **type 1 network**) if each edge has capacity $1$. As a technical assumption, there are no antiparallel edges (no pair $(u, v)$, $(v, u)$).
 :::
 
@@ -614,7 +624,10 @@ For a network with unit edge capacities, Dinic's algorithm requires at most $\O(
 
 ::: proof
 Each phase still takes time $\O(m)$, and in each phase the flow increases by at least $1$. If $\abs{f^*} \le m^{1/2}$, we find the maximum flow in $\O(m^{1/2})$ phases. Otherwise, let $f$ be
-the flow after $m^{1/2}$ phases. The maximum flow $f'$ in the residual network $G_f$ has value $\abs{f'} = \abs{f^*} - \abs{f}$, and at most $\abs{f'}$ phases remain. $G_f$ is again a
+the flow after $m^{1/2}$ phases. The maximum flow $f'$ in the residual network $G_f$ has value $\abs{f'} = \abs{f^*} - \abs{f}$, and at most $\abs{f'}$ phases remain.
+<!-- REVIEW: justification of |f'| = |f*| − |f| added (slide states it without proof); values in G_f are net values, see the assumption after def:flow-network. -->
+(A flow $g$ in $G_f$ gives the flow $e \mapsto f(e) + g(e) - g(e^R)$ in $G$ of value $\abs{f} + \abs{g}$, so $\abs{g} \le \abs{f^*} - \abs{f}$; conversely, putting
+$f^*(e) - f(e)$ on $e$ where it is positive and $f(e) - f^*(e)$ on $e^R$ where it is positive gives a flow in $G_f$ of value $\abs{f^*} - \abs{f}$.) $G_f$ is again a
 unit-capacity network, and the length $l$ of its shortest augmenting path is greater than $m^{1/2}$ (each phase increased it, [[lem:dinic-phases]]). By Lemma A applied to $G_f$,
 $\abs{f'} \le \abs{E(G_f)}/l \le m/m^{1/2} = m^{1/2}$ (the residual network of a unit-capacity network without antiparallel edges has at most $m$ edges). So at most $m^{1/2}$ phases remain,
 the total number of phases is at most $2m^{1/2}$, and the running time is $\O(m^{3/2})$.
@@ -676,9 +689,12 @@ a1 -- b1; a1 -- b2; a2 -- b1; a3 -- b2; a3 -- b3; a4 -- b3; a4 -- b4
 Derive the edge version of Menger's theorem for directed graphs ([[thm:menger-directed]] B) from the max-flow min-cut theorem and the integrality theorem.
 
 ::: solution
-Give every arc capacity $1$. An $s$–$t$ edge cut $F$ of size $k$ yields an $s$–$t$ cut of capacity at most $k$: take $S$ as the set of vertices reachable from $s$ in $G - F$; all arcs
+<!-- REVIEW: added the reduction to a flow network (Menger's digraphs may have parallel arcs and arcs into s / out of t, which def:flow-network excludes); the 0/1 flow below then becomes an integral flow whose value on a merged arc is split among its copies. -->
+First delete the arcs entering $s$ and leaving $t$: they lie on no $s$–$t$ path, and an edge cut stays an edge cut without them. Parallel arcs
+are merged into one arc whose capacity is their number; every other arc gets capacity $1$. An $s$–$t$ edge cut $F$ of size $k$ yields an $s$–$t$ cut of capacity at most $k$: take $S$ as the set of vertices reachable from $s$ in $G - F$; all arcs
 from $S$ to $T$ lie in $F$. Conversely, the arcs from $S$ to $T$ of any cut $(S, T)$ form an edge cut of size $\mathrm{cap}(S, T)$. So the minimum cut capacity equals the minimum size of an
-edge cut. By max-flow min-cut and integrality, there is a $0/1$ flow of that value. The arcs with flow $1$ form a d-flow in the sense of [[def:d-flow]], which decomposes into that many
+edge cut. By max-flow min-cut and integrality, there is an integral flow of that value. Take every arc with flow $1$ and, for a merged arc with
+flow $j$, $j$ of its parallel copies: these arcs form a d-flow in the sense of [[def:d-flow]], which decomposes into that many
 edge-disjoint paths ([[claim:d-flow-paths]]).
 :::
 ::::
@@ -743,9 +759,10 @@ $\O(mn)$ augmentations ([[lem:ek-monotone]], [[lem:ek-phase]]), each found by BF
 :::: quiz {#q:a02-dinic-phases}
 At most how many phases does Dinic's algorithm perform on a network with $n = 50$ vertices?
 
-answer: 50
+answer: 49
 
+<!-- REVIEW: answer was 50 (the lecture's bound n). The argument gives n − 1 = 49: the s–t distance takes values in {1, …, n − 1} and strictly increases each phase. -->
 ::: explanation
-Each phase strictly increases the $s$–$t$ distance in the residual network, which is at most $n - 1$ ([[lem:dinic-phases]]); the lecture states the bound as $n$.
+Each phase strictly increases the $s$–$t$ distance in the residual network, which is between $1$ and $n - 1$ ([[lem:dinic-phases]]), so there are at most $n - 1 = 49$ phases; the lecture states the weaker bound $n$.
 :::
 ::::
