@@ -118,7 +118,7 @@ A **graph** is a pair $G = (V, E)$ where ...
 | `aka` | optional | Alternative names, for search: `aka="degree sum formula"`. |
 | `source` | optional | Where it appears in the lecture material: `source="theory/2026-09-22 p2"`. |
 | `extra` | optional flag | `extra=true` marks material **not covered in the lectures** (added for completeness/intuition). Rendered with an "extra" badge so students know it is beyond the lectures. |
-| `defines` | definitions | Space-separated list of terms defined, for search and auto-linking: `defines="loop multigraph"`. |
+| `defines` | definitions | Comma-separated list of the terms (or phrases) defined, for search and link linting: `defines="loop, parallel edges"`. |
 
 ### 4.3 Proofs
 

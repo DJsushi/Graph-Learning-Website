@@ -18,7 +18,7 @@ also the combinatorial heart of the max-flow min-cut theorem of the algorithms c
 
 ## k-connectivity
 
-::: definition {#def:k-connected title="k-connected, k-edge-connected" defines="k-connected k-edge-connected vertex connectivity edge connectivity" source="theory/2026-10-13 p1"}
+::: definition {#def:k-connected title="k-connected, k-edge-connected" defines="k-connected, k-edge-connected, vertex connectivity, edge connectivity" source="theory/2026-10-13 p1"}
 Let $k \ge 1$. An undirected multigraph $G$ is **$k$-connected** if after deleting any at most $k - 1$ vertices of $G$, the
 rest stays connected. By convention, $K_1$ is $1$-connected, and $K_n$ for $n \ge 2$ is $(n-1)$-connected (but not
 $n$-connected); in general a $k$-connected graph must have at least $k + 1$ vertices, unless it is $K_1$ and $k = 1$.
@@ -42,7 +42,7 @@ panel: $K_4$
 use: K(4)
 ```
 
-::: definition {#def:st-cut title="s–t paths and cuts" defines="s-t path s-t cut s-t edge cut internally disjoint edge-disjoint" source="theory/2026-10-13 p1"}
+::: definition {#def:st-cut title="s–t paths and cuts" defines="s-t path, s-t cut, s-t edge cut, internally disjoint, edge-disjoint" source="theory/2026-10-13 p1"}
 Let $G$ be a (possibly directed) multigraph and $s \ne t$ vertices.
 
 - An **$s$–$t$ path** is a path between $s$ and $t$ in $G$ (in a directed graph: a directed path from $s$ to $t$).
@@ -310,7 +310,7 @@ a -- x [class=cycle]; x -- c [class=cycle]; b -- y [class=cycle]; y -- d [class=
 
 ### Ear decompositions
 
-::: theorem {#thm:ear-decomposition title="Ear decomposition" defines="ear ear decomposition" source="theory/2026-10-13 p3–4"}
+::: theorem {#thm:ear-decomposition title="Ear decomposition" defines="ear, ear decomposition" source="theory/2026-10-13 p3–4"}
 A graph $G$ is $2$-connected $\iff$ $G$ has an **ear decomposition**, i.e. $G$ can be built from a cycle by repeatedly adding new paths (**ears**)
 between two distinct existing vertices, whose inner vertices are new. (An ear may have no inner vertices, i.e. be a single new edge.)
 :::

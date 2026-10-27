@@ -19,7 +19,7 @@ to them.
 
 ## Flow networks
 
-::: definition {#def:flow-network title="Flow network" defines="flow network source sink capacity" source="algorithms/02 p3"}
+::: definition {#def:flow-network title="Flow network" defines="flow network, source, sink, capacity" source="algorithms/02 p3"}
 A **flow network** is a quadruple $(G, s, t, c)$ where
 
 - $G = (V, E)$ is a directed graph,
@@ -41,7 +41,7 @@ s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, 0); c @(3, 1); d @(3, 0); t [cla
 s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [c=9]; d -> c [c=9]; c -> t [c=10]; d -> t [c=10]
 ```
 
-::: definition {#def:flow title="Flow" defines="flow capacity constraints conservation value of a flow" source="algorithms/02 p4"}
+::: definition {#def:flow title="Flow" defines="flow, capacity constraints, conservation, value of a flow" source="algorithms/02 p4"}
 A **flow** is a function $f : E \to \R^+$ satisfying
 
 - the **capacity constraints**: $\forall e \in E : 0 \le f(e) \le c(e)$,
@@ -71,7 +71,7 @@ Flows*, 1993).
 
 ## Cuts and the max-flow min-cut theorem
 
-::: definition {#def:flow-cut title="s–t cut, capacity" defines="s-t cut capacity of a cut MaxFlow MinCut" source="algorithms/02 p6"}
+::: definition {#def:flow-cut title="s–t cut, capacity" defines="s-t cut, capacity of a cut, MaxFlow, MinCut" source="algorithms/02 p6"}
 An **$s$–$t$ cut** in a flow network $(G, s, t, c)$ is a bipartition $S \cup T = V$ of the vertices such that $s \in S$ and $t \in T$.
 The **capacity** of the cut is
 $$\mathrm{cap}(S, T) = \sum_{(u,v) \in E,\ u \in S,\ v \in T} c(u, v).$$
@@ -104,7 +104,7 @@ wanted to find the minimum cut of the Soviet railway network to Eastern Europe; 
 
 ## Residual networks and augmenting paths
 
-::: definition {#def:residual-network title="Residual network" defines="residual graph residual capacity residual network" source="algorithms/02 p10"}
+::: definition {#def:residual-network title="Residual network" defines="residual graph, residual capacity, residual network" source="algorithms/02 p10"}
 The **residual network** for a flow $f$ consists of
 
 1. the **residual graph** $G_f = (V, E_f)$, where $E_f$ contains, for each edge $e = (u, v) \in E$,
@@ -132,7 +132,7 @@ s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, 0); c @(3, 1); d @(3, 0); t [cla
 s -> a [c=2]; a -> s [c=8 class=back bend=0.3]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; d -> a [c=8 class=back]; b -> d [c=9]; d -> c [c=9]; c -> t [c=10]; d -> t [c=2]; t -> d [c=8 class=back bend=0.3]
 ```
 
-::: definition {#def:augmenting-path title="Augmenting path, bottleneck capacity" defines="augmenting path bottleneck capacity" source="algorithms/02 p12"}
+::: definition {#def:augmenting-path title="Augmenting path, bottleneck capacity" defines="augmenting path, bottleneck capacity" source="algorithms/02 p12"}
 An **augmenting path** is a path $P$ from $s$ to $t$ in $G_f$. The **bottleneck capacity** $\delta$ of $P$ is the minimum residual capacity among the
 edges of $P$.
 :::
@@ -304,7 +304,7 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 
 ### Level graphs
 
-::: definition {#def:level-graph title="Level graph" defines="level graph layer" source="algorithms/02 p28–29"}
+::: definition {#def:level-graph title="Level graph" defines="level graph, layer" source="algorithms/02 p28–29"}
 Let $L_i = \set{v \in V \mid \mathrm{dist}(s, v) = i}$ be the set of vertices at distance $i$ from $s$. The **level graph** $L_G = (V, E_G)$ is the subgraph of $G$ with
 $$E_G = \set{(u, v) \in E \mid \exists i \in \N : u \in L_i \land v \in L_{i+1}}.$$
 :::
@@ -488,7 +488,7 @@ Finding a blocking flow takes $\O(mn)$, all other operations of a phase take $\O
 Dinic needs time $\O(mn)$ per phase to construct a blocking flow. The "three Indians" algorithm keeps the phase structure of Dinic (at most $n$ phases, each computing a blocking
 flow in the level graph), but computes the blocking flow in $\O(n^2)$, using Fibonacci heaps.
 
-::: definition {#def:vertex-capacity title="Vertex capacity" defines="vertex capacity throughput" source="algorithms/02 p49"}
+::: definition {#def:vertex-capacity title="Vertex capacity" defines="vertex capacity, throughput" source="algorithms/02 p49"}
 The **capacity of a vertex** $v$ is
 $$c(v) = \min\Bigl(\sum_{(u,v) \in E} c(u, v),\ \sum_{(v,w) \in E} c(v, w)\Bigr),$$
 the maximum flow that can pass through $v$. (For $s$ and $t$ only the outgoing, resp. incoming, sum is used.) The same definition applies to residual capacities $c_f$.
@@ -562,7 +562,7 @@ s -> a [c=10]; s -> b [c=10]; a -> b [c=2]; a -> c [c=4]; a -> d [c=8]; b -> d [
 
 ## Unit capacities and matchings
 
-::: definition {#def:matching title="Matching" defines="matching maximum matching" source="algorithms/02 p55"}
+::: definition {#def:matching title="Matching" defines="matching, maximum matching" source="algorithms/02 p55"}
 A **matching** $M$ of a graph $G$ is a subset of edges such that no two edges in $M$ share a vertex. A **maximum matching** is a matching of maximum size.
 :::
 
@@ -589,7 +589,7 @@ unit (from $s$), so at most one edge $(a, b)$ carries flow; similarly every $b \
 the flow value.
 :::
 
-::: definition {#def:unit-capacity title="Unit-capacity network" defines="unit-capacity network type 1 network" source="algorithms/02 p56"}
+::: definition {#def:unit-capacity title="Unit-capacity network" defines="unit-capacity network, type 1 network" source="algorithms/02 p56"}
 A network is a **unit-capacity network** (also **type 1 network**) if each edge has capacity $1$. As a technical assumption, there are no antiparallel edges (no pair $(u, v)$, $(v, u)$).
 :::
 

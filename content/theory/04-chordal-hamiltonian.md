@@ -19,7 +19,7 @@ Ore.
 
 ## Chordal graphs
 
-::: definition {#def:chordal title="Chord, chordal graph" defines="chord chordal graph" source="theory/2026-10-06 p1"}
+::: definition {#def:chordal title="Chord, chordal graph" defines="chord, chordal graph" source="theory/2026-10-06 p1"}
 A **chord** of a cycle $C \subseteq G$ is an edge of $G$ between two vertices of $C$ that are not consecutive on
 $C$. A graph $G$ is **chordal** if every cycle $C \subseteq G$ of length at least $4$ has a chord.
 :::
@@ -97,7 +97,7 @@ Every chordal graph (with at least one vertex) contains a simplicial vertex.
 
 The proof needs two lemmas. The first one is about how chordal graphs can be cut apart.
 
-::: definition {#def:minimal-cut title="Minimal vertex cut between two vertices" defines="vertex cut separator minimal cut" source="theory/2026-10-06 p2"}
+::: definition {#def:minimal-cut title="Minimal vertex cut between two vertices" defines="vertex cut, separator, minimal cut" source="theory/2026-10-06 p2"}
 Let $u \ne v$ be vertices of $G$. A set $X \subseteq V(G) \setminus \set{u, v}$ is a **cut between $u$ and $v$** if $u$ and
 $v$ lie in different components of $G - X$. It is a **minimal cut** if no proper subset of $X$ is a cut
 between $u$ and $v$.
@@ -233,7 +233,7 @@ maximum clique or optimal colouring, NP-hard in general, become easy for chordal
 
 ## Hamiltonian graphs
 
-::: definition {#def:hamiltonian title="Hamiltonian cycle, path and graph" defines="Hamiltonian cycle Hamiltonian path Hamiltonian graph" source="theory/2026-10-06 p5"}
+::: definition {#def:hamiltonian title="Hamiltonian cycle, path and graph" defines="Hamiltonian cycle, Hamiltonian path, Hamiltonian graph" source="theory/2026-10-06 p5"}
 A cycle $C \subseteq G$ is **Hamiltonian** if $V(C) = V(G)$. A path $P \subseteq G$ is **Hamiltonian** if
 $V(P) = V(G)$. A graph $G$ is **Hamiltonian** if $G$ contains a Hamiltonian cycle.
 :::
@@ -271,7 +271,7 @@ use: K(3,4)
 
 The proof works by adding edges that do not change Hamiltonicity.
 
-::: definition {#def:hamiltonian-completion title="Hamiltonian completion" defines="Hamiltonian completion closure" source="theory/2026-10-06 p6"}
+::: definition {#def:hamiltonian-completion title="Hamiltonian completion" defines="Hamiltonian completion, closure" source="theory/2026-10-06 p6"}
 If $u \ne v \in V(G)$, $uv \notin E(G)$, and $d_G(u) + d_G(v) \ge \abs{V(G)}$, then the graph $G + uv$ is called a
 **(one-step) Hamiltonian completion** of $G$. In general, $H$ is a **Hamiltonian completion** of $G$ if $H$ is
 obtained from $G$ by any sequence of one-step Hamiltonian completions.

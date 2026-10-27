@@ -70,7 +70,7 @@ there is no topic layer, and there are no dependency links.
   - Add `intuitionsFor(ix, id)` next to `proofsFor` in `packages/content/pages.ts`.
   - Update CONTENT_CONVENTIONS.md §4.1/§4.3.
   - Add a vitest case.
-- [ ] I2 Lint in `scripts/validate-content.ts`, as warnings with their own count:
+- [x] I2 Lint in `scripts/validate-content.ts`, as warnings with their own count:
   - a reference container without an intuition;
   - a `defines` term mentioned unlinked in a section other than its defining one (first mention per section).
 - [ ] I3 Topic map.

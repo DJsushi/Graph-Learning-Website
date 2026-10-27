@@ -17,7 +17,7 @@ a graph can be split into two independent halves exactly when it has no cycle of
 
 ## Subgraphs
 
-::: definition {#def:subgraph title="Subgraph, induced subgraph" defines="subgraph induced subgraph" source="theory/2026-09-22 p3"}
+::: definition {#def:subgraph title="Subgraph, induced subgraph" defines="subgraph, induced subgraph" source="theory/2026-09-22 p3"}
 A graph $G_1$ is a **subgraph** of a graph $G$, written $G_1 \subseteq G$, if
 $V(G_1) \subseteq V(G)$, $E(G_1) \subseteq E(G)$ (and $G_1$ is a graph, i.e. every edge of $G_1$ has
 both endpoints in $V(G_1)$).
@@ -59,7 +59,7 @@ $V_1 \subseteq V$, $E_1 \subseteq E$, and $\varepsilon_1(e) = \varepsilon(e)$ fo
 The condition $\varepsilon_1(e) = \varepsilon(e)$ says that an edge keeps its endpoints when we pass
 to the submultigraph (and implicitly that those endpoints lie in $V_1$).
 
-::: definition {#def:clique title="Clique, independent set" defines="clique independent set" source="theory/2026-09-22 p3"}
+::: definition {#def:clique title="Clique, independent set" defines="clique, independent set" source="theory/2026-09-22 p3"}
 A **clique** in $G$ is a subgraph of $G$ isomorphic to a complete graph $K_m$. (Equivalently, a set
 of pairwise adjacent vertices.)
 
@@ -81,7 +81,7 @@ A set $X$ is independent in $G$ exactly when it is a clique in the complement $\
 
 ## Walks and paths
 
-::: definition {#def:walk title="Walk" defines="walk closed walk length of a walk" source="theory/2026-09-22 p3"}
+::: definition {#def:walk title="Walk" defines="walk, closed walk, length of a walk" source="theory/2026-09-22 p3"}
 A **walk** in a (multi)graph $G$ is a sequence
 $$W = (v_0, e_0, v_1, e_1, v_2, \dots, e_{k-1}, v_k)$$
 of vertices $v_i$ and edges $e_i$ of $G$ such that $e_i$ has the endpoints $v_i$ and $v_{i+1}$ for all
@@ -136,7 +136,7 @@ The relation "$u$ and $v$ are connected by a walk" on $V(G)$ is an **equivalence
 - it is symmetric: reversing a walk from $u$ to $v$ gives a walk from $v$ to $u$;
 - it is transitive: a walk from $u$ to $v$ followed by a walk from $v$ to $w$ is a walk from $u$ to $w$.
 
-::: definition {#def:component title="Connected components" defines="component connected" source="theory/2026-09-22 p4"}
+::: definition {#def:component title="Connected components" defines="component, connected" source="theory/2026-09-22 p4"}
 The equivalence classes of the relation "connected by a walk" on $V(G)$ are called the
 **(connected) components** of $G$. (Often the subgraphs induced on these classes are also called
 components.) A graph is **connected** if it has exactly one component, that is, if every two
@@ -145,7 +145,7 @@ vertices are connected by a walk.
 
 By [[claim:shortest-walk-path]], "connected by a walk" is the same as "connected by a path".
 
-::: definition {#def:distance title="Graph distance" defines="distance dist" source="theory/2026-09-22 p4"}
+::: definition {#def:distance title="Graph distance" defines="distance, dist" source="theory/2026-09-22 p4"}
 The **distance** of vertices $u, v$ in $G$ is
 $$\mathrm{dist}_G(u, v) := \min\set{\text{length of a walk from } u \text{ to } v},$$
 with $\mathrm{dist}_G(u, v) = \infty$ if $u$ and $v$ lie in different components.
@@ -201,7 +201,7 @@ x -- a; x -- b; x -- c; a -- d; b -- d; b -- e; c -- e; c -- f; d -- g; e -- g; 
 
 ## Bipartite graphs
 
-::: definition {#def:bipartite title="Bipartite graph" defines="bipartite bipartition" source="theory/2026-09-22 p4"}
+::: definition {#def:bipartite title="Bipartite graph" defines="bipartite, bipartition" source="theory/2026-09-22 p4"}
 A graph $G$ is **bipartite** if there are sets $A, B$ with $A \cup B = V(G)$, $A \cap B = \emptyset$, such
 that both $A$ and $B$ are independent. The pair $(A, B)$ is a **bipartition** of $G$.
 :::

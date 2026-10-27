@@ -33,7 +33,7 @@ The algorithms course uses the following conventions:
 Throughout, $G = (V, E)$ is an undirected **connected** graph with a **weight function** $w : E(G) \to \R^+$. The
 **weight** of a subgraph $H$ is $w(H) = \sum_{e \in E(H)} w(e)$.
 
-::: definition {#def:mst title="Minimum spanning tree" defines="minimum spanning tree MST weight" source="algorithms/01 p3"}
+::: definition {#def:mst title="Minimum spanning tree" defines="minimum spanning tree, MST, weight" source="algorithms/01 p3"}
 A **spanning tree** of $G$ is a subgraph $T \subseteq G$ such that $V(T) = V(G)$ and $T$ is a tree
 ([[def:spanning-tree]]). A **minimum spanning tree (MST)** of $G$ is a spanning tree $M$ such that $w(M) \le w(T)$ for
 all spanning trees $T$ of $G$.
@@ -290,7 +290,7 @@ a -- b [w=4]; a -- c [w=8]; b -- c [w=11]; b -- d [w=9]; c -- e [w=7]; c -- f [w
 d -- e [w=2]; d -- g [w=6]; e -- f [w=5]; e -- g [w=12]; f -- h [w=3]; g -- h [w=10]
 ```
 
-::: definition {#def:dense-sparse title="Dense and sparse graphs" defines="dense graph sparse graph" source="algorithms/01 p16"}
+::: definition {#def:dense-sparse title="Dense and sparse graphs" defines="dense graph, sparse graph" source="algorithms/01 p16"}
 A **dense** graph is a graph where the number of edges is close to the maximum possible number of edges; a **sparse** graph has only few edges.
 :::
 
@@ -352,7 +352,7 @@ d -- e [w=2]; d -- g [w=6]; e -- f [w=5]; e -- g [w=12]; f -- h [w=3]; g -- h [w
 
 Borůvka's algorithm is naturally expressed with **contractions**.
 
-::: definition {#def:edge-contraction title="Edge and subgraph contraction" defines="contraction edge contraction" source="algorithms/01 p21"}
+::: definition {#def:edge-contraction title="Edge and subgraph contraction" defines="contraction, edge contraction" source="algorithms/01 p21"}
 Let $e = uv$ be an edge of $G$. The graph $G_{uv} = G_e$ obtained from $G$ by **contracting** $e$ is defined by
 $$V(G_{uv}) = (V(G) \setminus \set{u, v}) \cup \set{w_{uv}}, \quad w_{uv} \notin V(G),$$
 $$E(G_{uv}) = \set{ab \in E(G) \mid \set{a, b} \cap \set{u, v} = \emptyset} \ \cup\ \set{w_{uv}x \mid ux \in E(G) \lor vx \in E(G)},$$
@@ -496,7 +496,7 @@ $\O(m \log \beta(m, n))$ in total. **Total time: $\O(m \log \beta(m, n))$.**
 
 ### F-heavy and F-light edges
 
-::: definition {#def:f-heavy title="F-heavy and F-light edges" defines="subforest F-heavy F-light" source="algorithms/01 p37"}
+::: definition {#def:f-heavy title="F-heavy and F-light edges" defines="subforest, F-heavy, F-light" source="algorithms/01 p37"}
 A **subforest** $F$ of a graph $G = (V, E)$ is a subgraph of $G$ which is a forest. For $e \in E$, let $w_F(e)$ be the weight of the heaviest edge on the unique
 path in $F$ between the endpoints of $e$, and $w_F(e) = \infty$ if $e$ joins two different components of $F$. The edge $e$ is **$F$-heavy** if $w(e) > w_F(e)$,
 and **$F$-light** otherwise.
@@ -634,7 +634,7 @@ $\O(\min\set{n^2, m \log n})$, matching Borůvka.
 
 How do we generalize spanning trees to directed graphs?
 
-::: definition {#def:arborescence title="Arborescence" defines="arborescence root" source="algorithms/01 p48"}
+::: definition {#def:arborescence title="Arborescence" defines="arborescence, root" source="algorithms/01 p48"}
 For a digraph $D = (V, E)$ and a **root** $r \in V$, an **arborescence** (rooted at $r$) is a subgraph $T = (V, F)$ such that
 
 1. $T$ is a spanning tree (if we forget the edge orientations), and

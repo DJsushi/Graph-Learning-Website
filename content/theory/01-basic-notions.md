@@ -24,7 +24,7 @@ Informally, a graph is a **symmetric binary relation**: a set of objects togethe
 information which pairs of them are related. Unless said otherwise, the word *graph* always
 means a **simple undirected graph**:
 
-::: definition {#def:graph title="Graph" defines="graph vertex edge" source="theory/2026-09-15 p1"}
+::: definition {#def:graph title="Graph" defines="graph, vertex, edge" basic=true source="theory/2026-09-15 p1"}
 A **graph** is a pair $G = (V, E)$, where $V$ is a set and $E \subseteq \binom{V}{2}$ is a set of
 2-element subsets of $V$.
 
@@ -37,7 +37,7 @@ Throughout, graphs are **finite** ($V$ is a finite set), and we use the notation
 - $n = \abs{V(G)}$ is the number of vertices and $m = \abs{E(G)}$ the number of edges;
 - an edge $\set{u, v}$ is often written shortly as $uv$ (so $uv = vu$).
 
-::: definition {#def:adjacent title="Adjacency and incidence" defines="adjacent incident neighbour neighbourhood endpoint" extra=true}
+::: definition {#def:adjacent title="Adjacency and incidence" defines="adjacent, incident, neighbour, neighbourhood, endpoint" basic=true extra=true}
 Let $G$ be a graph and $e = uv \in E(G)$. The vertices $u$ and $v$ are the **endpoints** of $e$;
 we say that $u$ and $v$ are **adjacent** (or **neighbours**), and that $e$ is **incident** with
 $u$ and with $v$. The **neighbourhood** of a vertex $v$ is the set
@@ -50,7 +50,7 @@ same endpoints (a set cannot contain the same element twice). Many applications 
 these features, and sometimes they also need edges with a direction. The following very general
 definition covers all of that at once.
 
-::: definition {#def:mixed-multigraph title="Mixed multigraph" defines="mixed multigraph loop parallel edges arc" source="theory/2026-09-15 p1"}
+::: definition {#def:mixed-multigraph title="Mixed multigraph" defines="mixed, multigraph, loop, parallel edges, arc" source="theory/2026-09-15 p1"}
 A **mixed multigraph** is a triple $G = (V, E, \varepsilon)$, where $V$ and $E$ are disjoint sets
 and
 $$\varepsilon : E \to V \,\cup\, (V \times V) \,\cup\, \binom{V}{2}$$
@@ -105,24 +105,24 @@ the roads separately.
 A few graphs appear so often that they have standard names. Mind the conventions for the index
 $n$: they follow the lectures, and they are a common source of off-by-one mistakes.
 
-::: definition {#def:path-graph title="Path $P_n$" defines="path P_n length" source="theory/2026-09-15 p2"}
+::: definition {#def:path-graph title="Path $P_n$" defines="path, P_n, length" source="theory/2026-09-15 p2"}
 The **path of length $n$**, denoted $P_n$, is the graph with
 $$V(P_n) = \set{0, 1, \dots, n}, \qquad E(P_n) = \set{\set{i-1, i} : 1 \le i \le n}.$$
 So $P_n$ has $n + 1$ vertices and $n$ edges. The **length** of a path is the number of its edges.
 :::
 
-::: definition {#def:cycle-graph title="Cycle $C_n$" defines="cycle C_n" source="theory/2026-09-15 p2"}
+::: definition {#def:cycle-graph title="Cycle $C_n$" defines="cycle, C_n" source="theory/2026-09-15 p2"}
 For $n \ge 3$, the **cycle of length $n$**, denoted $C_n$, is the graph with
 $$V(C_n) = \set{1, 2, \dots, n}, \qquad E(C_n) = \set{\set{i, i+1} : 1 \le i < n} \cup \set{\set{n, 1}}.$$
 So $C_n$ has $n$ vertices and $n$ edges.
 :::
 
-::: definition {#def:complete-graph title="Complete graph $K_n$" defines="complete graph K_n clique" source="theory/2026-09-15 p2"}
+::: definition {#def:complete-graph title="Complete graph $K_n$" defines="complete graph, K_n, clique" source="theory/2026-09-15 p2"}
 The **complete graph on $n$ vertices**, denoted $K_n$, has $\abs{V(K_n)} = n$ and
 $E(K_n) = \binom{V(K_n)}{2}$: every two distinct vertices are adjacent.
 :::
 
-::: definition {#def:complete-bipartite title="Complete bipartite graph $K_{m,n}$" defines="complete bipartite graph K_{m,n}" source="theory/2026-09-15 p3"}
+::: definition {#def:complete-bipartite title="Complete bipartite graph $K_{m,n}$" defines="complete bipartite graph, K_{m,n}" source="theory/2026-09-15 p3"}
 The **complete bipartite graph on $m + n$ vertices**, denoted $K_{m,n}$, has vertex set
 $V_m \cup V_n$, where $V_m = \set{1, \dots, m}$ and $V_n = \set{1', \dots, n'}$ are disjoint, and
 $$E(K_{m,n}) = \set{\set{u, v} : u \in V_m,\ v \in V_n}.$$
@@ -182,7 +182,7 @@ panel: $H$
 1 -- 2 -- 3 -- 4 -- 1
 ```
 
-::: definition {#def:isomorphism title="Isomorphism of graphs" defines="isomorphic isomorphism" source="theory/2026-09-15 p4"}
+::: definition {#def:isomorphism title="Isomorphism of graphs" defines="isomorphic, isomorphism" source="theory/2026-09-15 p4"}
 Graphs $G$ and $H$ are **isomorphic**, written $G \cong H$, if there exists a bijection
 $f : V(G) \to V(H)$ such that for all $u \ne v \in V(G)$:
 $$\set{u, v} \in E(G) \iff \set{f(u), f(v)} \in E(H).$$
@@ -271,7 +271,7 @@ use: C(3) prefix=b
 
 ## Degrees
 
-::: definition {#def:degree title="Degree" defines="degree d_G(v) isolated vertex" source="theory/2026-09-15 p5"}
+::: definition {#def:degree title="Degree" defines="degree, d_G(v), isolated vertex" source="theory/2026-09-15 p5"}
 The **degree** of a vertex $v \in V(G)$ is
 $$d_G(v) := \text{the number of edges incident with } v,$$
 where **loops are counted twice**. A vertex of degree $0$ is **isolated**.
@@ -357,7 +357,7 @@ l -- r [bend=0.5]; l -- mt; mt -- r; l -- mb; mt -- mb; r -- mb; l -- p; r -- q
 Now the reverse question: given a sequence of numbers, **is there a (simple) graph with this
 degree sequence?** This question is the subject of the rest of the lesson.
 
-::: definition {#def:graphic-sequence title="Graphic sequence" defines="graphic sequence realisation" extra=true}
+::: definition {#def:graphic-sequence title="Graphic sequence" defines="graphic sequence, realisation" extra=true}
 A sequence $(d_1, \dots, d_n)$ of non-negative integers is **graphic** if there is a simple graph
 $G$ with $V(G) = \set{v_1, \dots, v_n}$ and $d_G(v_i) = d_i$ for all $i$. Such a $G$ is a
 **realisation** of the sequence.

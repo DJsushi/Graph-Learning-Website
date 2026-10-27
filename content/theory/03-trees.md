@@ -18,7 +18,7 @@ a surprising existence theorem about graphs without short cycles.
 
 ## Forests and trees
 
-::: definition {#def:forest-tree title="Forest, tree" defines="acyclic forest tree" source="theory/2026-09-29 p1"}
+::: definition {#def:forest-tree title="Forest, tree" defines="acyclic, forest, tree" source="theory/2026-09-29 p1"}
 A graph $G$ is **acyclic**, or a **forest**, if $G$ contains no cycle. $G$ is a **tree** if $G$ is acyclic
 and connected.
 :::
@@ -352,7 +352,7 @@ unclass highlight: 5->2
 
 ## Girth and regular graphs
 
-::: definition {#def:girth title="Girth, regular graph" defines="girth regular d-regular" source="theory/2026-09-29 p8"}
+::: definition {#def:girth title="Girth, regular graph" defines="girth, regular, d-regular" source="theory/2026-09-29 p8"}
 The **girth** of a graph $G$ is the length of the shortest cycle in $G$ ($\infty$ if $G$ is acyclic). A
 graph is **$d$-regular** if every vertex has degree $d$.
 :::
