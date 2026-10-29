@@ -640,3 +640,8 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-settings-easing-side { display: flex; flex-direction: column; gap: 0.6rem; align-items: flex-start; }
 .ga-settings-easing-side .ga-seg { flex-wrap: wrap; }
 .ga-settings-css { font-size: 0.8rem; }
+
+/* lessons use the full screen width (VitePress caps the layout at 1440px and the doc column at 688px) */
+:root { --vp-layout-max-width: 100vw; }
+.VPDoc.has-aside .content-container { max-width: none !important; }
+.VPDoc .container, .VPDoc .content { max-width: none !important; }
