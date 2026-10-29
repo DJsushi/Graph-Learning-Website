@@ -26,6 +26,8 @@ export interface Step {
   /** vertices of the previous graph merged into `to` in `graph` (or, with `split`, split apart); animates contraction */
   merges?: Merge[]
   split?: boolean
+  /** caption of the main graph when side panels are shown (default: network $G$) */
+  title?: string
   /** extra graphs shown next to the main one (residual network, level graph) */
   panels?: StepPanel[]
   /** state panel entries, name -> display text ($math$ allowed) */

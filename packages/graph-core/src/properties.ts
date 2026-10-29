@@ -2,6 +2,7 @@
 import { GraphIndex } from './model'
 import * as A from './analysis'
 import { maxFlowValue } from './algorithms/flow'
+import { globalMinCut } from './algorithms/cuts'
 
 export interface PropertyDef {
   id: string
@@ -43,6 +44,7 @@ const defs: PropertyDef[] = [
     },
   },
   { id: 'chromatic-number', name: 'chromatic number $\\chi$', compute: ix => { const c = A.chromaticNumber(ix); return c === undefined ? '—' : String(c) } },
+  { id: 'min-cut', name: 'minimum cut $\\lambda(G)$', compute: ix => (ix.n > 1 ? String(globalMinCut(ix.g).value) : '—') },
   { id: 'max-matching', name: 'maximum matching', compute: ix => String(A.maxMatchingSize(ix)) },
   {
     id: 'max-flow-value', name: 'maximum flow', compute: ix => {

@@ -78,7 +78,7 @@ const stateEntries = computed(() => (show.value.includes('state') ? Object.entri
       <div class="ga-player-body" :class="{ 'ga-has-side': (codeHtml || stateEntries.length) && !panels.length }">
         <div class="ga-player-main" :class="{ 'ga-player-graphs': panels.length }">
           <div class="ga-side-graph">
-            <div v-if="panels.length" class="ga-pane-caption"><RichText text="network $G$" /></div>
+            <div v-if="panels.length" class="ga-pane-caption"><RichText :text="cur.title ?? 'network $G$'" /></div>
             <GraphView :graph="tweened" :fade="fade" :goo="goo" :ghost="ghost" animate :overlay="cur.overlay" :max-height="height" :aria-label="`${def?.name}, step ${step + 1}`" />
           </div>
           <div v-for="(p, i) in panels" :key="i" class="ga-side-graph">

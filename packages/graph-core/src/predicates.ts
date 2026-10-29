@@ -4,6 +4,7 @@ import * as A from './analysis'
 import { mstEdges } from './algorithms/mst'
 import { maxFlowValue } from './algorithms/flow'
 import { minArborescenceCost } from './algorithms/arborescence'
+import { cutCapacity, globalMinCut } from './algorithms/cuts'
 import { emptyGraph } from './model'
 
 export interface Selection { vertices: Set<Id>; edges: Set<Id> }
@@ -130,6 +131,12 @@ const preds: Record<string, Predicate> = {
     let cap = 0
     for (const e of graph.edges) if (S.has(e.tail[0]) && !S.has(e.head[0])) cap += num(e.data.c, Infinity)
     const best = maxFlowValue(graph, s, t).value
+    return cap === best ? ok() : no(`This cut has capacity ${cap}; a cut of smaller capacity exists.`)
+  },
+  'is-global-min-cut-side': ({ graph, selection }) => {
+    const S = selection.vertices
+    if (!S.size || S.size === graph.vertices.length) return no('Both sides of a cut must be non-empty.')
+    const cap = cutCapacity(graph, S), best = globalMinCut(graph).value
     return cap === best ? ok() : no(`This cut has capacity ${cap}; a cut of smaller capacity exists.`)
   },
   'is-min-arborescence': ({ graph, selection, args }) => {

@@ -213,7 +213,8 @@ watch([algoId, graph], () => {
     const prev = algoParams.value[name]
     if (name === 'source') p.source = prev && ids.includes(prev) ? prev : graph.value.vertices.find(v => v.classes.includes('source'))?.id ?? ids[0] ?? ''
     else if (name === 'sink') p.sink = prev && ids.includes(prev) ? prev : graph.value.vertices.find(v => v.classes.includes('sink'))?.id ?? ids[ids.length - 1] ?? ''
-    else if (name === 'root') p.root = prev && ids.includes(prev) ? prev : ids[0] ?? ''
+    else if (name === 'root' || name === 'start') p[name] = prev && ids.includes(prev) ? prev : ids[0] ?? ''
+    else if (name === 'seed') p.seed = prev ?? '1'
     else if (name === 'choice') p.choice = prev ?? 'dfs'
     else if (name === 'seq') p.seq = prev ?? '3,3,2,2,2'
   }
@@ -225,6 +226,7 @@ const algoNote = computed(() => {
   if (a.directed && !isDirected.value) return 'This algorithm needs a directed graph with capacities c (switch the graph type above).'
   if (['kruskal', 'jarnik', 'boruvka'].includes(a.id)) return 'Uses edge weights w (default 1). Set them in the inspector or with Randomize › Weights.'
   if (a.directed) return 'Uses arc capacities c (or weights w for arborescences).'
+  if (['stoer-wagner', 'gomory-hu', 'karger'].includes(a.id)) return 'Uses edge capacities c (else weights w, else 1); arcs count as undirected edges.'
   return ''
 })
 function run() { mode.value = 'run' }
@@ -463,7 +465,7 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
           </select>
         </label>
         <template v-for="name in algo?.params ?? []" :key="name">
-          <label v-if="['source', 'sink', 'root'].includes(name)" class="ga-field">{{ name }}
+          <label v-if="['source', 'sink', 'root', 'start'].includes(name)" class="ga-field">{{ name }}
             <select v-model="algoParams[name]">
               <option v-for="v in graph.vertices" :key="v.id" :value="v.id">{{ v.label?.replace(/\$/g, '') ?? v.id }}</option>
             </select>
@@ -473,6 +475,9 @@ watch(message, m => { if (m) setTimeout(() => { if (message.value === m) message
           </label>
           <label v-else-if="name === 'seq'" class="ga-field">degree sequence
             <input v-model="algoParams.seq" type="text" />
+          </label>
+          <label v-else-if="name === 'seed'" class="ga-field">random seed
+            <input v-model="algoParams.seed" type="number" min="0" />
           </label>
         </template>
         <p v-if="algoNote" class="ga-muted">{{ algoNote }}</p>

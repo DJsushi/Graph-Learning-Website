@@ -3,7 +3,7 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadContent } from '../../content/index'
 import { parseGraph } from '../src/dsl/parser'
-import { ALGORITHMS, collect, maxFlowValue, minArborescenceCost, mstEdges } from '../src/algorithms'
+import { ALGORITHMS, collect, cutCapacity, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
 import { GraphIndex, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
@@ -91,6 +91,74 @@ describe('flow lesson', () => {
   })
   it('matching exercise has a perfect matching', () => {
     expect(A.maxMatchingSize(new GraphIndex(fig('a02-ex-matching')))).toBe(4)
+  })
+})
+
+describe('minimum cuts lesson', () => {
+  const g = fig('a03-network')
+  const tree = fig('a03-network', 1)
+  const f = (s: string, t: string) => minSTCut(g, s, t).value
+  it('the drawn tree is a Gomory–Hu tree of the lecture network (all 15 pairs, path minima)', () => {
+    const w = (u: string, v: string) => num(tree.edges.find(e => (e.tail[0] === u && e.head[0] === v) || (e.tail[0] === v && e.head[0] === u))!.data.w)
+    const ids = g.vertices.map(v => v.id)
+    const pathMin = (s: string, t: string): number => {
+      const best = new Map([[s, Infinity]]), st = [s]
+      while (st.length) { const x = st.pop()!; for (const e of tree.edges) for (const [p, q] of [[e.tail[0], e.head[0]], [e.head[0], e.tail[0]]]) if (p === x && !best.has(q)) { best.set(q, Math.min(best.get(x)!, w(p, q))); st.push(q) } }
+      return best.get(t)!
+    }
+    for (const s of ids) for (const t of ids) if (s < t) expect(pathMin(s, t)).toBe(f(s, t))
+    expect([f('a', 'd'), f('a', 'c'), f('d', 'c'), f('b', 'f'), f('a', 'b'), f('e', 'd'), f('a', 'e')]).toEqual([13, 13, 14, 17, 18, 14, 13])
+  })
+  it('construction with the lecture pairs gives cuts 17, 18, 13, 14, 15 and the drawn tree', () => {
+    const { steps } = collect(ALGORITHMS['gomory-hu'], g, { pairs: 'b f, a b, c f, d e, c e' })
+    expect(steps.filter(s => s.line === 'mincut').map(s => /capacity \$(\d+)\$/.exec(s.message)![1])).toEqual(['17', '18', '13', '14', '15'])
+    const key = (u: string, v: string, w: number) => [u, v].sort().join('') + w
+    expect(gomoryHuTree(g, 'b f, a b, c f, d e, c e').map(e => key(e.u, e.v, e.w)).sort())
+      .toEqual(tree.edges.map(e => key(e.tail[0], e.head[0], num(e.data.w))).sort())
+  })
+  it('cut capacities quoted in the text', () => {
+    const c = (...S: string[]) => cutCapacity(g, new Set(S))
+    expect([c('a'), c('a', 'b'), c('c', 'd', 'e'), c('d'), c('c')]).toEqual([18, 17, 13, 14, 15])
+    expect(Math.min(...g.vertices.map(v => c(v.id)))).toBe(14)
+    expect(globalMinCut(g)).toEqual({ value: 13, side: new Set(['c', 'd', 'e']) })
+  })
+  it('Stoer–Wagner phases: cuts 14, 15, 13, 17, 18; phase 1 order a, b, f, c, e, d', () => {
+    const { steps } = collect(ALGORITHMS['stoer-wagner'], fig('a03-stoer-wagner-player'), { start: 'a' })
+    expect(steps.filter(s => s.line === 'end').map(s => /= (\d+)\$; it is/.exec(s.message)![1])).toEqual(['14', '15', '13', '17', '18'])
+    const phase1 = steps.slice(0, steps.findIndex(s => s.line === 'end')).filter(s => s.action).map(s => s.action!.id)
+    expect(['a', ...phase1]).toEqual(['a', 'b', 'f', 'c', 'e', 'd'])
+  })
+  it('identification figure: δ({u,v,y}) = 14 before and after', () => {
+    const fg = index.figureById.get('a03-identification')!
+    const steps = parseGraph(fg.source, fg.info).panels[0].steps
+    expect(cutCapacity(steps[0].graph, new Set(['u', 'v', 'y']))).toBe(14)
+    expect(cutCapacity(steps.at(-1)!.graph, new Set(['w', 'y']))).toBe(14)
+  })
+  it('uncrossing figure: 4 + 4 vs 3 + 3', () => {
+    const u = fig('a03-uncrossing')
+    const c = (...S: string[]) => cutCapacity(u, new Set(S))
+    expect([c('p', 'q'), c('q', 'r'), c('p', 'q', 'r'), c('q')]).toEqual([4, 4, 3, 3])
+  })
+  it('Karger players: seed 5 finds the minimum cut 2, seed 1 returns 4', () => {
+    expect((collect(ALGORITHMS.karger, fig('a03-karger-good'), { seed: '5' }).result as any).value).toBe(2)
+    expect((collect(ALGORITHMS.karger, fig('a03-karger-bad'), { seed: '1' }).result as any).value).toBe(4)
+    expect(globalMinCut(fig('a03-karger-good')).value).toBe(2)
+  })
+  it('exercises: tree value 6, global cut {a,b,c} = 4, phase order a b c d e', () => {
+    const t = fig('a03-ex-gomory-hu-value')
+    expect(Math.min(...t.edges.filter(e => ['xu', 'uv', 'vz'].includes(e.tail[0] + e.head[0])).map(e => num(e.data.w)))).toBe(6)
+    const gc = fig('a03-ex-global-cut')
+    const sel = (S: string[]) => PREDICATES['is-global-min-cut-side']({ graph: gc, original: gc, selection: { vertices: new Set(S), edges: new Set() }, args: {} }).ok
+    expect([sel(['a', 'b', 'c']), sel(['d', 'e', 'f']), sel(['a']), sel([])]).toEqual([true, true, false, false])
+    const ph = fig('a03-ex-mincut-phase')
+    expect(collect(ALGORITHMS['stoer-wagner'], ph, { start: 'a', phases: '1' }).steps.filter(s => s.action).map(s => s.action!.id)).toEqual(['b', 'c', 'd', 'e'])
+  })
+  it('Karger–Stein numbers: t = 9 for n = 10, t = 72 for n = 100, 19 levels for n = 1000', () => {
+    const t = (n: number) => Math.ceil(1 + n / Math.SQRT2)
+    expect([t(10), t(100), t(1000), t(709)]).toEqual([9, 72, 709, 503])
+    let n = 1000, d = 0
+    while (n > 6) { n = t(n); d++ }
+    expect(d).toBe(19)
   })
 })
 

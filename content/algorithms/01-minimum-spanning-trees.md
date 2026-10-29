@@ -901,7 +901,7 @@ measure $6000$ drops to at most $3500$ on the next level.
 :::
 
 ::: remark
-With high probability the algorithm runs in time $\O(m)$: for a connected graph, the probability is $1 - e^{-\Omega(m)}$ (by Chernoff bounds). In the worst case it takes
+[[def:whp|With high probability]] the algorithm runs in time $\O(m)$: for a connected graph, the probability is $1 - e^{-\Omega(m)}$ (by Chernoff bounds). In the worst case it takes
 $\O(\min\set{n^2, m \log n})$, the same bound as Borůvka.
 :::
 

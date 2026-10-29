@@ -67,3 +67,16 @@
     alg:dinic, lem:dinic-phases, alg:dinic-blocking, prop:dinic-blocking-time, thm:dinic, thm:mpm,
     def:vertex-capacity, alg:mpm, prop:mpm-time, thm:mpm-time, def:unit-capacity, lem:unit-distance,
     thm:unit-dinic]
+- slug: gomory-hu
+  title: All-pairs minimum cuts
+  intro: Cuts in undirected networks, node identification, Gomory–Hu trees and why their construction works.
+  ids: [def:undirected-cut, def:node-identification, obs:identification-cuts, def:gomory-hu-tree, obs:gomory-hu-edge,
+    prop:gomory-hu-path, alg:gomory-hu, lem:cut-submodular, lem:gomory-hu, cor:gomory-hu-contraction, lem:flow-triangle,
+    lem:flow-triangle-path, lem:gomory-hu-invariant, thm:gomory-hu]
+- slug: global-min-cut
+  title: Global minimum cuts
+  intro: The minimum cut of a whole network by n − 1 flows, by node identification (Stoer–Wagner) and by random contractions (Karger, Karger–Stein).
+  ids: [def:global-min-cut, prop:global-cut-flows, cor:identification-mincut, alg:simple-min-cut, def:tightly-connected,
+    alg:stoer-wagner, thm:mincut-phase, cor:stoer-wagner, prop:stoer-wagner-time, alg:karger, lem:karger-success,
+    cor:number-min-cuts, thm:karger-iterate, def:whp, thm:karger-whp, lem:contract-t, alg:fast-mincut, prop:fast-mincut-time,
+    thm:fast-mincut-probability, thm:karger-stein, thm:karger-stein-all]

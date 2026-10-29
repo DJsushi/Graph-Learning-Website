@@ -282,6 +282,9 @@ interface AlgorithmDef<P, R> {
 | `edmonds-karp` | algorithms 02 | shortest augmenting paths |
 | `dinic` | algorithms 02 | level graph, blocking flow |
 | `mpm` | algorithms 02 | vertex potentials, push/pull through min-potential vertex |
+| `gomory-hu` | algorithms 03 | `params: pairs="b f, a b, …"` (optional choice of $a, b$ per round); contraction of the components of $T - S_i$ as merges; tree $T$ as a side panel |
+| `stoer-wagner` | algorithms 03 | `params: start=a phases=1`; keys $c(U, v)$ as badges, identification of $s, t$ as a merge; vertex actions for `simulate` |
+| `karger` | algorithms 03 | `params: seed=5`; random contraction (probability $c(e)/c(E)$), parallel edges merged with summed capacities |
 | (theory) | theory lessons | e.g. Euler tours, tree algorithms — added as the content needs them |
 
 **To find the required set, grep `algo:` in `content/`.** The validation script fails on unknown
@@ -295,7 +298,7 @@ ids.
 set: `vertex-count`, `edge-count`, `degree-sequence`, `degree-sum`, `min-degree`,
 `max-degree`, `connected`, `components`, `bipartite`, `is-tree`, `is-forest`, `has-cycle`,
 `girth`, `diameter`, `radius`, `eulerian`, `planar`, `chromatic-number` (exact, small graphs
-only), `is-regular`, `is-simple`, `max-flow-value`. Grow as the content needs (`grep live:`).
+only), `is-regular`, `is-simple`, `max-flow-value`, `min-cut` ($\lambda(G)$, Stoer–Wagner). Grow as the content needs (`grep live:`).
 
 ---
 
@@ -315,7 +318,7 @@ Initial registry: `is-spanning-tree`, `is-mst`, `is-path` (`from`, `to`), `is-cy
 `is-perfect-matching`, `is-vertex-cover`, `is-independent-set`, `is-clique`, `is-cut`
 (`s`, `t`), `is-min-cut`, `is-augmenting-path`, `is-proper-coloring` (`k`),
 `degree-sequence` (`seq`), `is-tree`, `is-bipartite`, `is-connected`, `isomorphic-to`
-(`ref`), `vertex-count`, `edge-count`. **Grep `check:` in `content/` for the required set**;
+(`ref`), `vertex-count`, `edge-count`, `is-global-min-cut-side` (the selected vertices are one side of a minimum cut). **Grep `check:` in `content/` for the required set**;
 the validation script fails on unknown predicate names.
 
 Feedback must be specific and never reveal the full answer.
