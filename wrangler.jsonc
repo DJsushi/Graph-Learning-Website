@@ -1,0 +1,10 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "graph-learning-website",
+  "compatibility_date": "2026-10-23",
+  "assets": {
+    "directory": ".vitepress/dist",
+    // VitePress emits 404.html; serve it for unknown paths
+    "not_found_handling": "404-page"
+  }
+}
