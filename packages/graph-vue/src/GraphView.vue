@@ -263,6 +263,9 @@ function onWheel(ev: WheelEvent) {
 const pointers = new Map<number, Pt>()
 let pan: { start: Pt; tx: number; ty: number } | null = null
 let pinch: { d: number; k: number; mid: Pt; tx: number; ty: number } | null = null
+// pointer capture retargets the click to the <svg>, so a press and release on the same element counts as its click here
+let pressed: { kind: 'vertex' | 'edge'; id: Id; x: number; y: number } | null = null
+let clickedByPointer = false
 
 function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id) {
   if (canZoom.value) {
@@ -275,6 +278,7 @@ function onPointerDown(ev: PointerEvent, kind: 'bg' | 'vertex' | 'edge', id?: Id
     }
   }
   svg.value?.setPointerCapture(ev.pointerId)
+  pressed = kind !== 'bg' && id !== undefined ? { kind, id, x: ev.clientX, y: ev.clientY } : null
   const p = toModel(ev)
   if (kind === 'vertex' && id !== undefined) emit('vertex-down', id, p, ev)
   else if (kind === 'edge' && id !== undefined) emit('edge-down', id, ev)
@@ -312,7 +316,19 @@ function onPointerUp(ev: PointerEvent) {
   pointers.delete(ev.pointerId)
   if (pointers.size < 2) pinch = null
   if (pan) { pan = null; return }
+  const pr = pressed
+  pressed = null
+  if (pr && Math.hypot(ev.clientX - pr.x, ev.clientY - pr.y) < 5) {
+    clickElement(pr.kind, pr.id)
+    // a browser that still delivers the click to the element must not toggle twice
+    clickedByPointer = true
+    setTimeout(() => { clickedByPointer = false })
+  }
   emit('up', toModel(ev), vertexAt(ev), ev)
+}
+
+function onElementClick(kind: 'vertex' | 'edge', id: Id) {
+  if (!clickedByPointer) clickElement(kind, id)
 }
 
 function clickElement(kind: 'vertex' | 'edge', id: Id) {
@@ -408,7 +424,7 @@ const describe = computed(() => {
               :aria-label="interactiveEdges ? `edge ${e.tail[0]} ${e.head[0]}` : undefined"
               :aria-pressed="selectable !== 'none' ? !!selection?.edges.includes(e.id) : undefined"
               @pointerdown.stop="onPointerDown($event, 'edge', e.id)"
-              @click="clickElement('edge', e.id)"
+              @click="onElementClick('edge', e.id)"
               @dblclick.stop="emit('edge-dblclick', e.id)"
               @keydown="onKey($event, 'edge', e.id)" />
             <path class="gv-line" :d="geoms.get(e.id)!.d" />
@@ -456,7 +472,7 @@ const describe = computed(() => {
           :aria-label="interactiveVertices ? `vertex ${v.label?.replace(/\$/g, '') ?? v.id}` : undefined"
           :aria-pressed="selectable !== 'none' ? !!selection?.vertices.includes(v.id) : undefined"
           @pointerdown.stop="onPointerDown($event, 'vertex', v.id)"
-          @click="clickElement('vertex', v.id)"
+          @click="onElementClick('vertex', v.id)"
           @dblclick.stop="emit('vertex-dblclick', v.id)"
           @keydown="onKey($event, 'vertex', v.id)">
           <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 18)" />
