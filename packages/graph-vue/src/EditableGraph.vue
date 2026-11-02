@@ -90,6 +90,7 @@ function restore(from: string[], to: string[]) {
   to.push(JSON.stringify(props.modelValue))
   group = ''
   emitGraph(JSON.parse(s))
+  view.value?.refit()
   canUndo.value = undoStack.length > 0; canRedo.value = redoStack.length > 0
 }
 const undo = () => restore(undoStack, redoStack)
@@ -428,7 +429,7 @@ let clipboard: GraphData | null = null
       </div>
     </div>
     <div class="ga-editor-stage">
-      <div ref="wrap" class="ga-canvas-wrap" @pointerdown.capture="onCanvasPointerDown">
+      <div ref="wrap" class="ga-canvas-wrap" @pointerdown.capture="onCanvasPointerDown" @pointerup="view?.refit()">
         <GraphView ref="view" :graph="g" :overlay="overlay" :selection="selection" editable :fill="fill" :zoomable="fill" :background-pan="fill"
           :max-height="height" :preview="preview" :marquee="marquee" aria-label="Editable graph"
           @vertex-down="onVertexDown" @move="onMove" @up="onUp" @background-down="onBackgroundDown" @edge-down="onEdgeDown"

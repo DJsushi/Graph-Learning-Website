@@ -230,7 +230,9 @@ function zoomBy(f: number) {
   view.value = { k, tx: p.x - ((p.x - view.value.tx) * k) / k0, ty: p.y - ((p.y - view.value.ty) * k) / k0 }
 }
 const zoom = computed(() => view.value.k)
-defineExpose({ resetView, svg, clientPoint, zoomBy, zoom })
+/** drop the grow-only editing box so the view shrinks back to the drawing (no-op in fill mode) */
+const refit = () => { if (!props.fill) frozen.value = null }
+defineExpose({ resetView, refit, svg, clientPoint, zoomBy, zoom })
 watch(() => props.graph.vertices.length === 0, () => { if (props.fill) resetView() })
 onMounted(() => { if (props.fill) resetView() })
 
