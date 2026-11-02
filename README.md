@@ -6,7 +6,7 @@ VitePress + Vue 3 + TypeScript. See PLAN.md, GRAPH_DSL.md, CONTENT_CONVENTIONS.m
 ## Run
 
     npm install
-    npm run dev        # http://localhost:5173/graph-learning-website/
+    npm run dev        # http://localhost:5173/
     npm test           # graph-core tests (checks numbers claimed in lessons)
     npm run validate   # content validator
     npm run build      # validate + static build into .vitepress/dist
