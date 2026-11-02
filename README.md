@@ -31,7 +31,7 @@ New algorithms, exercise checks or live properties go into the registries in `pa
 1. Create a GitHub repository named `graph-learning-website` and push `main`.
 2. In the repository settings, Pages, set the source to "GitHub Actions".
 3. The workflow `.github/workflows/deploy.yml` tests, validates, builds and publishes on every push.
-   The base path is taken from the repository name (`BASE` env var); for a custom domain set `BASE=/`.
+   The site is served from a custom domain (graphs.gaens.dev), so the workflow builds with `BASE=/`. For a plain project site set `BASE=/<repo-name>/`.
 
 ## Known limitations
 

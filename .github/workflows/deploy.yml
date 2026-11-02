@@ -29,7 +29,7 @@ jobs:
       - name: Build (validates content first)
         run: npm run build
         env:
-          BASE: /${{ github.event.repository.name }}/
+          BASE: /
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .vitepress/dist
