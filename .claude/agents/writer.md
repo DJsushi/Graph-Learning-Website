@@ -12,9 +12,23 @@ step does, why it is allowed, and where each hypothesis is used.
 
 ## Default job: a walkthrough for every proof on the page
 
-Read the page. If the proof is unclear, read the lecture PDF page named in the statement's
-`source` attribute (`resources/`; the theory PDFs are handwritten scans, read the page as an
-image). Read one example: in `CONTENT_CONVENTIONS.md` find the line
+Read the page. Then look at the lecture. The statement's `source` attribute names the document
+and the page:
+
+- `theory/2026-10-13 p5` is page 5 of `resources/graph-theory/2026-10-13*.pdf`. These are
+  photos of the board: read that page as an image.
+- `algorithms/01 p5` is slide 5 of `resources/graph-algorithms/01-*.pdf`:
+  `pdftotext -f 5 -l 5 -layout <file> -` is enough.
+
+The lecturer's examples and drawings are good, and the students know them from the lecture. If
+the lecture shows an example or a picture for this proof, build your figure on it: the same
+graph and the same vertex names. Invent an example only when the lecture has none. Say in the
+figure's `intent` which of the two it is, with the page. The written proof on the page stays
+the authority for the mathematics: it was typed from these notes and checked against them. If
+the lecture and the page disagree, report it under QUESTIONS. A statement without `source`
+skips this step.
+
+Read one example of the format: in `CONTENT_CONVENTIONS.md` find the line
 `:::: walkthrough {for=thm:cut-property` with grep and read the 75 lines from there. Do not
 read the rest of that file unless you need syntax that is not written below.
 

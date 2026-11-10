@@ -444,6 +444,9 @@ Text of step 2.
   with `widget=stepper`. For a shorter proof the figure is optional: use one when a picture
   helps; otherwise write the steps alone (they may point into another figure of the page with
   mark links).
+- The figure uses the lecturer's example and drawing when the lecture has one for this proof
+  (the statement's `source` attribute names the page): the same graph and the same vertex
+  names. A new example is made only when the lecture has none, and the `intent` says so.
 - With a figure, the number of `::: step` blocks equals the number of `step:` lines in it. The
   `step:` captions stay short (they are the fallback caption and the screen-reader text).
 - `for=` names the statement being proved; it must be on the same page. Omit it when the
