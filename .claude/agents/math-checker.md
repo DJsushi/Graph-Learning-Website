@@ -27,10 +27,10 @@ written proof of `<id>` step by step. Check:
    function exists.
 5. **"In words" and idea paragraphs.** True as stated. A simplification that is false is an
    error.
-5. **Proof tasks.** The statement is true. The given results are enough. The model solution is
+6. **Proof tasks.** The statement is true. The given results are enough. The model solution is
    a complete proof. The hints lead to it.
-6. **Quizzes.** The marked answers are right and the others are wrong.
-7. **Moved statements and proofs.** Compare with the lecture PDF named in `source` only if
+7. **Quizzes.** The marked answers are right and the others are wrong.
+8. **Moved statements and proofs.** Compare with the lecture PDF named in `source` only if
    something looks wrong.
 
 Do not report style, wording or layout.
