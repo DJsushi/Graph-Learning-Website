@@ -10,7 +10,8 @@
 .vscode
 .zprofile
 .zshrc
-.claude/
+.claude/*
+!.claude/agents/
 # build output
 node_modules/
 dist/

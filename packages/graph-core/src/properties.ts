@@ -1,4 +1,4 @@
-// Live properties for editable widgets and the playground (PLAN.md §7).
+// Live properties for editable widgets and the playground.
 import { GraphIndex } from './model'
 import * as A from './analysis'
 import { maxFlowValue } from './algorithms/flow'

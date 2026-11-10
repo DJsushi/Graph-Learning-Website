@@ -1,4 +1,4 @@
-// Import / export: DSL, JSON, TikZ, adjacency matrix and list, share URLs (PLAN.md §10).
+// Import / export: DSL, JSON, TikZ, adjacency matrix and list, share URLs.
 import LZString from 'lz-string'
 import { emptyGraph, ends, type AttrValue, type GraphData, type Id } from './model'
 import { parseGraph, KNOWN_DIRECTIVES } from './dsl/parser'

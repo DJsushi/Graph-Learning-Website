@@ -1,4 +1,4 @@
-// Exercise predicates (PLAN.md §8). Property-based: every correct answer is accepted.
+// Exercise predicates. Property-based: every correct answer is accepted.
 import { GraphIndex, ends, num, type GraphData, type Id } from './model'
 import * as A from './analysis'
 import { mstEdges } from './algorithms/mst'
