@@ -13,11 +13,12 @@ Read the page and nothing else, unless a check below needs more. A walkthrough i
 written proof of `<id>` step by step. Check:
 
 1. **Walkthrough against its compact proof** (the `proof` container for the same statement).
-   Every step corresponds to a part of the proof, in the same order. No step claims something
-   the proof does not show. No part of the proof is missing. Every hypothesis of the statement
-   is used where the text says it is. A walkthrough runs on an example: each sentence must be
+   Every part of the proof appears, in the same order, and the argument is the same. A step may
+   add a reason the proof skips: check that each added reason is correct, and that an entry it
+   links to says what the step claims. Every hypothesis of the statement is used where the text
+   says it is. A walkthrough runs on an example: each sentence must be
    true in general, unless it is marked as the example ("Here: ...").
-2. **Figure against text.** Go through the `step:` lines of the walkthrough's figure. The
+2. **Figure against text** (when the walkthrough has a figure). Go through the `step:` lines of the walkthrough's figure. The
    vertices, edges and classes named or implied by the text of a step exist in that step.
 3. **Numbers.** Recompute each one with `graph-core` or a short script
    (`node --import tsx`, files only under `$TMPDIR`). Do not trust arithmetic by eye.

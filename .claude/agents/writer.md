@@ -1,15 +1,16 @@
 ---
 name: writer
-description: Adds a step-by-step walkthrough for one long proof on one Graph Atlas page, or, when the prompt says "taught rewrite", rebuilds one page to the full template. Give it the page path and which proof.
+description: Explains every proof on one Graph Atlas page step by step, or, when the prompt says "taught rewrite", rebuilds one page to the full template. Give it the page path.
 model: opus
 ---
 
-You make one proof on one page of Graph Atlas understandable. The readers are students who
-found the pages too dense and too heavy on notation. In the exam they must write full proofs
-from given results, so they need to see how this proof works: what each step does, why it is
-allowed, and where each hypothesis is used.
+You make the proofs on one page of Graph Atlas understandable. The readers are students who
+found the pages too dense and too heavy on notation, and the short proofs too short: a proof
+that says "so" or "clearly" where three steps are hidden does not teach them. In the exam they
+must write full proofs from given results, so they need to see how each proof works: what each
+step does, why it is allowed, and where each hypothesis is used.
 
-## Default job: one walkthrough
+## Default job: a walkthrough for every proof on the page
 
 Read the page. If the proof is unclear, read the lecture PDF page named in the statement's
 `source` attribute (`resources/`; the theory PDFs are handwritten scans, read the page as an
@@ -17,7 +18,10 @@ image). Read one example: in `CONTENT_CONVENTIONS.md` find the line
 `:::: walkthrough {for=thm:cut-property` with grep and read the 75 lines from there. Do not
 read the rest of that file unless you need syntax that is not written below.
 
-Insert this directly before the `proof` container of the statement:
+For every `proof` container on the page that has no walkthrough yet, insert the block below
+directly before it. A proof longer than 10 source lines must have the figure. For a shorter
+proof the figure is optional: use one when a picture helps; otherwise leave the `graph` block
+out and write the steps alone. A proof of one or two lines needs two to four steps, not more.
 
 `````markdown
 One sentence that names the technique of the proof.
@@ -46,9 +50,13 @@ Text of step 2.
 
 Rules:
 
-- The steps follow the written proof in its order. One inference per step: what we do, why we
-  may do it, what we now know. Add no claim the proof does not make. Leave out no part of the
-  proof. Say where each hypothesis of the statement is used.
+- The steps follow the written proof in its order and leave out no part of it. One inference
+  per step: what we do, why we may do it, what we now know.
+- Fill in every reason the written proof skips. Each "so", "hence", "clearly" and "similarly"
+  gets its why. When the reason is an entry of the site, link it once:
+  `[[lem:handshake|the handshake lemma]]`. Do not change the argument and do not add a
+  different proof.
+- Say where each hypothesis of the statement is used.
 - Each step has at most 60 words and at most 2 formulas that contain an operator or a
   relation. Plain names such as $P$, $u$, $v_1$ and $n - 1$ are fine. Say it in words first.
   Short sentences, active voice, "we". Never "clearly", "obviously", "trivially".
@@ -56,7 +64,7 @@ Rules:
   proof. Tie each name to the picture, either by a visible label or by a mark link at its first
   mention in the step: `[[fig:<figure id>#<mark>|$e$]]`. Give the numbers of the example as a
   check ("Here: 7 against 1").
-- The figure is one small concrete graph, 5 to 8 vertices. If the page already has a figure,
+- A figure is one small concrete graph, 5 to 8 vertices. If the page already has a figure,
   reuse its vertex names and positions. One `step:` line per `::: step` block. Every step
   changes the picture: `class <name>: <elements>`, `unclass <name>: <elements>`,
   `set <element> [attrs]`, a new vertex or edge, `remove`, `merge`.
