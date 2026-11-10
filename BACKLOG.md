@@ -10,6 +10,8 @@ first content revision (§13). The plan that schedules these is `RESTRUCTURE.md`
 - **Checked**: `yes` = confirmed in the code by the planner. `no` = reported by a review
   subagent; confirm before changing code. Line numbers are approximate.
 - Tick an item by appending the commit hash to its row.
+- An id that no task row of `RESTRUCTURE.md` §2 names is deferred, whatever its When says: do it
+  when a page shows the problem.
 
 ## 1. Framework: defects
 
@@ -34,7 +36,7 @@ first content revision (§13). The plan that schedules these is `RESTRUCTURE.md`
 | F17 | `ExerciseWidget.vue` ~45, `QuizBlock.vue` ~63 | The numeric-answer comparison exists twice and the copies differ (comma handling). Share one function. | P4 | no |
 | F18 | `graph-vue/src/widgets/PlayerWidget.vue` ~63 | State values are split on `,\ ` for display. Replaced by the typed views of C7. | P4 | no |
 | F19 | `graph-core/src/algorithms/basic.ts` ~47 | `dfs` has one counter, no finish times, no edge classification, no pseudocode line and no state. | Before a page uses DFS | no |
-| F20 | `algorithms/mst.ts`, `flow.ts`, `cuts.ts` | The weight attribute differs between algorithms (`w` and `c`). Document the rule in `GRAPH_DSL.md`; unify if cheap. | P2 (document, task T2.6) | no |
+| F20 | `algorithms/mst.ts`, `flow.ts`, `cuts.ts` | The weight attribute differs between algorithms (`w` and `c`). Document the rule in `GRAPH_DSL.md`; unify if cheap. | Later | no |
 
 ## 2. Framework: performance
 
@@ -98,8 +100,8 @@ Measure before optimising, except FP1.
 | C2 | Marks: text that spotlights figure elements (`CONTENT_CONVENTIONS.md` §6.1). | P2 | |
 | C3 | Stepper statement `set` to change attributes of an existing element. Today `a -- b [w=3]` in a step adds a second edge (`dsl/parser.ts` ~388, ~449). | P2 | no |
 | C4 | Figure size and the enlarge button (`RESTRUCTURE.md` §4.4). | P2 | |
-| C5 | Figure geometry lint in the validator (task T2.7). | P2 | |
-| C6 | Stepper `state` lines and vertex `badge`s (task T4.1). | P4 | |
+| C5 | Figure geometry lint in the validator, warnings only, for figures with pinned positions: two vertices closer than one vertex diameter, a vertex lying on an edge it does not belong to, the number of edge crossings. 63 of 94 figures are hand-placed and authors cannot see them. Use `packages/graph-vue/src/geometry.ts`. | Later | |
+| C6 | Stepper `state` lines and vertex `badge`s (`GRAPH_DSL.md` §16.3). | Later | |
 | C7 | Player: typed `table` state view; extra panels without `show: residual`; Kruskal shows the sorted edge list and the union-find forest. | P4 | no |
 | C8 | Stepper with several panels, and `layout-sync` in steppers and players. Today `StepperWidget.vue` draws `doc.panels[0]` only and `layout-sync` works in static figures only. | Before flows, Menger, Gomory–Hu | yes |
 | C9 | Matching elements across two panels: highlighting one highlights its partner. | With C8 | |
@@ -246,3 +248,17 @@ items are for the owner; none blocks the restructure.
 - Entries without a lecture source: `def:leaf` (no source), `def:cut-vertex-bridge` (extra, no source); `def:cut`
   and `def:msf` (term used but not defined; mark `extra`?).
 - `def:minimum-degree` sits in the hamiltonian topic, where it is first used. It could also go in degrees.
+
+## 14. Deferred parts of the plan
+
+Cut on 2026-11-10 to fit the usage limit. None is needed for the split or the walkthroughs.
+
+| ID | Item | When |
+|----|------|------|
+| D1 | Budget checks for taught pages: measuring functions (reading path, words, light and heavy math spans) in `packages/content` with unit tests, and rules E1 to E11 of `CONTENT_CONVENTIONS.md` §10 in the validator. | Before more than a few pages are rewritten |
+| D2 | Notation: `content/notation.yaml`, the "Symbols on this page" strip, `/reference/notation` (`CONTENT_CONVENTIONS.md` §3.1). | Decide |
+| D3 | Techniques: `content/techniques.yaml`, the `technique=` attribute, `/techniques/<id>` (`CONTENT_CONVENTIONS.md` §7.4). | Decide |
+| D4 | Proof tasks in exam format: `exercise` with `kind=proof given=`, hints one at a time, an "I solved it" button; about three per chapter, each checked by the math checker (`CONTENT_CONVENTIONS.md` §7.4, §13). The owner's exams ask for exactly this kind of task. | Decide |
+| D5 | Chapter practice pages; home, course index and practice overview by chapter instead of by lecture. | Later |
+| D6 | `needs`: prerequisites per page, shown in the page header. The concept map (S26) needs it. | Later |
+| D7 | Walkthroughs for the 24 proofs of 6 to 10 lines. | Decide at Gate C |

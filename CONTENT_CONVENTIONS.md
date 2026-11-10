@@ -6,8 +6,9 @@ only works if every file follows these conventions exactly. Figures use the DSL 
 `GRAPH_DSL.md`.
 
 The content is being rebuilt from one page per lecture into one page per concept
-(`RESTRUCTURE.md`). New content follows §8 to §13. A lecture file that is not converted yet
-keeps its old shape until its sections are moved out (§12).
+(`RESTRUCTURE.md`). A script first cuts the lecture files into concept pages without changing
+the text (stage `split`). Each long proof then gets a walkthrough (§9). A page rebuilt to the
+full template (§8, §10, §11) has stage `taught`; that happens only for pages the owner names.
 
 Parts marked *planned* describe syntax or behaviour that the code supports only after the
 phase of `RESTRUCTURE.md` named there.
@@ -19,13 +20,13 @@ phase of `RESTRUCTURE.md` named there.
 ```
 content/
   topics.yaml                      chapters: slug, title, intro, course, entry ids in reference order
-  notation.yaml                    every symbol once (§3.1)          planned, Phase 1
-  techniques.yaml                  proof techniques (§7.4)           planned, Phase 1
+  notation.yaml                    every symbol once (§3.1)          deferred
+  techniques.yaml                  proof techniques (§7.4)           deferred
   theory/
     03-trees.md                    lecture file: one per lecture, numbered by lecture order
     trees/
       leaves.md                    concept page: one concept
-      practice.md                  chapter practice page
+      practice.md                  chapter practice page (deferred)
   algorithms/
     01-minimum-spanning-trees.md
     mst/
@@ -58,11 +59,14 @@ lectures: [a01]               # slugs of the lecture files this page comes from
 goal: Explain why the lightest edge across a cut is in every minimum spanning tree.
 needs: [algorithms/mst/cuts]  # pages to read first (concept pages or lecture pages)
 symbols: [weight, cut-partition]   # ids from content/notation.yaml
-kind: concept                 # concept (default) | practice
+stage: split                  # split = text as cut from the lecture | taught = rebuilt to §8
 long: false                   # true raises the word cap; needs a comment saying why
 status: draft
 ---
 ```
+
+A split page has `title`, `course`, `chapter`, `order`, `lectures`, `stage` and `status`. `goal`
+and `long` belong to taught pages. `needs` and `symbols` are deferred (`BACKLOG.md` §14).
 
 Lecture files keep their frontmatter. A page is a concept page when it has `chapter`.
 New figures keep the lecture prefix in their id (`a01-...`, `t03-...`).
@@ -109,7 +113,7 @@ status: draft             # draft | reviewed
 
 ### 3.1 Notation registry
 
-*Planned, Phase 1.*
+*Deferred (`BACKLOG.md` §14).*
 
 `content/notation.yaml` lists every symbol once:
 
@@ -182,8 +186,8 @@ Further attributes:
 | Attribute | On | Meaning |
 |-----------|----|---------|
 | `for` | `proof`, `intuition`, `walkthrough` | The id of the statement it belongs to, when that is not the nearest preceding one. |
-| `technique` | `walkthrough` | Id from `content/techniques.yaml` (§7.4). |
-| `kind=proof`, `given` | `exercise` | A proof task in exam format and the results the reader may use (§7.4). |
+| `technique` | `walkthrough` | Id from `content/techniques.yaml` (§7.4). Deferred. |
+| `kind=proof`, `given` | `exercise` | A proof task in exam format and the results the reader may use (§7.4). Deferred. |
 | `difficulty` | `exercise` | 1 (routine) to 3 (hard). |
 
 ### 4.3 Proofs
@@ -214,9 +218,9 @@ Proof of the claim ...
 
 - Optional `::: proof {title="Proof sketch"}` or `{title="Alternative proof"}`.
 
-On a concept page a proof longer than 5 source lines renders closed, with the summary "Compact
-proof", and must be preceded by a walkthrough (§9). A shorter proof renders open. *Planned,
-Phase 1.*
+On a concept page a proof longer than 10 source lines, or one that has a walkthrough (§9),
+renders closed; other proofs render open. The validator lists long proofs that have no
+walkthrough yet. *Planned, Phase 1.*
 
 ### 4.4 Algorithms and pseudocode
 
@@ -354,7 +358,7 @@ By [[thm:handshake]], the sum of degrees is $2m = 14$.
 
 ### 7.4 Techniques and proof tasks
 
-*Planned: registry and pages Phase 1, task rendering Phase 4.*
+*Deferred (`BACKLOG.md` §14).*
 
 `content/techniques.yaml`: `id`, `name`, `how` (two or three sentences: what the move is and
 how to recognise when it applies). Start with the techniques the pilots need (exchange
@@ -390,7 +394,8 @@ walkthroughs (§13).
 
 ## 8. Concept page template
 
-In this order. "Required" items are checked by the validator (§10).
+For a page with `stage: taught`, in this order. "Required" items are checked by the validator
+once the budget checks exist (§10).
 
 1. **Opening** (required). One to three sentences that ask a concrete question about a small
    concrete graph, and the figure that shows it. No definition before this figure.
@@ -401,8 +406,7 @@ In this order. "Required" items are checked by the validator (§10).
    graph. Required for definitions and algorithms.
 5. **Why it is true** (required for every proof longer than 5 source lines). One sentence that
    names the technique, then a `walkthrough` (§9), then the verbatim `proof` container.
-   Proofs longer than 5 lines render closed with the summary "Compact proof". Shorter proofs
-   render open.
+   A proof that has a walkthrough renders closed with the summary "Compact proof".
 6. **Pitfall.** At most two `::: pitfall` blocks.
 7. **Check yourself** (required). At least one `quiz` or graph `exercise` about this concept.
 8. **`## More`** (optional). Cross-course connections, forward references, history. This
@@ -441,7 +445,8 @@ Text of step 2.
   `step:` captions stay short (they are the fallback caption and the screen-reader text).
 - `for=` names the statement being proved; it must be on the same page. Omit it when the
   walkthrough explains a definition or an example.
-- `technique=` is an id from `content/techniques.yaml` (§7.4).
+- `technique=` (an id from `content/techniques.yaml`, §7.4) is deferred. Name the technique in
+  the sentence before the walkthrough instead.
 - Each step: at most 60 words and 2 heavy math spans, and one inference. Say what we do, why we
   may do it, and what we now know.
 - The steps follow the compact proof in the same order and add no new claim.
@@ -457,15 +462,18 @@ Rendering:
   only when it is off screen.
 - Without JavaScript all steps are readable and the figure shows step 1.
 
-Under the walkthrough the page shows two generated lines: "Technique: ..." and "This proof
-uses: ..." (the `[[refs]]` inside the compact proof; `entryLinks` in `packages/content/pages.ts`
-already computes this for the reference).
+Under the walkthrough the page shows one generated line, "This proof uses: ..." (the
+`[[refs]]` inside the compact proof; `entryLinks` in `packages/content/pages.ts` already
+computes this for the reference).
 
 ---
 
 ## 10. Budgets, checked by `npm run validate`
 
-*Planned, Phase 1.*
+These budgets are for pages with `stage: taught`. Their checks in the validator are deferred
+(`BACKLOG.md` D1); until then the writer of a taught page counts by hand. The rules for
+walkthroughs and mark links (E7, E13) and for fences (E12) are checked on every page, and
+long proofs without a walkthrough are listed as warnings.
 
 Definitions:
 
@@ -552,10 +560,9 @@ After (34 words; the flow-network sentences move to `## More`):
 Converting a section means **cutting** it out of its lecture file and into a concept page. The
 lecture file shrinks; its URL stays.
 
-Do not retype moved text. *Planned, Phase 1:* `scripts/inventory.ts` lists the headings,
-containers and figures of a file with their line ranges, and `scripts/move.ts` cuts a line
-range into a target file. Statements and proofs are locked by hash in
-`content/entries.lock.json`; the validator fails when the text of a locked entry changes.
+The move is done once, by `scripts/split.ts` (`RESTRUCTURE.md` §4.1). Statements and proofs
+are locked by hash in `content/entries.lock.json`; the validator fails when the text of a
+locked entry changes. The rules below also hold for every later move by hand.
 
 1. Cut statements, their proofs and their figures and paste them unchanged (ids, attributes,
    text). `REVIEW` and `SOURCE UNCLEAR` comments travel with their text.
@@ -564,8 +571,8 @@ range into a target file. Statements and proofs are locked by hash in
    change one, leave a `REVIEW` comment.
 3. Content of an old intuition block that does not fit 50 words goes to `## More`. Do not
    delete facts silently.
-4. Quizzes and exercises move to the page of the concept they test, or to the chapter
-   `practice.md`.
+4. Quizzes and exercises stay in the lecture file for now (chapter practice pages are
+   deferred).
 5. Never rename a container id, a figure id or a lecture slug.
 6. If you find a mathematical error in a moved statement or proof, fix it minimally, mark it
    `<!-- REVIEW: what and why -->` and report it. The lock entry is then updated on purpose.

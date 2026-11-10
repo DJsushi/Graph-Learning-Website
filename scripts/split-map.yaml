@@ -1,0 +1,133 @@
+# One-time input for scripts/split.ts (RESTRUCTURE.md §4.1). Delete it after the split.
+#
+# Each lecture file is cut into concept pages. A page starts at `from` and ends where the next
+# entry starts. `from` is either a heading line (exact text) or the id of a container; for an
+# id the page starts right after the previous container or figure, so the lead-in text comes
+# along. `stay` ends the split: everything from that heading on stays in the lecture file.
+# `page` is <chapter>/<file name>; it becomes the URL /<course>/<chapter>/<file name> and must
+# never change after the site is published.
+
+content/theory/01-basic-notions.md:
+  - { page: basics/graphs, title: "Graphs", from: "## What is a graph?" }
+  - { page: basics/multigraphs-and-digraphs, title: "Multigraphs and directed graphs", from: "def:mixed-multigraph" }
+  - { page: basics/graph-families, title: "Paths, cycles and complete graphs", from: "## Basic graph classes" }
+  - { page: basics/isomorphism, title: "Isomorphism", from: "## Isomorphism" }
+  - { page: basics/isomorphism-invariants, title: "Telling graphs apart", from: "prop:iso-invariants" }
+  - { page: degrees/degrees-and-handshake, title: "Degrees and the handshake lemma", from: "## Degrees" }
+  - { page: degrees/degree-sequences, title: "Degree sequences", from: "## Degree sequences" }
+  - { page: degrees/havel-hakimi, title: "The Havel–Hakimi theorem", from: "### The Havel–Hakimi theorem" }
+  - { page: degrees/havel-hakimi-test, title: "The Havel–Hakimi test", from: "alg:havel-hakimi" }
+  - { page: degrees/erdos-gallai, title: "The Erdős–Gallai theorem", from: "### The Erdős–Gallai theorem" }
+  - { stay: "## Summary" }
+
+content/theory/02-walks-connectivity-bipartite.md:
+  - { page: basics/subgraphs, title: "Subgraphs", from: "## Subgraphs" }
+  - { page: basics/cliques-and-independent-sets, title: "Cliques and independent sets", from: "def:clique" }
+  - { page: walks-connectivity/walks-and-paths, title: "Walks and paths", from: "## Walks and paths" }
+  - { page: walks-connectivity/connected-components, title: "Connected components", from: "## Connectivity and distance" }
+  - { page: walks-connectivity/distance, title: "Distance", from: "def:distance" }
+  - { page: walks-connectivity/breadth-first-search, title: "Breadth-first search", from: "### Breadth-first search" }
+  - { page: bipartite/bipartite-graphs, title: "Bipartite graphs", from: "## Bipartite graphs" }
+  - { page: bipartite/odd-cycles, title: "Bipartite graphs and odd cycles", from: "thm:bipartite-odd-cycle" }
+  - { stay: "## Summary" }
+
+content/theory/03-trees.md:
+  - { page: trees/forests-and-trees, title: "Forests and trees", from: "## Forests and trees" }
+  - { page: trees/leaves, title: "Leaves", from: "thm:two-leaves" }
+  - { page: trees/small-degree-test, title: "Acyclic graphs and small degrees", from: "cor:acyclic-subgraph-small-degree" }
+  - { page: walks-connectivity/closed-walks, title: "Closed walks contain cycles", from: "## Closed walks and cycles" }
+  - { page: trees/unique-paths, title: "Unique paths in trees", from: "cor:tree-unique-path" }
+  - { page: trees/removing-a-leaf, title: "Removing a leaf", from: "## Characterisations of trees" }
+  - { page: trees/tree-characterisations, title: "Equivalent definitions of a tree", from: "thm:tree-characterisations" }
+  - { page: trees/spanning-trees, title: "Spanning trees", from: "## Spanning trees" }
+  - { page: trees/cayley-formula, title: "Cayley's formula", from: "### Cayley's formula" }
+  - { page: degrees/girth-and-regular-graphs, title: "Girth and regular graphs", from: "## Girth and regular graphs" }
+  - { page: degrees/regular-graphs-of-large-girth, title: "Regular graphs of large girth", from: "thm:regular-large-girth" }
+  - { stay: "## Summary" }
+
+content/theory/04-chordal-hamiltonian.md:
+  - { page: chordal/chordal-graphs, title: "Chordal graphs", from: "## Chordal graphs" }
+  - { page: chordal/interval-graphs, title: "Interval graphs", from: "### Interval graphs" }
+  - { page: chordal/simplicial-vertices, title: "Simplicial vertices", from: "### Simplicial vertices" }
+  - { page: chordal/minimal-cuts, title: "Minimal cuts in chordal graphs", from: "def:minimal-cut" }
+  - { page: chordal/two-simplicial-vertices, title: "Two non-adjacent simplicial vertices", from: "lem:two-simplicial" }
+  - { page: chordal/simplicial-decompositions, title: "Simplicial decompositions", from: "### Simplicial decompositions" }
+  - { page: hamiltonian/hamiltonian-graphs, title: "Hamiltonian cycles and paths", from: "## Hamiltonian graphs" }
+  - { page: hamiltonian/dirac-and-ore, title: "Dirac's and Ore's theorem", from: "def:minimum-degree" }
+  - { page: hamiltonian/hamiltonian-completion, title: "Hamiltonian completion", from: "def:hamiltonian-completion" }
+  - { stay: "## Summary" }
+
+content/theory/05-connectivity-menger.md:
+  - { page: menger/k-connectivity, title: "k-connectivity", from: "## k-connectivity" }
+  - { page: menger/cut-vertices-and-bridges, title: "Cut vertices and bridges", from: "def:cut-vertex-bridge" }
+  - { page: menger/paths-and-cuts, title: "Paths and cuts between two vertices", from: "def:st-cut" }
+  - { page: menger/mengers-theorem, title: "Menger's theorem", from: "## Menger's theorem" }
+  - { page: menger/vertex-version-from-edge-version, title: "From the edge version to the vertex version", from: "### Step 1: B implies A" }
+  - { page: menger/proving-the-edge-version, title: "Proving the edge version", from: "### Step 2: proving B" }
+  - { page: menger/back-to-undirected-graphs, title: "Back to undirected graphs", from: "### Step 3: back to undirected graphs" }
+  - { page: menger/set-version, title: "The set version of Menger's theorem", from: "## Variants of Menger's theorem" }
+  - { page: menger/two-connected-graphs, title: "2-connected graphs and cycles", from: "thm:two-connected-cycles" }
+  - { page: menger/ear-decompositions, title: "Ear decompositions", from: "### Ear decompositions" }
+  - { stay: "## Summary" }
+
+content/algorithms/01-minimum-spanning-trees.md:
+  - { page: mst/minimum-spanning-tree, title: "The minimum spanning tree problem", from: "## Notation and the problem" }
+  - { page: mst/cuts, title: "Cuts", from: "## Cut and cycle properties" }
+  - { page: mst/cut-and-cycle-properties, title: "The cut and cycle properties", from: "thm:cut-property" }
+  - { page: mst/distinct-weights, title: "Distinct weights and uniqueness", from: "thm:strong-cut-cycle" }
+  - { page: mst/generalized-greedy, title: "The generalized greedy algorithm", from: "## The generalized greedy algorithm" }
+  - { page: mst/kruskal, title: "Kruskal's algorithm", from: "## Kruskal's algorithm" }
+  - { page: mst/union-find, title: "Union-find and the running time of Kruskal", from: "### The disjoint-set (union-find) data structure" }
+  - { page: mst/jarnik, title: "Jarník's algorithm", from: "## Jarník's (Prim's) algorithm" }
+  - { page: mst/jarnik-with-a-heap, title: "Jarník's algorithm with a priority queue", from: "alg:jarnik-heap" }
+  - { page: mst/boruvka, title: "Borůvka's algorithm", from: "## Borůvka's algorithm" }
+  - { page: mst/contractions, title: "Contractions", from: "### Contractions" }
+  - { page: mst/timeline, title: "A timeline of MST algorithms", from: "## The MST timeline" }
+  - { page: mst/fredman-tarjan, title: "The Fredman–Tarjan algorithm", from: "## Faster deterministic algorithms" }
+  - { page: mst/packets, title: "Packets", from: "### Going beyond Fredman–Tarjan: packets" }
+  - { page: mst/f-heavy-edges, title: "F-heavy and F-light edges", from: "## A randomized linear-time algorithm" }
+  - { page: mst/verification, title: "Verifying a minimum spanning tree", from: "### MST verification" }
+  - { page: mst/sampling-lemma, title: "The sampling lemma", from: "### Randomizing the MST construction" }
+  - { page: mst/karger-klein-tarjan, title: "The Karger–Klein–Tarjan algorithm", from: "alg:kkt" }
+  - { page: arborescences/arborescences, title: "Arborescences", from: "## Directed graphs: arborescences" }
+  - { page: arborescences/reduced-weights, title: "Reduced weights", from: "### A sufficient condition and reduced weights" }
+  - { page: arborescences/edmonds-algorithm, title: "Edmonds' branching algorithm", from: "### Edmonds' branching algorithm" }
+  - { stay: "## Summary" }
+
+content/algorithms/02-maximum-flow.md:
+  - { page: flows/flow-networks, title: "Flow networks", from: "## Flow networks" }
+  - { page: flows/flows, title: "Flows", from: "def:flow" }
+  - { page: flows/cuts-in-networks, title: "Cuts in a flow network", from: "## Cuts and the max-flow min-cut theorem" }
+  - { page: flows/max-flow-min-cut, title: "The max-flow min-cut theorem", from: "thm:maxflow-mincut" }
+  - { page: flows/residual-networks, title: "Residual networks", from: "## Residual networks and augmenting paths" }
+  - { page: flows/augmenting-paths, title: "Augmenting paths", from: "def:augmenting-path" }
+  - { page: flows/characterising-maximum-flows, title: "When is a flow maximum?", from: "thm:maxflow-characterisation" }
+  - { page: flows/ford-fulkerson, title: "The Ford–Fulkerson algorithm", from: "## The Ford–Fulkerson algorithm" }
+  - { page: flows/ford-fulkerson-analysis, title: "Analysis of Ford–Fulkerson", from: "thm:ford-fulkerson-analysis" }
+  - { page: fast-flows/edmonds-karp, title: "The Edmonds–Karp algorithm", from: "## The Edmonds–Karp algorithm" }
+  - { page: fast-flows/level-graphs, title: "Level graphs", from: "### Level graphs" }
+  - { page: fast-flows/edmonds-karp-analysis, title: "Analysis of Edmonds–Karp", from: "### Analysis of Edmonds–Karp" }
+  - { page: fast-flows/dinic, title: "Dinic's algorithm", from: "## Dinic's algorithm" }
+  - { page: fast-flows/blocking-flows, title: "Finding a blocking flow", from: "### Finding a blocking flow" }
+  - { page: fast-flows/mpm, title: "The MPM algorithm", from: "## The MPM algorithm" }
+  - { page: fast-flows/overview, title: "Maximum-flow algorithms compared", from: "## Algorithms for MaxFlow" }
+  - { page: flows/matchings-as-flows, title: "Bipartite matchings as flows", from: "## Unit capacities and matchings" }
+  - { page: fast-flows/unit-capacity-networks, title: "Unit-capacity networks", from: "def:unit-capacity" }
+  - { stay: "## Summary" }
+
+content/algorithms/03-minimum-cuts.md:
+  - { page: gomory-hu/cuts-in-undirected-networks, title: "Cuts in undirected networks", from: "## Cuts in undirected networks" }
+  - { page: gomory-hu/node-identification, title: "Node identification", from: "### Node identification" }
+  - { page: gomory-hu/gomory-hu-trees, title: "Gomory–Hu trees", from: "## Gomory–Hu trees" }
+  - { page: gomory-hu/construction, title: "Building a Gomory–Hu tree", from: "### The construction" }
+  - { page: gomory-hu/uncrossing-cuts, title: "Uncrossing cuts", from: "lem:cut-submodular" }
+  - { page: gomory-hu/gomory-hu-lemma, title: "The Gomory–Hu lemma", from: "lem:gomory-hu" }
+  - { page: gomory-hu/triangle-inequality, title: "The triangle inequality for minimum cuts", from: "lem:flow-triangle" }
+  - { page: gomory-hu/correctness, title: "Why the construction works", from: "lem:gomory-hu-invariant" }
+  - { page: global-min-cut/global-minimum-cuts, title: "Global minimum cuts", from: "## Global minimum cuts" }
+  - { page: global-min-cut/stoer-wagner, title: "The Stoer–Wagner algorithm", from: "## The Stoer–Wagner algorithm" }
+  - { page: global-min-cut/stoer-wagner-correctness, title: "Why Stoer–Wagner works", from: "thm:mincut-phase" }
+  - { page: global-min-cut/karger, title: "Karger's contraction algorithm", from: "## Random contractions: Karger's algorithm" }
+  - { page: global-min-cut/karger-success-probability, title: "How often Karger's algorithm succeeds", from: "### Probability of an error" }
+  - { page: global-min-cut/karger-stein, title: "The Karger–Stein algorithm", from: "## The Karger–Stein algorithm" }
+  - { stay: "## Summary" }

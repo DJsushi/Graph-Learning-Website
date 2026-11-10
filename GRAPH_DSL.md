@@ -597,7 +597,7 @@ set a->b [f=3 class=path]
 Changes attributes of an existing vertex or edge inside a step. Listed attributes are
 replaced, the others stay. Without `set`, writing the edge again in a step adds a second edge.
 
-### 16.3 `state` and `badge` in steppers (Phase 4)
+### 16.3 `state` and `badge` in steppers (deferred)
 
 ```
 step: Step 1 has $5 \cdot 4$ choices.
@@ -616,7 +616,7 @@ driven by the walkthrough. The text of each step is in the Markdown `::: step` b
 `step:` captions stay short and serve as the fallback caption and the screen-reader text. The
 number of `step:` lines must equal the number of `::: step` blocks.
 
-### 16.5 `height` (Phase 2)
+### 16.5 `height` (Phase 1)
 
 `height: small | medium | large` no longer sets a pixel cap. All figures are drawn at one
 scale and shrink only to fit their column or the viewport (`RESTRUCTURE.md` §4.4). The

@@ -8,8 +8,9 @@ tools: Read, Grep, Glob, Bash
 You check the mathematics of one content page. You did not write it. Assume it contains an
 error and look for it. You change no file in the repository.
 
-Read the page, and `CONTENT_CONVENTIONS.md` §9 and §13 for what a walkthrough and a proof task
-must be. Then check:
+Read the page and nothing else, unless a check below needs more. A walkthrough is the block
+`:::: walkthrough {for=<id>}`: a stepper figure followed by `::: step` texts that explain the
+written proof of `<id>` step by step. Check:
 
 1. **Walkthrough against its compact proof** (the `proof` container for the same statement).
    Every step corresponds to a part of the proof, in the same order. No step claims something
