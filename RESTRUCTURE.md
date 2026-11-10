@@ -5,9 +5,10 @@ Agreed with the owner on 2026-11-10, cut down the same day to fit a Pro plan. Br
 
 The approach in one paragraph: a script splits the 8 lecture files into about 100 concept
 pages without changing a word. Every page then gets the cheap improvements (narrow text, large
-figures, long proofs closed). Model time is spent only where it matters most: a step-by-step
-walkthrough beside a figure for each of the 24 proofs longer than 10 lines. A full rewrite of a
-page happens only when the owner asks for it.
+figures, long proofs closed). Model time goes to the proofs: every proof gets a step-by-step
+explanation that fills in what the written proof skips, with a figure that changes with the
+steps for the long ones. Graph theory comes first: the owner has an exam on lectures 1 to 5
+around 2026-11-24. A full rewrite of a page happens only when the owner asks for it.
 
 Delete this file and `BACKLOG.md` when the work is finished; move what is still true into
 `ARCHITECTURE.md` first.
@@ -41,7 +42,7 @@ the task.
 | Agent | Model | Use for |
 |-------|-------|---------|
 | `coder` | Sonnet | One coding task. Pass `model: "opus"` when the row says `coder (opus)`. |
-| `writer` | Opus | One walkthrough, or one full page rewrite. Pass `model: "sonnet"` when the row or the Gate B decision (§6) says so. |
+| `writer` | Opus | The proofs of one page, or one full page rewrite. Pass `model: "sonnet"` when the row or the Gate B decision (§6) says so. |
 | `math-checker` | Opus | Independent check of the new mathematics on one page. Read-only. Always Opus. |
 | `visual-qa` | Sonnet | Looks at pages in Chrome and measures them, so screenshots stay out of your context. |
 
@@ -53,7 +54,7 @@ begin the prompt with "Read `.claude/agents/<name>.md` and follow it."
 | For | Prompt |
 |-----|--------|
 | Coding task | `Task T1.3 of RESTRUCTURE.md.` Add a fact from an earlier report only if the row cannot contain it. |
-| Walkthrough | `Walkthrough for the 17-line proof on content/theory/trees/leaves.md.` |
+| Proofs of a page | `Explain the proofs on content/theory/trees/leaves.md.` |
 | Full rewrite | `Taught rewrite of content/algorithms/mst/cut-and-cycle-properties.md.` |
 | Math check | `Check content/theory/trees/leaves.md.` |
 | Visual check | `Check /theory/trees/leaves at http://localhost:5173.` Start `npm run dev` outside the sandbox, in the background, once per session. |
@@ -77,7 +78,7 @@ Do not read diffs or source files to verify. If you doubt a change, ask `coder` 
 3. `npm run check`.
 4. Commit.
 
-Run `visual-qa` once per chapter, on the pages that changed, not once per page. One writer at
+Run `visual-qa` after every fifth page, on those five pages, not once per page. One writer at
 a time.
 
 ### 1.5 Spend rules
@@ -113,7 +114,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 | T1.5 | Reading layout: prose width, statement tint, long proofs closed, figure size, enlarge button. | coder | R §4.3, §4.4 | S23 S24 FL1 C4 FT1 | |
 | T1.6 | Validator: checks for concept pages, exit codes, the extra checks, the list of long proofs without a walkthrough. | coder | R §4.1 | S7 S19 S20 | |
 | T1.7 | `scripts/split.ts` with tests. Do not run it on `content/` yet. | coder | R §4.1 | | |
-| T1.8 | Run the split on all 8 lecture files. Fix what breaks. Check three pages and Ctrl-K search at 390px and 1366×768. Delete `scripts/split.ts` and `scripts/split-map.yaml`. | coder, then visual-qa | R §4.1 | S10 | |
+| T1.8 | Run the split on all 8 lecture files. Fix what breaks. Check a theory page, an algorithms page with a player, a lecture page and Ctrl-K search at 390px and 1366×768. Delete `scripts/split.ts` and `scripts/split-map.yaml`. | coder, then visual-qa | R §4.1 | S10 | |
 
 **Gate A.** See §6.
 
@@ -123,61 +124,110 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 |----|------|-------|------|---------|------|
 | T2.1 | Parser: `mark`, `set`, reserved words, marks per step; tests. | coder | DSL §16 | C3 F9 | |
 | T2.2 | Marks end to end: registry by figure id, spotlight in `GraphView.vue`, link component, the `[[fig:id#mark\|text]]` rule, vertex hit area. | coder | CC §6.1 | C2 FA2 F11 | |
-| T2.3 | Walkthrough: containers, component, sticky layout, scroll sync, stepper driven from outside, keyboard, the "This proof uses" line. | coder (opus) | CC §9 | C1 FA1 | |
+| T2.3 | Walkthrough: containers, component, sticky layout, scroll sync, stepper driven from outside, keyboard, the "This proof uses" line. A walkthrough without a figure is a numbered list. | coder (opus) | CC §9 | C1 FA1 | |
 | T2.4 | Validator rules for walkthroughs and mark links. | coder | R §4.1 | | |
-| T2.5 | Acceptance: a test page with a five-step walkthrough and three mark links; mouse, keyboard, touch emulation; light and dark; 390px, 1366×768, 1920×1080; reduced motion. Fix what fails; delete the page. | coder, then visual-qa | CC §9, §6.1 | | |
+| T2.5 | Acceptance: a test page with a five-step walkthrough, three mark links and a walkthrough without a figure; mouse, keyboard, touch emulation; light and dark; 390px, 1366×768, 1920×1080; reduced motion. Fix what fails; delete the page. | coder, then visual-qa | CC §9, §6.1 | | |
 
-### Phase 3: three exemplar pages
+### Phase 3: two exemplar pages
+
+Each task explains every proof on its page.
 
 | ID | Task | Agent | Done |
 |----|------|-------|------|
-| T3.1 | Walkthrough for the 17-line proof on `content/theory/trees/leaves.md`. | writer, math-checker | |
-| T3.2 | Walkthrough for the 19-line proof on `content/theory/walks-connectivity/closed-walks.md`. | writer with `model: "sonnet"`, math-checker | |
-| T3.3 | Taught rewrite of `content/algorithms/mst/cut-and-cycle-properties.md`: the whole page to the full template. The cut property follows CC §15; treat the cycle property the same way. | writer, math-checker | |
-| T3.4 | Check the three pages at 390px and 1366×768. | visual-qa | |
+| T3.1 | Explain the proofs on `content/theory/trees/leaves.md` (17 and 2 lines). | writer, math-checker | |
+| T3.2 | Explain the proof on `content/theory/walks-connectivity/closed-walks.md` (19 lines). | writer with `model: "sonnet"`, math-checker | |
+| T3.3 | Check the two pages at 390px and 1366×768. | visual-qa | |
 
 **Gate B.** See §6.
 
-### Phase 4: walkthroughs for the other long proofs
+### Phase 4: graph theory, every proof
 
-One row per proof longer than 10 source lines. Pipeline §1.4. The writer's model is the one
-the owner chose at Gate B. After the last row of a chapter, run `visual-qa` on its changed
-pages.
+One row per page, in lecture order; pages whose proofs are all beyond the lectures come last.
+Pipeline §1.4. The writer's model is the one the owner chose at Gate B. The owner may reorder
+the rows at any time.
 
 | ID | Page (under `content/`) | Proof lines | Done |
 |----|-------------------------|-------------|------|
-| T4.1 | `theory/trees/tree-characterisations.md` | 21 | |
-| T4.2 | `theory/trees/cayley-formula.md` | 37 | |
-| T4.3 | `theory/bipartite/odd-cycles.md` | 27 | |
-| T4.4 | `theory/degrees/havel-hakimi.md` | 54 | |
-| T4.5 | `theory/degrees/erdos-gallai.md` | 95 | |
-| T4.6 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
-| T4.7 | `theory/chordal/minimal-cuts.md` | 22 | |
-| T4.8 | `theory/chordal/two-simplicial-vertices.md` | 19 | |
-| T4.9 | `theory/hamiltonian/hamiltonian-completion.md` | 23 | |
-| T4.10 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
-| T4.11 | `theory/menger/proving-the-edge-version.md` | 28 | |
-| T4.12 | `theory/menger/back-to-undirected-graphs.md` | 16 | |
-| T4.13 | `theory/menger/set-version.md` | 12 | |
-| T4.14 | `theory/menger/two-connected-graphs.md` | 12 | |
-| T4.15 | `theory/menger/ear-decompositions.md` | 14 | |
-| T4.16 | `algorithms/mst/generalized-greedy.md` | 15 | |
-| T4.17 | `algorithms/mst/sampling-lemma.md` | 21 | |
-| T4.18 | `algorithms/arborescences/edmonds-algorithm.md` | 11 | |
-| T4.19 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16 | |
-| T4.20 | `algorithms/gomory-hu/correctness.md` | 33 | |
-| T4.21 | `algorithms/gomory-hu/correctness.md` | 14 | |
-| T4.22 | `algorithms/global-min-cut/karger-success-probability.md` | 11 | |
+| T4.1 | `theory/degrees/degrees-and-handshake.md` | 8, 4 | |
+| T4.2 | `theory/degrees/havel-hakimi.md` | 54 | |
+| T4.3 | `theory/degrees/erdos-gallai.md` | 95 | |
+| T4.4 | `theory/walks-connectivity/walks-and-paths.md` | 6 | |
+| T4.5 | `theory/bipartite/bipartite-graphs.md` | 7 | |
+| T4.6 | `theory/bipartite/odd-cycles.md` | 27 | |
+| T4.7 | `theory/trees/small-degree-test.md` | 6 | |
+| T4.8 | `theory/trees/unique-paths.md` | 8 | |
+| T4.9 | `theory/trees/cayley-formula.md` | 37 | |
+| T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
+| T4.11 | `theory/chordal/minimal-cuts.md` | 22 | |
+| T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19, 2 | |
+| T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | |
+| T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23, 5 | |
+| T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
+| T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28 | |
+| T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16 | |
+| T4.18 | `theory/menger/set-version.md` | 12 | |
+| T4.19 | `theory/menger/two-connected-graphs.md` | 12 | |
+| T4.20 | `theory/menger/ear-decompositions.md` | 14 | |
+| T4.21 | `theory/basics/graph-families.md` | 6 (beyond the lectures) | |
+| T4.22 | `theory/basics/isomorphism-invariants.md` | 8 (beyond the lectures) | |
+| T4.23 | `theory/walks-connectivity/distance.md` | 5 (beyond the lectures) | |
+| T4.24 | `theory/trees/removing-a-leaf.md` | 6 (beyond the lectures) | |
+| T4.25 | `theory/trees/tree-characterisations.md` | 21, 1 (beyond the lectures) | |
+| T4.26 | `theory/trees/spanning-trees.md` | 4 (beyond the lectures) | |
+| T4.27 | `theory/chordal/chordal-graphs.md` | 2 (beyond the lectures) | |
+| T4.28 | `theory/chordal/interval-graphs.md` | 6 (beyond the lectures) | |
 
 **Gate C.** See §6.
 
+### Phase 5: graph algorithms, every proof
+
+After Gate C. Same pipeline.
+
+| ID | Page (under `content/`) | Proof lines | Done |
+|----|-------------------------|-------------|------|
+| T5.1 | `algorithms/mst/cut-and-cycle-properties.md` | 3, 3 | |
+| T5.2 | `algorithms/mst/distinct-weights.md` | 7, 3 | |
+| T5.3 | `algorithms/mst/generalized-greedy.md` | 15 (beyond the lectures) | |
+| T5.4 | `algorithms/mst/union-find.md` | 3 | |
+| T5.5 | `algorithms/mst/boruvka.md` | 4 | |
+| T5.6 | `algorithms/mst/contractions.md` | 8 | |
+| T5.7 | `algorithms/mst/f-heavy-edges.md` | 2 | |
+| T5.8 | `algorithms/mst/verification.md` | 3 | |
+| T5.9 | `algorithms/mst/sampling-lemma.md` | 21 | |
+| T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | |
+| T5.11 | `algorithms/arborescences/reduced-weights.md` | 2, 3 | |
+| T5.12 | `algorithms/arborescences/edmonds-algorithm.md` | 11 (beyond the lectures) | |
+| T5.13 | `algorithms/flows/cuts-in-networks.md` | 4 (beyond the lectures) | |
+| T5.14 | `algorithms/flows/augmenting-paths.md` | 9 | |
+| T5.15 | `algorithms/flows/characterising-maximum-flows.md` | 7, 3 | |
+| T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | |
+| T5.17 | `algorithms/fast-flows/edmonds-karp-analysis.md` | 9, 8, 2 | |
+| T5.18 | `algorithms/fast-flows/dinic.md` | 4 (beyond the lectures) | |
+| T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | |
+| T5.20 | `algorithms/fast-flows/mpm.md` | 4, 1 | |
+| T5.21 | `algorithms/flows/matchings-as-flows.md` | 4 (beyond the lectures) | |
+| T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | |
+| T5.23 | `algorithms/gomory-hu/node-identification.md` | 6 | |
+| T5.24 | `algorithms/gomory-hu/gomory-hu-trees.md` | 3, 4 | |
+| T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 | |
+| T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16, 4 | |
+| T5.27 | `algorithms/gomory-hu/triangle-inequality.md` | 3 | |
+| T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | |
+| T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | |
+| T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3 | |
+| T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 4, 5 | |
+| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2, 2 | |
+| T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
+
+**Gate D.** See §6.
+
 ### Later, only when the owner asks
 
-- Walkthroughs for the 24 proofs of 6 to 10 lines (`npm run validate` lists them).
-- Taught rewrites of pages the owner names. Do `BACKLOG.md` D1 first if there are more than a
-  few.
-- The deferred parts in `BACKLOG.md` §14, and the items marked "Before <chapter>" when the
-  lectures on planarity, colouring and matchings are added.
+- A taught rewrite of a page the owner names (the full template, `CONTENT_CONVENTIONS.md` §8).
+  Do `BACKLOG.md` D1 first if there are more than a few.
+- The deferred parts in `BACKLOG.md` §14; D4 (proof tasks in exam format) is the most useful.
+- New lectures (planarity, colouring, matchings): they have no content yet. Their
+  `BACKLOG.md` items are marked "Before <chapter>".
 
 ---
 
@@ -221,7 +271,8 @@ The graph framework and the site shell are in good shape. They are extended, not
 | How pages are made | A script cuts the lecture files. No text changes; a hash lock proves it. |
 | Chapters | The topics in `content/topics.yaml`. |
 | Lecture pages | Keep their URLs. Each shows its intro, the generated list of its concept pages, its summary and its exercises. |
-| Long proofs | Each proof over 10 source lines gets a walkthrough beside a figure. The written proof stays below it, closed. |
+| Proofs | Every proof gets a step-by-step explanation that fills in what the written proof skips. A proof over 10 source lines gets a figure that changes with the steps; a shorter one gets a figure when a picture helps. The written proof stays below it, closed. |
+| Order | Graph theory first: the owner has an exam on lectures 1 to 5 around 2026-11-24. Algorithms after it. The framework work of Phases 1 and 2 covers both courses. |
 | Full rewrites | Only for pages the owner names. The template and budgets are in `CONTENT_CONVENTIONS.md` §8 to §11. |
 | Numbers ("Theorem 3.2") | Removed. Entries are shown by kind and name, with a tag pointing into the lecture notes. |
 | Text width | Prose is capped at about 68 characters. Figures and walkthroughs use the full column. |
@@ -264,10 +315,10 @@ holds only what those files do not say.
   unique in its chapter, `lectures` that do not resolve, a container fence that does not start
   at column 0, a quiz without id or explanation, two ids with the same anchor, a locked entry
   that changed. A lint message is printed; an error fails the run. Also print, as a warning,
-  every proof longer than 10 source lines without a walkthrough, and count the ones of 6 to 10
-  lines.
-- **Validator for walkthroughs and marks** (T2.4). Errors: the first child of a walkthrough is
-  not a `widget=stepper` figure; the number of `::: step` blocks differs from the number of
+  every proof without a walkthrough, longest first.
+- **Validator for walkthroughs and marks** (T2.4). Errors: a walkthrough for a proof longer
+  than 10 source lines has no figure; a figure in a walkthrough is not its first child or not
+  `widget=stepper`; with a figure, the number of `::: step` blocks differs from the number of
   `step:` lines; a step has more than 60 words; `for=` does not name a statement on the same
   page; a mark link without link text, to a figure on another page, or to a mark that is not
   declared.
@@ -346,8 +397,6 @@ concept pages. Lecture pages also show their `sources`.
 
 - T3.1 and T3.2 are the same kind of task on proofs of similar length, one written by Opus and
   one by Sonnet, both checked by Opus. The owner compares them at Gate B.
-- T3.3 shows what a full rewrite gives on top of a walkthrough, so the owner can decide whether
-  any page is worth it.
 - Until Gate B the model for a walkthrough is the block in `CONTENT_CONVENTIONS.md` §15. After
   Gate B it is the approved page.
 
@@ -355,19 +404,22 @@ concept pages. Lecture pages also show their `sources`.
 
 ## 6. Gates, feedback and questions
 
-**Gate A** (after T1.8). Stop. Start the dev server outside the sandbox and give the owner the
-URL. The site now has about 100 short pages with the old text. The owner checks the page
-titles and URLs (they are permanent once merged) and the look. Write the feedback below.
+**Gate A** (after T1.8). Do not stop. Tell the owner that the split site is ready to look at
+(start the dev server outside the sandbox and give the URL) and go on with Phase 2. The site
+now has about 100 short pages with the old text. Page titles and URLs can still change until
+the branch is merged; after that they are permanent.
 
-**Gate B** (after T3.4). Stop. Give the owner the three URLs. The owner decides, and you write
+**Gate B** (after T3.3). Stop. Give the owner the two URLs. The owner decides, and you write
 down here:
 
-1. who writes the remaining walkthroughs: Opus or Sonnet;
-2. whether any page gets a taught rewrite, and which;
-3. changes to the writer's rules (then edit `.claude/agents/writer.md`).
+1. who writes the remaining pages: Opus, Sonnet, or Opus only for pages with a proof over 20
+   lines;
+2. changes to the writer's rules (then edit `.claude/agents/writer.md`).
 
-**Gate C** (after T4.22). Stop. The owner and their friends use the site. The owner decides
-whether to merge `restructure` into `main` and what to do from "Later".
+**Gate C** (after the last row of Phase 4). Stop. Graph theory is done. The owner decides
+whether to merge `restructure` into `main` now, so their friends can use it before the exam.
+
+**Gate D** (after the last row of Phase 5). Stop. The owner decides what to do from "Later".
 
 ### Decisions and feedback
 

@@ -7,7 +7,7 @@ only works if every file follows these conventions exactly. Figures use the DSL 
 
 The content is being rebuilt from one page per lecture into one page per concept
 (`RESTRUCTURE.md`). A script first cuts the lecture files into concept pages without changing
-the text (stage `split`). Each long proof then gets a walkthrough (§9). A page rebuilt to the
+the text (stage `split`). Every proof then gets a walkthrough (§9). A page rebuilt to the
 full template (§8, §10, §11) has stage `taught`; that happens only for pages the owner names.
 
 Parts marked *planned* describe syntax or behaviour that the code supports only after the
@@ -219,8 +219,8 @@ Proof of the claim ...
 - Optional `::: proof {title="Proof sketch"}` or `{title="Alternative proof"}`.
 
 On a concept page a proof longer than 10 source lines, or one that has a walkthrough (§9),
-renders closed; other proofs render open. The validator lists long proofs that have no
-walkthrough yet. *Planned, Phase 1.*
+renders closed; other proofs render open. The validator lists proofs that have no walkthrough
+yet. *Planned, Phase 1.*
 
 ### 4.4 Algorithms and pseudocode
 
@@ -440,8 +440,11 @@ Text of step 2.
 ::::
 `````
 
-- The first child is exactly one `graph` block with `widget=stepper`.
-- The number of `::: step` blocks equals the number of `step:` lines in the figure. The
+- A walkthrough for a proof longer than 10 source lines starts with exactly one `graph` block
+  with `widget=stepper`. For a shorter proof the figure is optional: use one when a picture
+  helps; otherwise write the steps alone (they may point into another figure of the page with
+  mark links).
+- With a figure, the number of `::: step` blocks equals the number of `step:` lines in it. The
   `step:` captions stay short (they are the fallback caption and the screen-reader text).
 - `for=` names the statement being proved; it must be on the same page. Omit it when the
   walkthrough explains a definition or an example.
@@ -449,7 +452,9 @@ Text of step 2.
   the sentence before the walkthrough instead.
 - Each step: at most 60 words and 2 heavy math spans, and one inference. Say what we do, why we
   may do it, and what we now know.
-- The steps follow the compact proof in the same order and add no new claim.
+- The steps follow the written proof in the same order. They fill in every reason the proof
+  skips: each "so", "hence" and "clearly" gets its why, with a link to the entry it uses. They
+  do not change the argument.
 
 Rendering:
 
@@ -461,6 +466,7 @@ Rendering:
   a click on a step, and the stepper controls. The controls scroll the active step into view
   only when it is off screen.
 - Without JavaScript all steps are readable and the figure shows step 1.
+- A walkthrough without a figure is a numbered list in the text column.
 
 Under the walkthrough the page shows one generated line, "This proof uses: ..." (the
 `[[refs]]` inside the compact proof; `entryLinks` in `packages/content/pages.ts` already
@@ -473,7 +479,7 @@ computes this for the reference).
 These budgets are for pages with `stage: taught`. Their checks in the validator are deferred
 (`BACKLOG.md` D1); until then the writer of a taught page counts by hand. The rules for
 walkthroughs and mark links (E7, E13) and for fences (E12) are checked on every page, and
-long proofs without a walkthrough are listed as warnings.
+proofs without a walkthrough are listed as warnings.
 
 Definitions:
 
@@ -495,8 +501,8 @@ Errors (the build fails). They apply to concept pages only; items 2, 3 and 9 do 
 | E3 | At most 2 definitions and at most 3 other statements. |
 | E4 | Reading path at most 900 words (1400 with `long: true`). |
 | E5 | Reading path: at most 3 heavy spans and at most 12 spans in total per 100 words. |
-| E6 | Every `proof` longer than 5 source lines has a `walkthrough` with `for=` its statement. |
-| E7 | Walkthrough: first child is a stepper, step counts match, each step within its limits. |
+| E6 | Every `proof` has a `walkthrough` with `for=` its statement. |
+| E7 | Walkthrough: a figure when the proof is longer than 10 lines; a figure is the first child and a stepper; step counts match; each step within its limits. |
 | E8 | `intuition`: at most 50 words and 1 heavy span. Every statement has one. |
 | E9 | At least one `quiz` or graph `exercise`. |
 | E10 | Frontmatter: `chapter` exists, `order` unique, `goal` present and at most 25 words, `needs`, `lectures` and `symbols` resolve, `needs` has no cycle. |
@@ -583,7 +589,8 @@ locked entry changes. The rules below also hold for every later move by hand.
 
 Moved text was checked against the lectures. New text was not. Rules for everything new:
 
-- A walkthrough follows its compact proof step by step and adds no claim (§9).
+- A walkthrough follows its written proof step by step. Every reason it adds must be correct;
+  it does not change the argument (§9).
 - Every number in new text (a weight, a count, a degree) is computed with `graph-core`, not by
   hand, and gets a test in `packages/graph-core/test/content-claims.test.ts`.
 - A new proof task states a standard result or a direct consequence of entries on the site.

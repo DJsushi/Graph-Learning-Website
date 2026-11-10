@@ -261,4 +261,4 @@ Cut on 2026-11-10 to fit the usage limit. None is needed for the split or the wa
 | D4 | Proof tasks in exam format: `exercise` with `kind=proof given=`, hints one at a time, an "I solved it" button; about three per chapter, each checked by the math checker (`CONTENT_CONVENTIONS.md` §7.4, §13). The owner's exams ask for exactly this kind of task. | Decide |
 | D5 | Chapter practice pages; home, course index and practice overview by chapter instead of by lecture. | Later |
 | D6 | `needs`: prerequisites per page, shown in the page header. The concept map (S26) needs it. | Later |
-| D7 | Walkthroughs for the 24 proofs of 6 to 10 lines. | Decide at Gate C |
+| D7 | Walkthroughs for short proofs. | Done: now in the plan, every proof gets one |
