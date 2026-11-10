@@ -22,7 +22,10 @@ written proof of `<id>` step by step. Check:
    vertices, edges and classes named or implied by the text of a step exist in that step.
 3. **Numbers.** Recompute each one with `graph-core` or a short script
    (`node --import tsx`, files only under `$TMPDIR`). Do not trust arithmetic by eye.
-4. **"In words" and idea paragraphs.** True as stated. A simplification that is false is an
+4. **Example figures.** The drawn graph has every property its caption or the nearby text
+   claims, and a non-example really fails the definition. Check with `graph-core` where a
+   function exists.
+5. **"In words" and idea paragraphs.** True as stated. A simplification that is false is an
    error.
 5. **Proof tasks.** The statement is true. The given results are enough. The model solution is
    a complete proof. The hints lead to it.

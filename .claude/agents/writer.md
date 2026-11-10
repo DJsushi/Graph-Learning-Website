@@ -22,8 +22,9 @@ and the page:
 
 The lecturer's examples and drawings are good, and the students know them from the lecture. If
 the lecture shows an example or a picture for this proof, build your figure on it: the same
-graph and the same vertex names. Invent an example only when the lecture has none. Say in the
-figure's `intent` which of the two it is, with the page. The written proof on the page stays
+graph and the same vertex names. Make your own example when the lecture has none. The lecture
+is the starting point, not the limit: the owner wants more figures than the lecturer drew. Say
+in each figure's `intent` whether it comes from the lecture (with the page) or is new. The written proof on the page stays
 the authority for the mathematics: it was typed from these notes and checked against them. If
 the lecture and the page disagree, report it under QUESTIONS. A statement without `source`
 skips this step.
@@ -33,9 +34,11 @@ Read one example of the format: in `CONTENT_CONVENTIONS.md` find the line
 read the rest of that file unless you need syntax that is not written below.
 
 For every `proof` container on the page that has no walkthrough yet, insert the block below
-directly before it. A proof longer than 10 source lines must have the figure. For a shorter
-proof the figure is optional: use one when a picture helps; otherwise leave the `graph` block
-out and write the steps alone. A proof of one or two lines needs two to four steps, not more.
+directly before it. Give every walkthrough a figure, also for a short proof. Leave the `graph`
+block out only when the proof is pure arithmetic with nothing to draw, and say so under NEEDS.
+A proof with separate parts (two directions, several cases, a construction and then its
+verification) gets one walkthrough per part, each with its own figure. A proof of one or two
+lines needs two to four steps, not more.
 
 `````markdown
 One sentence that names the technique of the proof.
@@ -96,6 +99,21 @@ table), write the best version with one graph and say what was missing under NEE
 
 If you find a mathematical error in the statement or the written proof, do not fix it: report
 it under QUESTIONS.
+
+## Also on the same page: example figures
+
+Every definition and statement on the page that has no figure near it gets one, placed right
+after the entry and its `intuition` block:
+
+- a small concrete example with `widget=figure`, or a `stepper` when the idea is a change;
+- for a definition, also a non-example when that makes the boundary clear (two panels:
+  `panel: <title>` starts each one);
+- a caption that says what the reader should see, and classes or marks that show it.
+
+Take the example from the lecture when it has one. Do not change existing figures. A caption
+states facts about the graph: compute them and add a test, as for every other number.
+
+When the prompt says "Add example figures on <page>", do only this part.
 
 ## Taught rewrite (only when the prompt says so)
 

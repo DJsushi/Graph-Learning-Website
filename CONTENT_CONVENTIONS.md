@@ -271,6 +271,8 @@ return T                                          // @return
 - Figures are ```` ```graph ```` blocks (see `GRAPH_DSL.md`).
 - Every figure has an `id` (prefix = lesson `slug`, e.g. `t01-…`, `a02-…`), a `caption`, and an
   `intent` unless it is trivially obvious.
+- Every definition and statement has a figure near it: an example, and for a definition a
+  non-example where it makes the boundary clear.
 - Figures transcribed from the lecture material keep the lecture's vertex names and numbers so
   students can match them with their notes.
 - Prefer `widget=player` for algorithms in the registry, `widget=stepper` for proof
@@ -441,12 +443,13 @@ Text of step 2.
 `````
 
 - A walkthrough for a proof longer than 10 source lines starts with exactly one `graph` block
-  with `widget=stepper`. For a shorter proof the figure is optional: use one when a picture
-  helps; otherwise write the steps alone (they may point into another figure of the page with
-  mark links).
+  with `widget=stepper`. A shorter proof has one too, unless the proof is pure arithmetic with
+  nothing to draw. A proof with separate parts (two directions, several cases) gets one
+  walkthrough per part, each with its own figure.
 - The figure uses the lecturer's example and drawing when the lecture has one for this proof
   (the statement's `source` attribute names the page): the same graph and the same vertex
-  names. A new example is made only when the lecture has none, and the `intent` says so.
+  names. Where the lecture has none, make a new one. The lecture's figures are the minimum,
+  not the limit. The `intent` says whether a figure comes from the lecture or is new.
 - With a figure, the number of `::: step` blocks equals the number of `step:` lines in it. The
   `step:` captions stay short (they are the fallback caption and the screen-reader text).
 - `for=` names the statement being proved; it must be on the same page. Omit it when the

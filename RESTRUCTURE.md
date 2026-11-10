@@ -6,8 +6,9 @@ Agreed with the owner on 2026-11-10, cut down the same day to fit a Pro plan. Br
 The approach in one paragraph: a script splits the 8 lecture files into about 100 concept
 pages without changing a word. Every page then gets the cheap improvements (narrow text, large
 figures, long proofs closed). Model time goes to the proofs: every proof gets a step-by-step
-explanation that fills in what the written proof skips, with a figure that changes with the
-steps for the long ones. Graph theory comes first: the owner has an exam on lectures 1 to 5
+explanation with a figure that changes with the steps, and fills in what the written proof
+skips. Every definition and statement gets an example figure. The lecturer's drawings are the
+starting point; the owner wants more figures than the lecture has. Graph theory comes first: the owner has an exam on lectures 1 to 5
 around 2026-11-24. A full rewrite of a page happens only when the owner asks for it.
 
 Delete this file and `BACKLOG.md` when the work is finished; move what is still true into
@@ -54,7 +55,8 @@ begin the prompt with "Read `.claude/agents/<name>.md` and follow it."
 | For | Prompt |
 |-----|--------|
 | Coding task | `Task T1.3 of RESTRUCTURE.md.` Add a fact from an earlier report only if the row cannot contain it. |
-| Proofs of a page | `Explain the proofs on content/theory/trees/leaves.md.` |
+| Proofs of a page | `Explain the proofs on content/theory/trees/leaves.md.` The writer also adds example figures for entries that have none. |
+| Figures only | `Add example figures on content/theory/basics/graphs.md.` For a page without proofs. |
 | Full rewrite | `Taught rewrite of content/algorithms/mst/cut-and-cycle-properties.md.` |
 | Math check | `Check content/theory/trees/leaves.md.` |
 | Visual check | `Check /theory/trees/leaves at http://localhost:5173.` Start `npm run dev` outside the sandbox, in the background, once per session. |
@@ -143,6 +145,7 @@ Each task explains every proof on its page.
 ### Phase 4: graph theory, every proof
 
 One row per page, in lecture order; pages whose proofs are all beyond the lectures come last.
+The last row covers the pages without proofs.
 Pipeline §1.4. The writer's model is the one the owner chose at Gate B. The owner may reorder
 the rows at any time.
 
@@ -176,6 +179,7 @@ the rows at any time.
 | T4.26 | `theory/trees/spanning-trees.md` | 4 (beyond the lectures) | |
 | T4.27 | `theory/chordal/chordal-graphs.md` | 2 (beyond the lectures) | |
 | T4.28 | `theory/chordal/interval-graphs.md` | 6 (beyond the lectures) | |
+| T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Write each page and its commit here. | | |
 
 **Gate C.** See §6.
 
@@ -218,6 +222,7 @@ After Gate C. Same pipeline.
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 4, 5 | |
 | T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2, 2 | |
 | T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
+| T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Write each page and its commit here. | | |
 
 **Gate D.** See §6.
 
@@ -271,7 +276,8 @@ The graph framework and the site shell are in good shape. They are extended, not
 | How pages are made | A script cuts the lecture files. No text changes; a hash lock proves it. |
 | Chapters | The topics in `content/topics.yaml`. |
 | Lecture pages | Keep their URLs. Each shows its intro, the generated list of its concept pages, its summary and its exercises. |
-| Proofs | Every proof gets a step-by-step explanation that fills in what the written proof skips. A proof over 10 source lines gets a figure that changes with the steps; a shorter one gets a figure when a picture helps. The written proof stays below it, closed. |
+| Proofs | Every proof gets a step-by-step explanation that fills in what the written proof skips. Each has a figure that changes with the steps (required over 10 source lines; left out for a short proof only when there is nothing to draw). The written proof stays below it, closed. |
+| Figures | Every walkthrough has a figure and every definition and statement has an example figure. The lecturer's examples are used first; new ones are added wherever the lecture has none. |
 | Order | Graph theory first: the owner has an exam on lectures 1 to 5 around 2026-11-24. Algorithms after it. The framework work of Phases 1 and 2 covers both courses. |
 | Full rewrites | Only for pages the owner names. The template and budgets are in `CONTENT_CONVENTIONS.md` §8 to §11. |
 | Numbers ("Theorem 3.2") | Removed. Entries are shown by kind and name, with a tag pointing into the lecture notes. |
@@ -315,13 +321,14 @@ holds only what those files do not say.
   unique in its chapter, `lectures` that do not resolve, a container fence that does not start
   at column 0, a quiz without id or explanation, two ids with the same anchor, a locked entry
   that changed. A lint message is printed; an error fails the run. Also print, as a warning,
-  every proof without a walkthrough, longest first.
+  every proof without a walkthrough, longest first, and every concept page that has fewer
+  figures than reference entries.
 - **Validator for walkthroughs and marks** (T2.4). Errors: a walkthrough for a proof longer
   than 10 source lines has no figure; a figure in a walkthrough is not its first child or not
   `widget=stepper`; with a figure, the number of `::: step` blocks differs from the number of
   `step:` lines; a step has more than 60 words; `for=` does not name a statement on the same
   page; a mark link without link text, to a figure on another page, or to a mark that is not
-  declared.
+  declared. Warning: a walkthrough without a figure.
 
 ### 4.2 Content index, pages and routes
 
