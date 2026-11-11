@@ -111,7 +111,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 |----|------|-------|------|---------|------|
 | T1.1 | Content index: scan `content/{theory,algorithms}/**`, page kinds, the new frontmatter, first and last line of every container and figure, build once per build, proof attachment; tests. | coder (opus) | R §4.2, CC §2 | S1 S2 S3 S8 S22 | 87142df |
 | T1.2 | Routes and pages: rewrite for `content/:course/:chapter/:page`, sidebar by chapter, previous and next, concept page header, done button, "Continue", lecture page list and hash redirect, progress shape. | coder | R §4.2, §4.5 | S8 S9 S13 | 144c57b |
-| T1.3 | Entry lock: `scripts/lock-entries.ts`, `content/entries.lock.json` made from the current content, validator check. | coder | R §4.1 | | |
+| T1.3 | Entry lock: `scripts/lock-entries.ts`, `content/entries.lock.json` made from the current content, validator check. | coder | R §4.1 | | 477a3a1 |
 | T1.4 | Labels without numbers and the `source` tag. | coder | R §4.3 | S11 S14 S22 | |
 | T1.5 | Reading layout: prose width, statement tint, long proofs closed, figure size, enlarge button. | coder | R §4.3, §4.4 | S23 S24 FL1 C4 FT1 | |
 | T1.6 | Validator: checks for concept pages, exit codes, the extra checks, the list of long proofs without a walkthrough. | coder | R §4.1 | S7 S19 S20 | |
