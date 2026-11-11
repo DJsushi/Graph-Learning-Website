@@ -13,7 +13,8 @@ const hash = (raw: string) =>
 export function entryHashes(ix: ContentIndex): Record<string, string> {
   const out: Record<string, string> = {}
   const proofs = new Map<string, number>()
-  for (const c of ix.containers) {
+  // Proofs are numbered in reading order: concept pages by `order` (file names sort differently), stable otherwise.
+  for (const c of [...ix.containers].sort((a, b) => (a.lesson.order ?? 0) - (b.lesson.order ?? 0))) {
     if (c.id && LOCKED_TYPES.has(c.type)) out[c.id] = hash(c.raw)
     else if (c.type === 'proof' && c.forId) {
       const n = (proofs.get(c.forId) ?? 0) + 1

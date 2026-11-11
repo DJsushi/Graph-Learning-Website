@@ -33,3 +33,17 @@ describe('entry lock', () => {
     expect(errs[1]).toMatch(/thm:a#proof2 is gone/)
   })
 })
+
+describe('entry lock after a split', () => {
+  it('numbers proofs of one statement in page order, not file-name order', () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'lock-'))
+    fs.mkdirSync(path.join(root, 'content/theory/c'), { recursive: true })
+    const w = (f: string, order: number, body: string) =>
+      fs.writeFileSync(path.join(root, 'content/theory/c', f), ['---', 'title: T', 'course: theory', 'chapter: c', `order: ${order}`, '---', body].join('\n'))
+    w('b.md', 1, '::: theorem {#thm:a}\nA.\n:::\n::: proof\nfirst\n:::')
+    w('a.md', 2, '::: proof {for=thm:a}\nsecond\n:::')
+    const h = entryHashes(loadContent(root))
+    expect(Object.keys(h)).toEqual(['thm:a', 'thm:a#proof1', 'thm:a#proof2'])
+    expect(h['thm:a#proof2']).not.toBe(h['thm:a#proof1'])
+  })
+})
