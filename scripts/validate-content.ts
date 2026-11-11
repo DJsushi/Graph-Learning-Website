@@ -1,9 +1,11 @@
 // Validates content/: container ids, [[refs]], graph blocks (DSL parse), and registry names (algo/check/live).
 // Exits with code 1 on errors. Run: npm run validate
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadContent, loadTopics, resolveTarget } from '../packages/content/index'
 import { REFERENCE_KINDS } from '../packages/content/pages'
+import { entryHashes, lockErrors } from '../packages/content/lock'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { PREDICATES } from '../packages/graph-core/src/predicates'
@@ -17,6 +19,11 @@ const lint: string[] = []
 const where = (file: string, line?: number) => `${path.relative(root, file)}${line ? `:${line}` : ''}`
 
 for (const p of index.problems) errors.push(`${p.lesson ? where(p.lesson.file, p.line) : ''} ${p.message}`)
+
+// Entry lock: statements and proofs must keep their text (see scripts/lock-entries.ts).
+const lockFile = path.join(root, 'content/entries.lock.json')
+if (fs.existsSync(lockFile)) errors.push(...lockErrors(JSON.parse(fs.readFileSync(lockFile, 'utf8')), entryHashes(index)))
+else errors.push('content/entries.lock.json is missing (node --import tsx scripts/lock-entries.ts)')
 
 for (const r of index.refs) {
   if (!resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)
