@@ -49,6 +49,8 @@ export interface GraphData {
   edges: Edge[]
   faces: Face[]
   groups: Group[]
+  /** named sets of elements (GRAPH_DSL.md 16.1): refs as vertex id, `@edgeId`, `face:id` or group id. No visual effect by themselves. */
+  marks: Record<string, string[]>
   meta: Record<string, string>
 }
 
@@ -59,7 +61,7 @@ export interface Merge {
 }
 
 export function emptyGraph(type: GraphType = 'undirected'): GraphData {
-  return { type, simple: false, vertices: [], edges: [], faces: [], groups: [], meta: {} }
+  return { type, simple: false, vertices: [], edges: [], faces: [], groups: [], marks: {}, meta: {} }
 }
 
 export function cloneGraph(g: GraphData): GraphData {
@@ -70,6 +72,7 @@ export function cloneGraph(g: GraphData): GraphData {
     edges: g.edges.map(e => ({ ...e, tail: [...e.tail], head: [...e.head], classes: [...e.classes], data: { ...e.data } })),
     faces: g.faces.map(f => ({ ...f, walk: [...f.walk], classes: [...f.classes] })),
     groups: g.groups.map(gr => ({ ...gr, members: [...gr.members], classes: [...gr.classes] })),
+    marks: Object.fromEntries(Object.entries(g.marks ?? {}).map(([k, v]) => [k, [...v]])),
     meta: { ...g.meta },
   }
 }
