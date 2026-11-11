@@ -298,3 +298,70 @@ describe('Leaves page', () => {
     expect([deg(g, 'a'), deg(g, 'g')]).toEqual([1, 1])
   })
 })
+
+describe('Closed walks page', () => {
+  const ends = (e: { tail: string[]; head: string[] }) => [e.tail[0], e.head[0]].sort().join('')
+  // traversals per edge id of a vertex walk (each consecutive pair must be an edge; simple parts only)
+  const counts = (g: GraphData, walk: string[]) => {
+    const c = new Map<string, number>()
+    for (let i = 0; i + 1 < walk.length; i++) {
+      const key = [walk[i], walk[i + 1]].sort().join('')
+      const e = g.edges.filter(x => ends(x) === key)
+      expect(e.length).toBe(1)
+      c.set(e[0].id, (c.get(e[0].id) ?? 0) + 1)
+    }
+    return c
+  }
+  const byEnds = (g: GraphData, key: string) => g.edges.filter(e => ends(e) === key)
+  it('base figure: loop at a, edge bc, two parallel edges de, two loops at f', () => {
+    const g = fig('t03-closed-walk-base')
+    expect(g.vertices.length).toBe(6)
+    expect(g.edges.length).toBe(6)
+    expect([byEnds(g, 'aa').length, byEnds(g, 'bc').length, byEnds(g, 'de').length, byEnds(g, 'ff').length]).toEqual([1, 1, 2, 2])
+  })
+  it('b1 figure: W = v0..v4 v0 on 5 distinct vertices is a 5-cycle, v2 y is not on W', () => {
+    const g = fig('t03-closed-walk-no-repeat')
+    expect(g.vertices.length).toBe(6)
+    const w = ['v0', 'v1', 'v2', 'v3', 'v4', 'v0']
+    expect(new Set(w.slice(0, 5)).size).toBe(5)
+    const c = counts(g, w)
+    expect([...c.values()]).toEqual([1, 1, 1, 1, 1])
+    expect(A.isCycleEdgeSet(g, new Set(c.keys()))).toBe(true)
+    expect(byEnds(g, 'v2y').length).toBe(1)
+    expect(c.has(byEnds(g, 'v2y')[0].id)).toBe(false)
+  })
+  it('split figure: W has length 7, x = v2 = v5, W2 is the triangle x b c (3 edges), W1 has 4 edges, counts add', () => {
+    const g = fig('t03-closed-walk-split')
+    const W = ['v0', 'a', 'x', 'b', 'c', 'x', 'a', 'v0']
+    expect(W.length - 1).toBe(7)
+    expect([W[2], W[5]]).toEqual(['x', 'x'])
+    const i = 2, j = 5
+    const W2 = W.slice(i, j + 1), W1 = [...W.slice(0, i + 1), ...W.slice(j + 1)]
+    expect([W2.length - 1, W1.length - 1]).toEqual([3, 4])
+    expect(W1.join('')).toBe('v0axav0')
+    expect(W2.join('')).toBe('xbcx')
+    const c = counts(g, W), c1 = counts(g, W1), c2 = counts(g, W2)
+    for (const e of g.edges) expect(c.get(e.id) ?? 0).toBe((c1.get(e.id) ?? 0) + (c2.get(e.id) ?? 0))
+    const id = (k: string) => byEnds(g, k)[0].id
+    expect([c1.get(id('av0')), c2.get(id('av0')) ?? 0, c1.get(id('ax')), c2.get(id('ax')) ?? 0]).toEqual([2, 0, 2, 0])
+    expect([c2.get(id('bx')), c2.get(id('bc')), c2.get(id('cx'))]).toEqual([1, 1, 1])
+    expect(A.isCycleEdgeSet(g, new Set(c2.keys()))).toBe(true)
+  })
+  it('even figure: tree, W of length 8, x = v2 = v4, W2 has 2 edges, W1 has 6, all counts even', () => {
+    const g = fig('t03-closed-walk-split-even')
+    expect(A.isTree(new GraphIndex(g))).toBe(true)
+    expect(g.vertices.length).toBe(5)
+    const W = ['v0', 'a', 'x', 'b', 'x', 'c', 'x', 'a', 'v0']
+    expect(W.length - 1).toBe(8)
+    expect([W[2], W[4], W[6]]).toEqual(['x', 'x', 'x'])
+    const W2 = W.slice(2, 5), W1 = [...W.slice(0, 3), ...W.slice(5)]
+    expect([W2.length - 1, W1.length - 1]).toEqual([2, 6])
+    const c = counts(g, W), c1 = counts(g, W1), c2 = counts(g, W2)
+    for (const e of g.edges) {
+      expect(c.get(e.id)).toBe(2)
+      expect((c1.get(e.id) ?? 0) + (c2.get(e.id) ?? 0)).toBe(2)
+    }
+    expect(c2.get(byEnds(g, 'bx')[0].id)).toBe(2)
+    expect(c1.has(byEnds(g, 'bx')[0].id)).toBe(false)
+  })
+})
