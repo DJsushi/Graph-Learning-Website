@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { loadContent, resolveTarget } from '../index'
+import { courseChapters, lectureLessons, loadContent, resolveTarget, type Topic } from '../index'
 
 function site(files: Record<string, string[]>): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'))
@@ -86,5 +86,25 @@ describe('loadContent', () => {
     const third = loadContent(root)
     expect(third).not.toBe(second)
     expect(third.lessons.map(l => l.path)).toContain('theory/trees/leaves')
+  })
+})
+
+describe('lectureLessons and courseChapters', () => {
+  const page = (order: number, chapter = 'trees') => ['---', `title: P${order}`, 'course: theory', `chapter: ${chapter}`, `order: ${order}`, '---']
+  const ix = loadContent(site({
+    'content/theory/03-trees.md': [...lecture, 'Text.'],
+    'content/theory/trees/b.md': page(2),
+    'content/theory/trees/a.md': page(1),
+    'content/theory/degrees/c.md': page(1, 'degrees'),
+  }))
+  const topic = (slug: string, course: 'theory' | 'algorithms'): Topic => ({ slug, course, title: slug, intro: '', ids: [] })
+  it('lists only lecture pages', () => {
+    expect(lectureLessons(ix).map(l => l.path)).toEqual(['theory/03-trees'])
+  })
+  it('groups concept pages by chapter in topics order and page order, leaving out empty chapters', () => {
+    const topics = [topic('trees', 'theory'), topic('empty', 'theory'), topic('degrees', 'theory'), topic('mst', 'algorithms')]
+    expect(courseChapters(ix, topics, 'theory').map(c => [c.topic.slug, c.pages.map(p => p.path)]))
+      .toEqual([['trees', ['theory/trees/a', 'theory/trees/b']], ['degrees', ['theory/degrees/c']]])
+    expect(courseChapters(ix, topics, 'algorithms')).toEqual([])
   })
 })

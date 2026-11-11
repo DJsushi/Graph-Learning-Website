@@ -13,6 +13,18 @@ export interface Progress {
 
 const empty = (): Progress => ({ solved: {}, attempted: {}, cards: {}, visited: {}, done: {} })
 export const progress = reactive<Progress>(empty())
+
+const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v)
+const times = (v: unknown): Record<string, number> =>
+  isRecord(v) ? Object.fromEntries(Object.entries(v).filter(([, t]) => typeof t === 'number' && Number.isFinite(t))) as Record<string, number> : {}
+const cards = (v: unknown): Progress['cards'] =>
+  isRecord(v) ? Object.fromEntries(Object.entries(v).filter(([, c]) => isRecord(c) && Number.isFinite(c.box) && Number.isFinite(c.seen))) as Progress['cards'] : {}
+
+/** Keep only well-formed entries, so a hand-edited or old storage value cannot break the pages (S9). The storage key carries the version. */
+export function normalizeProgress(o: unknown): Progress {
+  const r = isRecord(o) ? o : {}
+  return { solved: times(r.solved), attempted: times(r.attempted), cards: cards(r.cards), visited: times(r.visited), done: times(r.done) }
+}
 let loaded = false
 
 export function loadProgress() {
@@ -20,7 +32,7 @@ export function loadProgress() {
   loaded = true
   try {
     const raw = window.localStorage.getItem(KEY)
-    if (raw) Object.assign(progress, { ...empty(), ...JSON.parse(raw) })
+    if (raw) Object.assign(progress, normalizeProgress(JSON.parse(raw)))
   } catch { /* storage unavailable: progress stays in memory */ }
 }
 
@@ -74,8 +86,7 @@ export function exportProgress(): string {
 export function importProgress(text: string) {
   const o = JSON.parse(text)
   if (!o || typeof o !== 'object') throw new Error('not a progress file')
-  const pick = <K extends keyof Progress>(k: K): Progress[K] => (o[k] && typeof o[k] === 'object' ? o[k] : {})
-  Object.assign(progress, { solved: pick('solved'), attempted: pick('attempted'), cards: pick('cards'), visited: pick('visited'), done: pick('done') })
+  Object.assign(progress, normalizeProgress(o))
   save()
 }
 

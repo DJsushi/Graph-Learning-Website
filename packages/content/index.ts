@@ -78,11 +78,24 @@ export function parseContainerInfo(rest: string): { id?: string; attrs: Record<s
   return { id: idm?.[1], attrs }
 }
 
-export interface Topic { slug: string; title: string; intro: string; ids: string[] }
+export interface Topic { slug: string; course?: Course; title: string; intro: string; ids: string[] }
 
 /** content/topics.yaml: the ordered topic map of the reference. */
 export function loadTopics(root: string): Topic[] {
   return (matter as any).engines.yaml.parse(fs.readFileSync(path.join(root, 'content', 'topics.yaml'), 'utf8')) ?? []
+}
+
+/** The lecture pages of a course (or of both), in lecture order. Concept pages have `lecture: 0` and are not in this list. */
+export function lectureLessons(ix: ContentIndex, course?: Course): Lesson[] {
+  return ix.lessons.filter(l => l.kind === 'lecture' && (!course || l.course === course))
+    .sort((a, b) => (a.course === b.course ? a.lecture - b.lecture : a.course === 'theory' ? -1 : 1))
+}
+
+/** The chapters of a course, in `topics.yaml` order, each with its concept pages by `order`. Chapters without a page are left out. */
+export function courseChapters(ix: ContentIndex, topics: Topic[], course: Course): { topic: Topic; pages: Lesson[] }[] {
+  return topics.filter(t => t.course === course)
+    .map(topic => ({ topic, pages: ix.lessons.filter(l => l.kind === 'concept' && l.course === course && l.chapter === topic.slug).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) }))
+    .filter(c => c.pages.length)
 }
 
 let cached: { root: string; stamp: string; index: ContentIndex } | undefined

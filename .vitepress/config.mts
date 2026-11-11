@@ -1,6 +1,7 @@
 import { defineConfig, type DefaultTheme } from 'vitepress'
+import fs from 'node:fs'
 import path from 'node:path'
-import { loadContent, loadTopics, COURSE_NAMES, type Course } from '../packages/content/index'
+import { loadContent, loadTopics, courseChapters, lectureLessons, COURSE_NAMES, type Course } from '../packages/content/index'
 import { setupMarkdown, ROOT } from './markdown'
 import { topicSections } from './search'
 
@@ -8,14 +9,28 @@ import { BASE } from './base'
 
 const base = BASE
 const index = loadContent(ROOT)
+const topics = loadTopics(ROOT)
+
+/** Everything the sidebars are built from. The sidebar is fixed when the config loads (S8), so the dev server restarts when this changes. */
+const navKey = (ix: ReturnType<typeof loadContent>, tp: ReturnType<typeof loadTopics>) => JSON.stringify([
+  tp.map(t => [t.slug, t.course, t.title]),
+  (['theory', 'algorithms'] as Course[]).map(c => [
+    courseChapters(ix, tp, c).map(ch => [ch.topic.slug, ch.pages.map(p => [p.path, p.title])]),
+    lectureLessons(ix, c).map(l => [l.path, l.slug, l.lecture, l.title]),
+  ]),
+])
+const currentNavKey = navKey(index, topics)
 
 function courseSidebar(course: Course): DefaultTheme.SidebarItem[] {
   return [
     { text: COURSE_NAMES[course], link: `/${course}/` },
+    ...courseChapters(index, topics, course).map(({ topic, pages }) => ({
+      text: topic.title, collapsed: false,
+      items: pages.map(p => ({ text: p.title, link: `/${p.path}` })),
+    })),
     {
-      text: 'Lessons',
-      items: index.lessons.filter(l => l.course === course).sort((a, b) => a.lecture - b.lecture)
-        .map(l => ({ text: `${l.lecture}. ${l.title}`, link: `/${l.path}` })),
+      text: 'Lectures',
+      items: lectureLessons(index, course).map(l => ({ text: `${l.lecture}. ${l.title}`, link: `/${l.path}` })),
     },
     {
       text: 'More',
@@ -41,6 +56,7 @@ export default defineConfig({
   ],
   rewrites: {
     'content/:course/:page': ':course/:page',
+    'content/:course/:chapter/:page': ':course/:chapter/:page',
     'site/:page': ':page',
     'site/:dir/:page': ':dir/:page',
   },
@@ -73,7 +89,7 @@ export default defineConfig({
           text: 'Reference',
           items: [{ text: 'Overview', link: '/reference/' }],
         },
-        { text: 'Topics', items: loadTopics(ROOT).map(t => ({ text: t.title, link: `/reference/${t.slug}` })) },
+        { text: 'Topics', items: topics.map(t => ({ text: t.title, link: `/reference/${t.slug}` })) },
         {
           text: 'Lists',
           items: [
@@ -90,7 +106,7 @@ export default defineConfig({
         { text: 'Practice', items: [{ text: 'Overview', link: '/practice/' }, { text: 'Random drills', link: '/practice/drills' }] },
         ...(['theory', 'algorithms'] as Course[]).map(c => ({
           text: COURSE_NAMES[c],
-          items: index.lessons.filter(l => l.course === c).sort((a, b) => a.lecture - b.lecture)
+          items: lectureLessons(index, c)
             .map(l => ({ text: `${l.lecture}. ${l.title}`, link: `/practice/${l.slug}` })),
         })),
       ],
@@ -107,6 +123,19 @@ export default defineConfig({
     docFooter: { prev: 'Previous', next: 'Next' },
   },
   vite: {
+    plugins: [{
+      name: 'ga-restart-on-new-pages',
+      configureServer(server) {
+        const config = path.join(ROOT, '.vitepress/config.mts')
+        const check = (file: string) => {
+          if (!/[\\/]content[\\/].*\.(md|ya?ml)$/.test(file)) return
+          try {
+            if (navKey(loadContent(ROOT), loadTopics(ROOT)) !== currentNavKey) fs.utimesSync(config, new Date(), new Date())   // VitePress restarts when the config file changes
+          } catch { /* a half-saved file: the next save checks again */ }
+        }
+        for (const ev of ['add', 'unlink', 'change']) server.watcher.on(ev, check)
+      },
+    }],
     resolve: {
       alias: {
         '@core': path.join(ROOT, 'packages/graph-core/src'),

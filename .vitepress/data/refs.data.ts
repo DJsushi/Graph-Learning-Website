@@ -38,7 +38,7 @@ export default defineLoader({
       out[anchorId(c.id)] = {
         head: `${containerLabel(c)}${c.attrs.title ? ` (${inlineMath(c.attrs.title)})` : ''}`,
         html: md.render(body, env),
-        lesson: `${c.lesson.course === 'theory' ? 'Graph Theory' : 'Graph Algorithms'} · Lesson ${c.lesson.lecture}`,
+        lesson: `${c.lesson.course === 'theory' ? 'Graph Theory' : 'Graph Algorithms'} · ${c.lesson.kind === 'concept' ? c.lesson.title : `Lesson ${c.lesson.lecture}`}`,
       }
       const t = topicOf.get(c.id)
       if (t) out[anchorId(c.id)].entry = {

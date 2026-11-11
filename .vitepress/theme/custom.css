@@ -564,6 +564,11 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 /* lesson done / resume */
 .ga-lesson-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
 .ga-lesson-top .ga-lesson-eyebrow { margin: 0; }
+.ga-lesson-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0; }
+.ga-lesson-tag { padding: 0.1rem 0.6rem; border: 1px solid var(--vp-c-divider); border-radius: 999px; font-size: 0.82rem; color: var(--vp-c-text-2); text-decoration: none; }
+.ga-lesson-tag:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.ga-lesson-pages { margin-top: 1rem; }
+.ga-lesson-pages ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
 .ga-done-btn.active { color: var(--ga-ok); background: color-mix(in srgb, var(--ga-ok) 12%, transparent); }
 .ga-done-footer { display: flex; justify-content: center; margin: 2.5rem 0 0.5rem; }
 .ga-done-mark { color: var(--ga-ok); font-weight: 700; }

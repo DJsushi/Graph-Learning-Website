@@ -1,6 +1,6 @@
 // Generates Markdown for the reference, practice and exam pages from the content index.
 // The generated Markdown goes through the same pipeline as the lessons (math, containers, refs, graph blocks).
-import { COURSE_NAMES, KIND_NAMES, anchorId, containerLabel, type Container, type ContentIndex, type Lesson, type Topic } from './index'
+import { COURSE_NAMES, KIND_NAMES, anchorId, containerLabel, lectureLessons, type Container, type ContentIndex, type Lesson, type Topic } from './index'
 
 export const REFERENCE_KINDS: Record<string, { title: string; types: string[]; intro: string }> = {
   definitions: { title: 'Definitions', types: ['definition'], intro: 'Every definition from both courses, grouped by topic. Each links to its full entry.' },
@@ -14,9 +14,6 @@ export const REFERENCE_KINDS: Record<string, { title: string; types: string[]; i
 
 /** Sections of a topic page, in order. */
 const TOPIC_SECTIONS: [string, string][] = [['Definitions', 'definitions'], ['Results', 'theorems'], ['Algorithms', 'algorithms']]
-
-const sortedLessons = (ix: ContentIndex) =>
-  [...ix.lessons].sort((a, b) => (a.course === b.course ? a.lecture - b.lecture : a.course === 'theory' ? -1 : 1))
 
 /** Raw source of a container with at least `colons` colons, so it can be nested. */
 function fenced(c: Container): string {
@@ -99,7 +96,7 @@ export function topicMarkdown(ix: ContentIndex, topics: Topic[], slug: string): 
 }
 
 export function practiceLessons(ix: ContentIndex): Lesson[] {
-  return sortedLessons(ix)
+  return lectureLessons(ix)
 }
 
 export function practiceMarkdown(ix: ContentIndex, lesson: Lesson): string {
@@ -122,7 +119,8 @@ export function flashcardMarkdown(ix: ContentIndex): string {
   const out: string[] = ['# Flashcards', '',
     'Recall the statement, then reveal the card and rate yourself. Cards you know move to the back; cards you miss come back sooner. Your progress is saved in this browser.', '',
     '<FlashcardDeck>', '']
-  for (const l of sortedLessons(ix)) {
+  // entries live on lecture pages or, after the split, on concept pages
+  for (const l of [...lectureLessons(ix), ...ix.lessons.filter(x => x.kind === 'concept')]) {
     for (const c of ix.containers.filter(x => x.lesson === l && FLASHCARD_TYPES.includes(x.type) && x.id && !x.parentId)) {
       const label = containerLabel(c, l.course === 'theory' ? 'algorithms' : 'theory')
       const title = (c.title ?? '').replace(/"/g, '&quot;')
