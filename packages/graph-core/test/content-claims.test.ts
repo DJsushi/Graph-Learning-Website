@@ -182,6 +182,29 @@ describe('theory lessons', () => {
     expect(run('3,3,3,3,3,3')).toBe(true)
     expect(run('3,3,1,1')).toBe(false)
   })
+  it('handshake walkthrough: 8 edges, degree sum 16; with the loop at x 9 edges, sum 18', () => {
+    const f = index.figureById.get('t01-handshake-count')!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    const steps = doc.panels[0].steps
+    const sum = (g: GraphData) => { const ix = new GraphIndex(g); return ix.vertexIds.reduce((z, v) => z + ix.degree(v), 0) }
+    expect([steps[0].graph.edges.length, sum(steps[0].graph)]).toEqual([8, 16])
+    const last = steps.at(-1)!.graph
+    expect([last.edges.length, sum(last)]).toEqual([9, 18])
+    const ix = new GraphIndex(last)
+    expect(ix.degree('x')).toBe(2)
+    expect(ix.degree('l')).toBe(4)
+    expect(ix.vertexIds.map(v => ix.degree(v)).sort()).toEqual([1, 1, 2, 3, 3, 4, 4])
+  })
+  it('odd-count walkthrough: odd vertices mt, mb, p, q (k = 4); sums 8 and 8, total 16', () => {
+    const ix = new GraphIndex(fig('t01-odd-count'))
+    const odd = ix.vertexIds.filter(v => ix.degree(v) % 2 === 1)
+    const even = ix.vertexIds.filter(v => ix.degree(v) % 2 === 0)
+    expect(odd.sort()).toEqual(['mb', 'mt', 'p', 'q'])
+    expect(even.sort()).toEqual(['l', 'r', 'x'])
+    expect(odd.reduce((z, v) => z + ix.degree(v), 0)).toBe(8)
+    expect(even.reduce((z, v) => z + ix.degree(v), 0)).toBe(8)
+  })
   it('odd-degree exercise: a, c, d, f', () => {
     const g = fig('t01-ex-odd-vertices')
     const ix = new GraphIndex(g)
