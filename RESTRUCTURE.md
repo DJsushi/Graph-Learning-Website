@@ -430,6 +430,12 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Decisions and feedback
 
+- T1.8 is NOT done (split committed a52740e, first QA fixes committed after it). Open after the second visual-qa run:
+  - Sidebar active item is not scrolled into view on lecture pages (`/theory/03-trees`); on concept pages it sits flush at the bottom instead of centred (`.vitepress/theme/SidebarMarks.vue`).
+  - At 911px wide every page scrolls horizontally (scrollWidth 985 vs 901): the top nav bar and its "more" menu overflow. Check whether it predates the restructure (`main`) before fixing.
+  - Ctrl-K "leaf" ranks `/theory/trees/leaves` 4th, behind reference and `removing-a-leaf`. Acceptable unless the owner objects.
+  - The Chrome window cannot be resized; visual-qa measures 390/1366 in iframes.
+  Then rerun visual-qa on the three pages, commit and write the hash in the T1.8 row.
 - Carry-over notes from coders (2026-11-11):
   - T1.7/T1.8: `scripts/lock-entries.ts` with no argument overwrites the whole lock and would erase the verbatim proof after the split. Use `--accept <key>` only.
   - T2.3: the proof-closing rule in `.vitepress/markdown.ts` listens for `container_walkthrough_open`, which is not registered yet. Register `walkthrough` and check the "next proof after the walkthrough" matching.
