@@ -79,4 +79,41 @@ describe('structureChecks', () => {
       'content/theory/trees/w.md 0 figures for 2 reference entries',
     ])
   })
+
+  describe('walkthroughs', () => {
+    const fig = (extra = '', n = 2) => ['```graph id=t03-wt widget=stepper' + extra, '1 -- 2', ...Array.from({ length: n }, (_, i) => `step: S${i}.`), '```']
+    const step = (t = 'Text.') => ['::: step', t, ':::']
+    const wt = (head: string, inner: string[], proof = ['P.']) => run({
+      'content/theory/trees/w.md': concept(['::: lemma {#lem:a}', 'A.', ':::', ...head ? [`:::: walkthrough {${head}}`, ...inner, '::::'] : [], '::: proof', ...proof, ':::']),
+    })
+    const msgs = (r: ReturnType<typeof run>) => [...r.errors, ...r.warnings].map(m => m.replace(/^content\/theory\/trees\/w.md:\d+ /, ''))
+
+    it('accepts a walkthrough with a stepper figure and matching steps, and finds the proof by for=', () => {
+      const r = wt('for=lem:a', [...fig(), ...step(), ...step()])
+      expect(r.errors).toEqual([])
+      expect(r.warnings.filter(w => w.includes('no walkthrough'))).toEqual([])
+    })
+
+    it('rejects a for= that is not a statement on the page', () => {
+      expect(msgs(wt('for=lem:zz', [...fig(), ...step(), ...step()]))).toContain('walkthrough for=lem:zz does not name a statement on this page')
+    })
+
+    it('errors on a long proof without figure, warns otherwise', () => {
+      const long = Array.from({ length: 11 }, () => 'L.')
+      expect(msgs(wt('for=lem:a', step(), long))).toContain('walkthrough for a proof of 11 lines has no figure')
+      expect(msgs(wt('for=lem:a', step()))).toContain('walkthrough has no figure')
+    })
+
+    it('checks the position and widget of the figure and the number of steps', () => {
+      const m = msgs(wt('for=lem:a', ['Intro.', ...fig().map(l => l.replace(' widget=stepper', '')), ...step()]))
+      expect(m).toContain('figure t03-wt is not the first child of its walkthrough')
+      expect(m).toContain('figure t03-wt in a walkthrough needs widget=stepper')
+      expect(m).toContain('walkthrough has 1 step blocks but its figure has 2 step: lines')
+    })
+
+    it('limits a step to 60 words', () => {
+      expect(msgs(wt('for=lem:a', [...fig('', 1), ...step('w '.repeat(61))]))).toEqual(['step has 61 words (at most 60)'])
+      expect(wt('for=lem:a', [...fig('', 1), ...step('w '.repeat(60))]).errors).toEqual([])
+    })
+  })
 })

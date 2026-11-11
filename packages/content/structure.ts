@@ -1,7 +1,7 @@
 // Structure checks of RESTRUCTURE.md §4.1 and BACKLOG S7, S19, S20: frontmatter, ids, fences, quizzes, concept pages.
 // Pure functions of the content index; scripts/validate-content.ts prints the result and fails on errors.
 import path from 'node:path'
-import { anchorId, type ContentIndex, type Topic } from './index'
+import { anchorId, STATEMENT_TYPES, type ContentIndex, type Topic } from './index'
 import { REFERENCE_KINDS } from './pages'
 
 export const ID_PREFIX: Record<string, string> = {
@@ -69,11 +69,41 @@ export function structureChecks(root: string, ix: ContentIndex, topics: Topic[])
       errors.push(`${at(f.lesson.file, f.line)} figure id ${f.id} should start with ${slugs.join(' or ')}-`)
   }
 
+  // Walkthroughs (CONTENT_CONVENTIONS.md 9): one figure first, one step block per step: line, short steps.
+  const walkthroughs = new Set<string>()
+  for (const w of ix.containers.filter(c => c.type === 'walkthrough')) {
+    const here = (c: { line: number; lesson: unknown }) => c.lesson === w.lesson && c.line > w.line && c.line < w.endLine
+    const lines = w.lesson.source.split('\n')
+    const figures = ix.figures.filter(f => here(f))
+    const stmt = w.attrs.for ? ix.byId.get(w.attrs.for) : undefined
+    if (w.attrs.for) {
+      if (!stmt || stmt.lesson !== w.lesson || !STATEMENT_TYPES.has(stmt.type)) errors.push(`${at(w.lesson.file, w.line)} walkthrough for=${w.attrs.for} does not name a statement on this page`)
+      else walkthroughs.add(`${w.lesson.path}\0${w.attrs.for}`)
+    }
+    const proof = ix.containers.find(c => c.type === 'proof' && c.lesson === w.lesson && w.attrs.for && c.forId === w.attrs.for)
+    if (!figures.length) {
+      if (proof && proof.endLine - proof.line - 1 > 10) errors.push(`${at(w.lesson.file, w.line)} walkthrough for a proof of ${proof.endLine - proof.line - 1} lines has no figure`)
+      else warnings.push(`${at(w.lesson.file, w.line)} walkthrough has no figure`)
+    }
+    let first = w.line   // 1-based number of the first non-blank line inside is first + 1 once blanks are skipped
+    while (first < w.endLine - 1 && !lines[first].trim()) first++
+    for (const f of figures) {
+      if (f.line !== first + 1) errors.push(`${at(w.lesson.file, f.line)} figure ${f.id} is not the first child of its walkthrough`)
+      if (f.info.widget !== 'stepper') errors.push(`${at(w.lesson.file, f.line)} figure ${f.id} in a walkthrough needs widget=stepper`)
+    }
+    const steps = ix.containers.filter(c => c.type === 'step' && here(c))
+    for (const st of steps) {
+      const words = st.body.split(/\s+/).filter(Boolean).length
+      if (words > 60) errors.push(`${at(w.lesson.file, st.line)} step has ${words} words (at most 60)`)
+    }
+    if (figures.length) {
+      const captions = figures[0].source.split('\n').filter(l => /^\s*step:/.test(l)).length
+      if (captions !== steps.length) errors.push(`${at(w.lesson.file, w.line)} walkthrough has ${steps.length} step blocks but its figure has ${captions} step: lines`)
+    }
+  }
+
   // Warnings: concept pages only.
   const concept = new Set(ix.lessons.filter(l => l.kind === 'concept'))
-  const walkthroughs = new Set<string>()
-  for (const l of concept)
-    for (const m of l.source.matchAll(/^ {0,3}:{3,}\s*walkthrough\b.*?\bfor=([^\s}]+)/gm)) walkthroughs.add(`${l.path}\0${m[1]}`)
   const bare = ix.containers.filter(c => c.type === 'proof' && concept.has(c.lesson) && !(c.forId && walkthroughs.has(`${c.lesson.path}\0${c.forId}`)))
     .map(c => ({ c, len: c.endLine - c.line - 1 })).sort((a, b) => b.len - a.len)
   for (const { c, len } of bare) warnings.push(`${at(c.lesson.file, c.line)} proof of ${c.forId} (${len} lines) has no walkthrough`)
