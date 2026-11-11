@@ -1,4 +1,4 @@
-// Scans content/**/*.md: lessons, theorem-like containers (with numbering), graph figures, pseudocode, references.
+// Scans content/{theory,algorithms}/**/*.md: lecture and concept pages, theorem-like containers (with numbering), graph figures, pseudocode, references.
 // Shared by the VitePress config (numbering, [[refs]]), the data loaders and scripts/validate-content.ts.
 import fs from 'node:fs'
 import path from 'node:path'
@@ -8,10 +8,15 @@ import { parseKV } from '../graph-core/src/dsl/parser'
 export type Course = 'theory' | 'algorithms'
 
 export interface Lesson {
-  path: string          // e.g. "theory/01-basic-notions" (URL path without leading slash)
+  path: string          // e.g. "theory/01-basic-notions" or "theory/trees/leaves" (URL path without leading slash)
   file: string
+  kind: 'lecture' | 'concept'   // concept page: frontmatter has `chapter`; lecture page: numeric `lecture`
   course: Course
-  lecture: number
+  lecture: number       // 0 on a concept page
+  chapter?: string      // concept page: chapter slug from topics.yaml
+  order?: number        // concept page: position in the chapter
+  lectures: string[]    // concept page: slugs of the lecture files it comes from
+  stage?: string        // concept page: split | taught
   slug: string
   title: string
   summary: string
@@ -27,14 +32,15 @@ export interface Container {
   title?: string
   number?: string       // e.g. "1.3"
   lesson: Lesson
-  line: number
+  line: number          // first line (the opening fence), 1-based
+  endLine: number       // last line (the closing fence)
   body: string          // raw markdown between the fences
   raw: string           // full source including the fences
   parentId?: string
   forId?: string        // for proofs: the statement proved; for intuitions: the reference entry explained
 }
 
-export interface Figure { id: string; info: Record<string, string>; source: string; raw: string; lesson: Lesson; line: number; parentId?: string }
+export interface Figure { id: string; info: Record<string, string>; source: string; raw: string; lesson: Lesson; line: number; endLine: number; parentId?: string }
 export interface Ref { target: string; lesson: Lesson; line: number }
 
 export interface ContentIndex {
@@ -81,15 +87,19 @@ export function loadTopics(root: string): Topic[] {
 
 let cached: { root: string; stamp: string; index: ContentIndex } | undefined
 
+/** Rebuilds only when a content file or one of the yaml files changed; callers that ask many times per page
+ * (the markdown plugins) should ask once per page, since even the check reads every directory. */
 export function loadContent(root: string): ContentIndex {
   const dir = path.join(root, 'content')
   const files: string[] = []
   for (const course of ['theory', 'algorithms']) {
     const d = path.join(dir, course)
     if (!fs.existsSync(d)) continue
-    for (const f of fs.readdirSync(d).sort()) if (f.endsWith('.md') && f !== 'index.md') files.push(path.join(d, f))
+    for (const f of (fs.readdirSync(d, { recursive: true }) as string[]).sort())
+      if (f.endsWith('.md') && path.basename(f) !== 'index.md') files.push(path.join(d, f))
   }
-  const stamp = files.map(f => `${f}:${fs.statSync(f).mtimeMs}`).join('|')
+  const keyed = [...files, ...['topics.yaml', 'notation.yaml', 'techniques.yaml'].map(f => path.join(dir, f)).filter(f => fs.existsSync(f))]
+  const stamp = keyed.map(f => `${f}:${fs.statSync(f).mtimeMs}`).join('|')
   if (cached && cached.root === root && cached.stamp === stamp) return cached.index
 
   const index: ContentIndex = {
@@ -110,9 +120,14 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
   const fm = matter(text)
   const rel = path.relative(path.join(root, 'content'), file).replace(/\\/g, '/').replace(/\.md$/, '')
   const course = rel.split('/')[0] as Course
+  const kind = fm.data.chapter !== undefined ? 'concept' : 'lecture'
   const lesson: Lesson = {
-    path: rel, file, course,
-    lecture: Number(fm.data.lecture ?? 0),
+    path: rel, file, kind, course,
+    lecture: kind === 'lecture' ? Number(fm.data.lecture ?? 0) : 0,
+    chapter: kind === 'concept' ? String(fm.data.chapter) : undefined,
+    order: fm.data.order !== undefined ? Number(fm.data.order) : undefined,
+    lectures: Array.isArray(fm.data.lectures) ? fm.data.lectures.map(String) : [],
+    stage: fm.data.stage !== undefined ? String(fm.data.stage) : undefined,
     slug: String(fm.data.slug ?? rel),
     title: String(fm.data.title ?? rel),
     summary: String(fm.data.summary ?? ''),
@@ -121,12 +136,16 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
     source: text,
   }
   index.lessons.push(lesson)
+  if (kind === 'lecture' && !Number.isInteger(fm.data.lecture))
+    index.problems.push({ lesson, line: 1, message: 'page has neither chapter (concept page) nor a numeric lecture (lecture page)' })
   const lines = text.split('\n')
   const offset = text.split('\n').length - fm.content.split('\n').length
   const counters: Record<string, number> = {}
-  const stack: { c: Container; colons: number; start: number }[] = []
+  // lastStatement: the statement a proof without for= proves, the last one among its siblings (S3)
+  const stack: { c: Container; colons: number; start: number; lastStatement?: Container }[] = []
+  const outer: { lastStatement?: Container } = {}
+  const frame = () => stack.at(-1) ?? outer
   let fence: { ch: string; len: number; info: string; start: number; lines: string[] } | undefined
-  let lastStatement: Container | undefined
   let lastEntry: Container | undefined   // last reference entry (definition, statement, algorithm), for intuitions
   let currentAlg: Container | undefined
 
@@ -140,7 +159,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
         if (/^graph(\s|$)/.test(info)) {
           const kv = parseKV(info.slice(5))
           const id = kv.id
-          const fig: Figure = { id: id ?? '', info: kv, source: fence.lines.join('\n'), raw: lines.slice(fence.start - 1, i + 1).join('\n'), lesson, line: fence.start, parentId: stack.at(-1)?.c.id }
+          const fig: Figure = { id: id ?? '', info: kv, source: fence.lines.join('\n'), raw: lines.slice(fence.start - 1, i + 1).join('\n'), lesson, line: fence.start, endLine: lineNo, parentId: stack.at(-1)?.c.id }
           if (!id) index.problems.push({ lesson, line: fence.start, message: 'graph block without id' })
           else if (index.figureById.has(id)) index.problems.push({ lesson, line: fence.start, message: `duplicate figure id ${id}` })
           else index.figureById.set(id, fig)
@@ -156,12 +175,13 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
     const fo = /^\s*(`{3,}|~{3,})(.*)$/.exec(line)
     if (fo) { fence = { ch: fo[1][0], len: fo[1].length, info: fo[2], start: lineNo, lines: [] }; continue }
 
-    const open = /^(:{3,})\s*([a-z]+)\b(.*)$/.exec(line)
+    // up to 3 spaces of indent, as markdown-it-container accepts (S2)
+    const open = /^ {0,3}(:{3,})\s*([a-z]+)\b(.*)$/.exec(line)
     if (open && CONTAINER_TYPES.has(open[2])) {
       const [, colons, type, rest] = open
       const { id, attrs } = parseContainerInfo(rest)
       const c: Container = {
-        type, id, attrs, title: attrs.title, lesson, line: lineNo, body: '', raw: '',
+        type, id, attrs, title: attrs.title, lesson, line: lineNo, endLine: lineNo, body: '', raw: '',
         parentId: stack.at(-1)?.c.id,
       }
       const counter = COUNTER[type]
@@ -169,9 +189,13 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
         counters[counter] = (counters[counter] ?? 0) + 1
         c.number = `${lesson.lecture}.${counters[counter]}`
       }
-      if (type === 'proof') c.forId = attrs.for ?? lastStatement?.id
+      if (type === 'proof') {
+        const stmt = frame().lastStatement
+        c.forId = attrs.for ?? stmt?.id
+        if (!attrs.for && !stmt) index.problems.push({ lesson, line: lineNo, message: 'proof without a preceding statement or for=' })
+      }
       if (type === 'intuition') c.forId = attrs.for ?? lastEntry?.id
-      if (STATEMENT_TYPES.has(type)) lastStatement = c
+      if (STATEMENT_TYPES.has(type)) frame().lastStatement = c
       if (id && (STATEMENT_TYPES.has(type) || type === 'definition' || type === 'algorithm') && type !== 'claim') lastEntry = c
       if (type === 'algorithm') currentAlg = c
       if (id) {
@@ -184,11 +208,12 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
       stack.push({ c, colons: colons.length, start: i + 1 })
       continue
     }
-    const close = /^(:{3,})\s*$/.exec(line)
+    const close = /^ {0,3}(:{3,})\s*$/.exec(line)
     if (close && stack.length && stack[stack.length - 1].colons <= close[1].length) {
       const top = stack.pop()!
       top.c.body = lines.slice(top.start, i).join('\n')
       top.c.raw = lines.slice(top.start - 1, i + 1).join('\n')
+      top.c.endLine = lineNo
       if (top.c.type === 'algorithm') currentAlg = undefined
       continue
     }

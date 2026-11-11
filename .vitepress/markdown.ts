@@ -6,7 +6,7 @@ import { tex } from '@mdit/plugin-tex'
 import type { MarkdownRenderer as MarkdownIt } from 'vitepress'
 import {
   loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES,
-  type Course,
+  type Course, type ContentIndex,
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { KATEX_MACROS } from '../packages/graph-vue/src/katexMacros'
@@ -43,9 +43,17 @@ function b64(s: string): string {
   return Buffer.from(s, 'utf8').toString('base64')
 }
 
+// One index per page render (S1): loadContent re-reads every content directory on each call.
+const perRender = new WeakMap<object, ContentIndex>()
+function contentFor(env: any): ContentIndex {
+  if (!env || typeof env !== 'object') return loadContent(ROOT)
+  let ix = perRender.get(env)
+  if (!ix) perRender.set(env, ix = loadContent(ROOT))
+  return ix
+}
+
 /** Replace [[target]] by markdown links, for text that is rendered at runtime (graph block captions etc.). */
-function linkRefs(text: string, course?: Course): string {
-  const index = loadContent(ROOT)
+function linkRefs(index: ContentIndex, text: string, course?: Course): string {
   return text.replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, t: string, label?: string) => {
     const r = resolveTarget(index, t.trim(), course)
     return r ? `[${label ?? r.label}](${r.href})` : `[[${t}]]`
@@ -85,14 +93,14 @@ export function setupMarkdown(md: MarkdownIt) {
     const token = tokens[idx]
     const info = token.info.trim()
     if (/^graph(\s|$)/.test(info)) {
-      const index = loadContent(ROOT)
+      const index = contentFor(env)
       const kv: Record<string, string> = {}
       info.slice(5).replace(/([A-Za-z_][\w-]*)\s*=\s*("([^"]*)"|\S+)/g, (_, k, v, q) => (kv[k] = q ?? v, ''))
       const algo = /^algo:\s*(\S+)/m.exec(token.content)?.[1]
       const pseudoId = algo && ALGORITHMS[algo] ? ALGORITHMS[algo].pseudocode ?? `alg:${algo}` : undefined
       const pseudo = pseudoId ? index.pseudocode.get(pseudoId) : undefined
       const payload = {
-        id: kv.id, info: kv, source: linkRefs(token.content, courseOf(env)),
+        id: kv.id, info: kv, source: linkRefs(index, token.content, courseOf(env)),
         pseudocode: pseudo ? { id: pseudoId, html: renderPseudo(pseudo).replace(' v-pre', '') } : undefined,
       }
       const anchor = kv.id ? ` id="fig-${anchorId(kv.id)}"` : ''
@@ -108,7 +116,7 @@ export function setupMarkdown(md: MarkdownIt) {
     const m = /^\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/.exec(src)
     if (!m) return false
     if (!silent) {
-      const index = loadContent(ROOT)
+      const index = contentFor(state.env)
       const r = resolveTarget(index, m[1].trim(), courseOf(state.env))
       if (r) {
         const open = state.push('link_open', 'a', 1)
@@ -178,7 +186,7 @@ export function setupMarkdown(md: MarkdownIt) {
 }
 
 function openContainer(type: string, rest: string, env: any, tok: any): string {
-  const index = loadContent(ROOT)
+  const index = contentFor(env)
   const { id, attrs } = parseContainerInfo(rest)
   const where = env?.relativePath ?? ''
   const name = KIND_NAMES[type] ?? type
