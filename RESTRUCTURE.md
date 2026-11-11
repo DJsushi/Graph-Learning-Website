@@ -113,7 +113,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 | T1.2 | Routes and pages: rewrite for `content/:course/:chapter/:page`, sidebar by chapter, previous and next, concept page header, done button, "Continue", lecture page list and hash redirect, progress shape. | coder | R §4.2, §4.5 | S8 S9 S13 | 144c57b |
 | T1.3 | Entry lock: `scripts/lock-entries.ts`, `content/entries.lock.json` made from the current content, validator check. | coder | R §4.1 | | 477a3a1 |
 | T1.4 | Labels without numbers and the `source` tag. | coder | R §4.3 | S11 S14 S22 | 424a7cd |
-| T1.5 | Reading layout: prose width, statement tint, long proofs closed, figure size, enlarge button. | coder | R §4.3, §4.4 | S23 S24 FL1 C4 FT1 | |
+| T1.5 | Reading layout: prose width, statement tint, long proofs closed, figure size, enlarge button. | coder | R §4.3, §4.4 | S23 S24 FL1 C4 FT1 | 31c23ec |
 | T1.6 | Validator: checks for concept pages, exit codes, the extra checks, the list of long proofs without a walkthrough. | coder | R §4.1 | S7 S19 S20 | |
 | T1.7 | `scripts/split.ts` with tests. Do not run it on `content/` yet. | coder | R §4.1 | | |
 | T1.8 | Run the split on all 8 lecture files. Fix what breaks. Check a theory page, an algorithms page with a player, a lecture page and Ctrl-K search at 390px and 1366×768. Delete `scripts/split.ts` and `scripts/split-map.yaml`. | coder, then visual-qa | R §4.1 | S10 | |
@@ -430,7 +430,10 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Decisions and feedback
 
-(empty)
+- Carry-over notes from coders (2026-11-11):
+  - T1.7/T1.8: `scripts/lock-entries.ts` with no argument overwrites the whole lock and would erase the verbatim proof after the split. Use `--accept <key>` only.
+  - T2.3: the proof-closing rule in `.vitepress/markdown.ts` listens for `container_walkthrough_open`, which is not registered yet. Register `walkthrough` and check the "next proof after the walkthrough" matching.
+  - T1.2: `index.lessons` holds concept pages with `lecture: 0`; lecture-only consumers filter them out (`lectureLessons`).
 
 ### Needs reported by writers
 
