@@ -26,6 +26,7 @@ function decode(b64: string) {
 
 const payload = computed(() => decode(props.data))
 // the mark a text link spotlights in this figure; GraphView dims everything else
+provide('ga-fig-id', payload.value.id || null)
 provide('ga-spotlight', computed(() => (payload.value.id ? spotlights[payload.value.id] : null) ?? null))
 const doc = computed(() => parseGraph(payload.value.source, payload.value.info))
 const widget = computed(() => payload.value.info.widget ?? 'figure')

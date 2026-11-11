@@ -11,12 +11,20 @@ export const WALKTHROUGH: InjectionKey<WalkthroughState> = Symbol('ga-walkthroug
 
 interface Box { top: number; bottom: number }
 
-/** The step whose box crosses the line `y` (the middle of the viewport), or -1 when none does. */
-export function crossing(boxes: Box[], y: number): number {
-  return boxes.findIndex(b => b.top <= y && b.bottom >= y)
+/** The active step for the line `y`: the last step that starts at or above it, or the first one when `y` is above them all. */
+export function activeStep(boxes: Box[], y: number): number {
+  let i = 0
+  boxes.forEach((b, k) => { if (b.top <= y) i = k })
+  return i
 }
 
-/** A box lies wholly outside the visible band from `top` to `bottom`. */
-export function offScreen(b: Box, top: number, bottom: number): boolean {
-  return b.bottom <= top || b.top >= bottom
+/** A box lies wholly inside the visible band from `top` to `bottom`, give or take `tol` pixels. */
+export function inBand(b: Box, top: number, bottom: number, tol = 2): boolean {
+  return b.top >= top - tol && b.bottom <= bottom + tol
+}
+
+/** How far to scroll down so the box shows in the band: 0 when it is in it, else center it, or align its top when it is taller than the band. */
+export function scrollDelta(b: Box, top: number, bottom: number): number {
+  if (inBand(b, top, bottom)) return 0
+  return b.bottom - b.top > bottom - top ? b.top - top : (b.top + b.bottom) / 2 - (top + bottom) / 2
 }

@@ -2,7 +2,7 @@
 import { computed, onBeforeUnmount, ref, watchEffect } from 'vue'
 import { withBase } from 'vitepress'
 import { renderRich } from './rich'
-import { spotlights } from './marks'
+import { markAvailable, spotlights, tapSpot } from './marks'
 
 const props = defineProps<{ text: string; tag?: string }>()
 const html = computed(() => {
@@ -13,7 +13,7 @@ const html = computed(() => {
 // mark links in the html (rich.ts) behave like MarkLink.vue: hover, focus or tap spotlights the mark
 const root = ref<HTMLElement>()
 const markOf = (t: EventTarget | null) => (t instanceof Element ? t.closest<HTMLElement>('.ga-mark[data-fig]') : null)
-const on = (b: HTMLElement) => { spotlights[b.dataset.fig!] = b.dataset.mark! }
+const on = (b: HTMLElement) => { if (markAvailable(b.dataset.fig!, b.dataset.mark!)) spotlights[b.dataset.fig!] = b.dataset.mark! }
 const off = (b: HTMLElement) => { if (spotlights[b.dataset.fig!] === b.dataset.mark) spotlights[b.dataset.fig!] = null }
 let touch = false
 function ev(e: Event) {
@@ -25,11 +25,16 @@ function ev(e: Event) {
   else if (e.type === 'pointerout' && pe.pointerType !== 'touch' && !b.contains(pe.relatedTarget as Node | null)) off(b)
   else if (e.type === 'focusin') on(b)
   else if (e.type === 'focusout') off(b)
-  else if (e.type === 'click' && touch) (spotlights[b.dataset.fig!] === b.dataset.mark ? off : on)(b)
+  else if (e.type === 'click' && touch && markAvailable(b.dataset.fig!, b.dataset.mark!)) tapSpot(b, b.dataset.fig!, b.dataset.mark!)
 }
 watchEffect(() => {
   void html.value
-  for (const b of root.value?.querySelectorAll<HTMLElement>('.ga-mark[data-fig]') ?? []) b.setAttribute('aria-pressed', String(spotlights[b.dataset.fig!] === b.dataset.mark))
+  for (const b of root.value?.querySelectorAll<HTMLElement>('.ga-mark[data-fig]') ?? []) {
+    const live = markAvailable(b.dataset.fig!, b.dataset.mark!)
+    b.classList.toggle('ga-mark-inert', !live)
+    if (live) { b.setAttribute('aria-pressed', String(spotlights[b.dataset.fig!] === b.dataset.mark)); b.removeAttribute('aria-disabled') }
+    else { b.removeAttribute('aria-pressed'); b.setAttribute('aria-disabled', 'true') }
+  }
 }, { flush: 'post' })
 onBeforeUnmount(() => { for (const b of root.value?.querySelectorAll<HTMLElement>('.ga-mark[data-fig]') ?? []) off(b) })
 </script>

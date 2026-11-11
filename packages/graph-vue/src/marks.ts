@@ -3,6 +3,21 @@ import { reactive } from 'vue'
 
 export const spotlights = reactive<Record<string, string | null>>({})
 
+/** The mark names the graph a figure shows right now defines (published by a stepper); a link to a mark that is not in it is inert. */
+export const shown = reactive<Record<string, string[]>>({})
+export const markAvailable = (fig: string, mark: string) => !shown[fig] || shown[fig].includes(mark)
+
+/** A tap spotlights and keeps it until the next pointer-down elsewhere (a touch has no hover, and not every browser focuses a tapped button). */
+export function tapSpot(el: Element, fig: string, mark: string) {
+  spotlights[fig] = mark
+  const away = (e: Event) => {
+    if (el.contains(e.target as Node)) return
+    document.removeEventListener('pointerdown', away, true)
+    if (spotlights[fig] === mark) spotlights[fig] = null
+  }
+  document.addEventListener('pointerdown', away, true)
+}
+
 export interface Spot { vertices: Set<string>; edges: Set<string>; faces: Set<string>; groups: Set<string> }
 
 /** The elements of a mark that exist in this graph, or null when none do (then nothing is dimmed). Refs: vertex id, `@edgeId`, `face:id`, group id. */

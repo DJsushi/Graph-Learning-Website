@@ -260,6 +260,8 @@
 /* the link in the text: a focusable button that looks like a dotted link in the accent colour */
 .vp-doc .ga-mark { all: unset; cursor: pointer; color: var(--gv-accent); border-bottom: 1px dotted currentColor; font-weight: 500; }
 .vp-doc .ga-mark:hover, .vp-doc .ga-mark[aria-pressed="true"] { background: color-mix(in srgb, var(--gv-accent) 14%, transparent); }
+.vp-doc .ga-mark.ga-mark-inert { color: var(--vp-c-text-3); border-bottom-color: var(--vp-c-divider); font-weight: inherit; cursor: default; }
+.vp-doc .ga-mark.ga-mark-inert:hover { background: none; }
 .vp-doc .ga-mark:focus-visible { outline: 2px solid var(--gv-accent); outline-offset: 2px; border-radius: 2px; }
 
 @media (prefers-reduced-motion: reduce) {
@@ -292,11 +294,11 @@
   color: var(--vp-c-text-1); font-size: 0.86rem; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.ga-btn:hover:not(:disabled) { background: var(--ga-ctl-hover); }
+.ga-btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--ga-ctl-hover); }
 .ga-btn:focus-visible, .ga-tab:focus-visible, select:focus-visible, .ga-field input:focus-visible, .ga-code:focus-visible, .ga-chip:focus-visible {
   outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px;
 }
-.ga-btn:disabled { opacity: 0.4; cursor: default; }
+.ga-btn:disabled, .ga-btn[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 .ga-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ga-icon-btn { padding: 0; }
 .ga-btn-primary { background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: var(--vp-c-white); }
@@ -692,6 +694,12 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 /* the step text is beside the figure; the stepper's own caption stays for screen readers */
 .ga-wt-body .ga-graph-frame .ga-step-message {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+/* one column: a short control row (the text steps are the navigation) with the enlarge button beside it, not over the drawing */
+@container (max-width: 959.98px) {
+  .ga-wt-body .ga-controls .ga-slider, .ga-wt-body .ga-controls .ga-speed { display: none; }
+  .ga-wt-body .ga-controls .ga-step-count { min-width: 0; padding: 0 0.4em; }
+  .ga-wt-body .ga-enlarge { top: auto; bottom: 10px; }
 }
 @container (min-width: 960px) {
   .ga-wt-body { --ga-fig-h: calc(100vh - var(--ga-wt-top) - 8em); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 0 2em; align-items: start; }

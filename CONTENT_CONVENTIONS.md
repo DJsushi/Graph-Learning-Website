@@ -417,7 +417,7 @@ once the budget checks exist (§10).
 
 ## 9. Walkthrough
 
-*Planned, Phase 2.*
+*Implemented (T2.3, T2.5).*
 
 A proof or construction explained step by step beside one figure.
 
