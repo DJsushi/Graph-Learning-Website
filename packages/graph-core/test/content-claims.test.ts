@@ -182,6 +182,53 @@ describe('theory lessons', () => {
     expect(run('3,3,3,3,3,3')).toBe(true)
     expect(run('3,3,1,1')).toBe(false)
   })
+  describe('Havel–Hakimi walkthroughs on (3,2,2,2,2,1)', () => {
+    const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+    // degree and neighbours by the label $v_i$, since the renaming steps swap labels, not ids
+    const byLabel = (g: GraphData) => {
+      const ix = new GraphIndex(g), lab = (v: string) => Number(/v_(\d)/.exec(ix.vertex(v)!.label!)![1])
+      const deg: Record<number, number> = {}, nb: Record<number, number[]> = {}
+      for (const v of ix.vertexIds) { deg[lab(v)] = ix.degree(v); nb[lab(v)] = ix.neighbors(v).map(lab).sort() }
+      return { deg, nb, m: ix.m, sum1: nb[1]?.reduce((z, u) => z + deg[u], 0), back1: nb[1]?.filter(u => u >= 5).length }
+    }
+    const seq = (g: GraphData) => Object.entries(byLabel(g).deg).sort(([a], [b]) => +a - +b).map(([, d]) => d)
+    it('direction <=: H has (1,1,1,2,1); adding v1 gives (3,2,2,2,2,1)', () => {
+      const s = steps('t01-havel-hakimi-back')
+      expect(seq(s[0])).toEqual([1, 1, 1, 2, 1])
+      expect(seq(s.at(-1)!)).toEqual([3, 2, 2, 2, 2, 1])
+    })
+    it('set-up: 6 edges, v1 ~ v2 v5 v6, neighbour sum 5, 2 neighbours in {v5,v6}', () => {
+      const r = byLabel(steps('t01-havel-hakimi-choice')[0])
+      expect([seq(steps('t01-havel-hakimi-choice')[0]), r.m, r.nb[1], r.sum1, r.back1]).toEqual([[3, 2, 2, 2, 2, 1], 6, [2, 5, 6], 5, 2])
+    })
+    it('case (a): v1 ~ v2 v3 v4; G - v1 has (1,1,1,2,1)', () => {
+      const s = steps('t01-havel-hakimi-case-a')
+      expect([seq(s[0]), byLabel(s[0]).nb[1]]).toEqual([[3, 2, 2, 2, 2, 1], [2, 3, 4]])
+      expect(seq(s[1])).toEqual([1, 1, 1, 2, 1])
+    })
+    it('case (b): only v2 of v2..v4 is a neighbour; d(v3) = 2 > d(v6) = 1', () => {
+      const r = byLabel(steps('t01-havel-hakimi-case-b')[0])
+      expect([r.nb[1].filter(u => u <= 4), r.deg[3], r.deg[6]]).toEqual([[2], 2, 1])
+    })
+    it('equal case: v4, v5 of degree 2; after the swap degrees fit, sum 5, 1 neighbour in {v5,v6}', () => {
+      const s = steps('t01-havel-hakimi-rename'), a = byLabel(s[0]), b = byLabel(s.at(-1)!)
+      expect([a.deg[4], a.deg[5], a.nb[1].includes(4), a.nb[1].includes(5)]).toEqual([2, 2, false, true])
+      expect([seq(s.at(-1)!), b.sum1, b.back1]).toEqual([[3, 2, 2, 2, 2, 1], 5, 1])
+    })
+    it('greater case: k = v4; the switch keeps (3,2,2,2,2,1), sum 5 -> 6; the swap reaches the case (a) graph', () => {
+      const s = steps('t01-havel-hakimi-greater'), g = byLabel(s[0])
+      expect([g.nb[3].filter(u => u !== 6), g.nb[6].filter(u => u !== 1)]).toEqual([[2, 4], []])
+      const sw = byLabel(s[3])
+      expect([seq(s[3]), sw.nb[1], g.sum1, sw.sum1]).toEqual([[3, 2, 2, 2, 2, 1], [2, 3, 5], 5, 6])
+      const last = byLabel(s.at(-1)!), a = byLabel(steps('t01-havel-hakimi-case-a')[0])
+      expect(last.nb).toEqual(a.nb)
+    })
+    it('2-switch figure: d(v_i) = 3 > d(v_j) = 2, and the switch keeps every degree', () => {
+      const s = steps('t01-havel-hakimi-switch'), deg = (g: GraphData) => { const ix = new GraphIndex(g); return Object.fromEntries(ix.vertexIds.map(v => [v, ix.degree(v)])) }
+      expect([deg(s[0]).vi, deg(s[0]).vj]).toEqual([3, 2])
+      expect(deg(s.at(-1)!)).toEqual(deg(s[0]))
+    })
+  })
   it('handshake walkthrough: 8 edges, degree sum 16; with the loop at x 9 edges, sum 18', () => {
     const f = index.figureById.get('t01-handshake-count')!
     const doc = parseGraph(f.source, f.info)
