@@ -152,7 +152,7 @@ the rows at any time.
 | ID | Page (under `content/`) | Proof lines | Done |
 |----|-------------------------|-------------|------|
 | T4.1 | `theory/degrees/degrees-and-handshake.md` | 8, 4 | 3364005 |
-| T4.2 | `theory/degrees/havel-hakimi.md` | 54 | |
+| T4.2 | `theory/degrees/havel-hakimi.md` | 54 | 528662b |
 | T4.3 | `theory/degrees/erdos-gallai.md` | 95 | |
 | T4.4 | `theory/walks-connectivity/walks-and-paths.md` | 6 | |
 | T4.5 | `theory/bipartite/bipartite-graphs.md` | 7 | |
