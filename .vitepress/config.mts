@@ -118,7 +118,16 @@ export default defineConfig({
     outline: { level: [2, 3], label: 'On this page' },
     search: {
       provider: 'local',
-      options: { miniSearch: { _splitIntoSections: (file, html) => (html ? undefined : topicSections(file)) as any } },
+      options: {
+        // concept and lecture pages have no h1 (the title is in the page header), so VitePress would drop their text before the first heading and show no breadcrumb: give them a title heading
+        _render: async (src: string, env: any, md: any) => {
+          const html: string = md.render(src, env)
+          const fm = env.frontmatter
+          if (fm?.search === false) return ''
+          return fm?.course && (fm.chapter || fm.lecture) ? `<h1 id="page">${md.utils.escapeHtml(fm.title)}<a class="header-anchor" href="#"></a></h1>${html}` : html
+        },
+        miniSearch: { _splitIntoSections: (file, html) => (html ? undefined : topicSections(file)) as any },
+      },
     },
     footer: {
       message: 'Unofficial student resource based on the lectures <em>Graph Theory</em> (P. Hliněný) and <em>MA015 Graph Algorithms</em> (Jan Obdržálek), Faculty of Informatics, Masaryk University.',

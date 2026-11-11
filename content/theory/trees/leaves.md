@@ -44,7 +44,7 @@ So indeed $d_G(u) = d_G(v) = 1$.
 caption: The end $u$ of a longest path $P$ cannot have another neighbour $x$: outside $P$ it would prolong $P$, on $P$ it would close a cycle.
 intent: Transcription of the lecture sketch of the two cases (b1), (b2).
 layout: fixed
-u [class=current] @(0, 0); p1 @(1, 0.3); p2 @(2, 0); p3 @(3, 0.3); v [class=current] @(4, 0)
+u [class=current] @(0, 0); p1 @(1, -0.3); p2 @(2, 0); p3 @(3, -0.3); v [class=current] @(4, 0)
 x1 [label="$x$" class=muted] @(-0.8, 0.8)
 u -- p1 -- p2 -- p3 -- v [class=path]
 u -- x1 [class="rejected dashed"]; u -- p2 [class="rejected dashed" bend=0.4]

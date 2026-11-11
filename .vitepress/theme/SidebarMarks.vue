@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// Ticks finished lessons in the VitePress sidebar (data-done on the matching links; CSS draws the mark).
+// Scrolls the active item into view and ticks finished lessons in the VitePress sidebar (data-done on the matching links; CSS draws the mark).
 import { nextTick, onMounted, watch } from 'vue'
 import { useRoute, withBase } from 'vitepress'
 import { loadProgress, progress } from '@gv/progress'
@@ -11,6 +11,7 @@ function mark() {
     const href = a.getAttribute('href')!.replace(/\.html$/, '').replace(/#.*$/, '')
     a.toggleAttribute('data-done', done.has(href))
   }
+  document.querySelector('.VPSidebar .VPSidebarItem.is-active > .item')?.scrollIntoView({ block: 'nearest' })   // VitePress leaves a long sidebar at the top
 }
 onMounted(() => {
   loadProgress()

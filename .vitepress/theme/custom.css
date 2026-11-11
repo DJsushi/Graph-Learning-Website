@@ -575,6 +575,7 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-lesson-tag { padding: 0.1rem 0.6rem; border: 1px solid var(--vp-c-divider); border-radius: 999px; font-size: 0.82rem; color: var(--vp-c-text-2); text-decoration: none; }
 .ga-lesson-tag:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
 .ga-lesson-pages { margin-top: 1rem; }
+.ga-lesson-pages a { color: var(--vp-c-brand-1); text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
 .ga-lesson-pages ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
 .ga-done-btn.active { color: var(--ga-ok); background: color-mix(in srgb, var(--ga-ok) 12%, transparent); }
 .ga-done-footer { display: flex; justify-content: center; margin: 2.5rem 0 0.5rem; }
@@ -654,7 +655,9 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-settings-css { font-size: 0.8rem; }
 
 /* reading width: text and boxes stop at 68ch, figures and walkthroughs use the column (RESTRUCTURE.md 4.4) */
-.vp-doc :is(p, ul, ol, blockquote, .ga-box, .ga-proof, .ga-reveal) { max-width: 68ch; }
+.vp-doc :is(.ga-box, .ga-proof, .ga-reveal) { max-width: 68ch; }
+/* prose measure: <= 75 chars/line, counted as width / (font-size / 2); ch is ~0.63em in this font so 68ch gave 85 */
+.vp-doc :is(p, ul, ol, blockquote) { max-width: 37em; }
 
 /* lessons use the full screen width (VitePress caps the layout at 1440px and the doc column at 688px) */
 :root { --vp-layout-max-width: 100vw; }
