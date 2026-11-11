@@ -39,7 +39,7 @@ Part (a): the base cases are checked one by one.
 caption: The base cases $k = 0, 1, 2$ of the closed-walk lemma, one small multigraph for all of them.
 intent: New. The base cases (a) of the lecture proof (theory/2026-09-29 p4), shown on one multigraph with a loop, a single edge, two parallel edges and two loops.
 layout: fixed
-a @(0, 0); b @(1.8, 0.5); c @(3.2, 0.5); d @(0, -1.8); e @(1.8, -1.8); f @(3.4, -1.8)
+a @(0, 0); b @(1.6, 0); c @(3.1, 0); d @(4.7, 0); e @(6.2, 0); f @(7.8, 0)
 a -- a [side=top]; b -- c; d -- e; d -- e; f -- f [side=top]; f -- f [side=bottom]
 mark W: b
 step: Length $k = 0$: a single vertex.
@@ -90,7 +90,7 @@ Part (b1): a closed walk of length at least $3$ that repeats no vertex is itself
 caption: Case (b1): a closed walk on five distinct vertices traces a cycle.
 intent: New. The case (b1) of the lecture proof (theory/2026-09-29 p4) on a 5-cycle with one extra vertex that the walk does not visit.
 layout: fixed
-v0 [label="$v_0$"] @(1.5, 1.6); v1 [label="$v_1$"] @(2.9, 0.6); v2 [label="$v_2$"] @(2.4, -1); v3 [label="$v_3$"] @(0.6, -1); v4 [label="$v_4$"] @(0.1, 0.6); y @(3.8, -1.2)
+v0 [label="$v_0$"] @(1.5, 1.3); v1 [label="$v_1$"] @(3.1, 0.5); v2 [label="$v_2$"] @(2.5, -0.8); v3 [label="$v_3$"] @(0.5, -0.8); v4 [label="$v_4$"] @(-0.1, 0.5); y @(4.1, -0.8)
 v0 -- v1 -- v2 -- v3 -- v4 -- v0; v2 -- y
 mark W: v0--v1 v1--v2 v2--v3 v3--v4 v4--v0
 mark distinct: v0 v1 v2 v3 v4
