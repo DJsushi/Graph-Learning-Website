@@ -13,7 +13,7 @@ export function renderRich(text: string, linkBase = ''): string {
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => `<a href="${u.startsWith('/') ? linkBase.replace(/\/$/, '') + u : u}">${t}</a>`)
+      .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, t, u) => `<a href="${(u.startsWith('/') ? linkBase.replace(/\/$/, '') + u : u).replace(/"/g, '&quot;')}">${t}</a>`)
   }).join('')
 }
 

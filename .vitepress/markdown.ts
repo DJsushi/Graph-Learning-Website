@@ -5,7 +5,7 @@ import container from 'markdown-it-container'
 import { tex } from '@mdit/plugin-tex'
 import type { MarkdownRenderer as MarkdownIt } from 'vitepress'
 import {
-  loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES, sourceTag,
+  loadContent, parseContainerInfo, resolveTarget, parseMarkRef, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES, sourceTag,
   type ContentIndex,
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
@@ -112,8 +112,13 @@ export function setupMarkdown(md: MarkdownIt) {
     if (!m) return false
     if (!silent) {
       const index = contentFor(state.env)
-      const r = resolveTarget(index, m[1].trim())
-      if (r) {
+      const mark = parseMarkRef(m[1].trim())
+      const r = mark ? undefined : resolveTarget(index, m[1].trim())
+      if (mark && m[2]) {
+        // a mark link spotlights part of a figure (MarkLink.vue); the validator checks figure, mark and page
+        const t = state.push('html_inline', '', 0)
+        t.content = `<MarkLink fig="${escapeHtml(mark.fig)}" mark="${escapeHtml(mark.mark)}">${inlineMath(m[2])}</MarkLink>`
+      } else if (r) {
         const open = state.push('link_open', 'a', 1)
         open.attrs = [['href', r.href], ['class', 'ga-ref']]
         const t = state.push('html_inline', '', 0)

@@ -283,8 +283,6 @@ return T                                          // @return
 
 ### 6.1 Marks: text that lights up the figure
 
-*Planned, Phase 2.*
-
 In a figure, a mark is a named set of elements with no visual effect of its own:
 
 ```
@@ -296,7 +294,8 @@ mark crossing: b--d c--e c--f
 like other statements, and a later `mark` with the same name replaces the earlier one.
 
 In text: `[[fig:a01-cut-property#crossing|the three crossing edges]]`. The link text is
-required and the figure must be on the same page.
+required and the figure must be on the same page. The validator checks the figure, the page, the
+link text and that some step (or the base graph) defines the mark.
 
 Behaviour: pointing at, focusing or tapping the link spotlights the mark. Marked elements get
 an accent ring or a thicker stroke and everything else in that figure fades to about 30%.

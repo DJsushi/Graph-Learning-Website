@@ -3,7 +3,8 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadContent, loadTopics, resolveTarget, sourceTag } from '../packages/content/index'
+import { loadContent, loadTopics, resolveTarget, sourceTag, parseMarkRef } from '../packages/content/index'
+import { markRefErrors } from '../packages/content/marks'
 import { REFERENCE_KINDS } from '../packages/content/pages'
 import { entryHashes, lockErrors } from '../packages/content/lock'
 import { structureChecks } from '../packages/content/structure'
@@ -36,7 +37,7 @@ for (const c of index.containers) {
 }
 
 for (const r of index.refs) {
-  if (!resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)
+  if (!parseMarkRef(r.target) && !resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)
 }
 
 const resolveFigure = (id: string, panel?: number) => {
@@ -44,6 +45,14 @@ const resolveFigure = (id: string, panel?: number) => {
   if (!f) return undefined
   return parseGraph(f.source, f.info).panels[(panel ?? 1) - 1]?.graph
 }
+
+const marksOf = (f: { source: string; info: Record<string, string> }) => {
+  const names = new Set<string>()
+  for (const p of parseGraph(f.source, f.info, { resolveFigure }).panels)
+    for (const g of [p.graph, ...p.steps.map(s => s.graph)]) for (const n of Object.keys(g.marks)) names.add(n)
+  return names
+}
+for (const e of markRefErrors(index, marksOf)) errors.push(`${where(e.lesson.file, e.line)} ${e.message}`)
 
 const WIDGETS = new Set(['figure', 'player', 'editable', 'exercise', 'stepper'])
 for (const f of index.figures) {

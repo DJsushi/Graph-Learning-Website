@@ -595,7 +595,8 @@ set a->b [f=3 class=path]
 ```
 
 Changes attributes of an existing vertex or edge inside a step. Listed attributes are
-replaced, the others stay. Without `set`, writing the edge again in a step adds a second edge.
+replaced, the others stay; `class=` is the exception: it adds the class, as everywhere else in
+the DSL (`unclass` removes one). Without `set`, writing the edge again in a step adds a second edge.
 
 ### 16.3 `state` and `badge` in steppers (deferred)
 

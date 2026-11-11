@@ -51,3 +51,11 @@ it('names a proof with a walkthrough "Compact proof" and closes it', () => {
   expect(proofOnConceptPage(3, true)).toEqual({ closed: true, summary: 'Compact proof' })
   expect(proofOnConceptPage(3, false)).toEqual({ closed: false, summary: 'Proof' })
 })
+
+it('renders [[fig:id#mark|text]] as a MarkLink and leaves it out when the text is missing', async () => {
+  const md = await createMarkdownRenderer(process.cwd(), { attrs: { disable: true }, config: m => setupMarkdown(m) })
+  const html = md.render('See [[fig:a01-x#S|the $k$ edges]].', {})
+  expect(html).toContain('<MarkLink fig="a01-x" mark="S">')
+  expect(html).toContain('</MarkLink>')
+  expect(md.render('See [[fig:a01-x#S]].', {})).toContain('ga-ref-broken')
+}, 30_000)

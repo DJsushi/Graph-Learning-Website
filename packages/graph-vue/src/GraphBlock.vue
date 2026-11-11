@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // Entry point for ```graph blocks in Markdown: decodes the payload, parses the DSL and dispatches to a widget.
-import { computed, ref, type Component } from 'vue'
+import { computed, provide, ref, type Component } from 'vue'
 import { withBase } from 'vitepress'
 import { parseGraph } from '@core/dsl/parser'
 import { encodeShare } from '@core/io'
@@ -11,6 +11,7 @@ import SandboxWidget from './widgets/SandboxWidget.vue'
 import ExerciseWidget from './widgets/ExerciseWidget.vue'
 import RichText from './RichText.vue'
 import ZoomDialog from './ZoomDialog.vue'
+import { spotlights } from './marks'
 
 const props = defineProps<{ data: string }>()
 
@@ -24,6 +25,8 @@ function decode(b64: string) {
 }
 
 const payload = computed(() => decode(props.data))
+// the mark a text link spotlights in this figure; GraphView dims everything else
+provide('ga-spotlight', computed(() => (payload.value.id ? spotlights[payload.value.id] : null) ?? null))
 const doc = computed(() => parseGraph(payload.value.source, payload.value.info))
 const widget = computed(() => payload.value.info.widget ?? 'figure')
 const caption = computed(() => doc.value.directives.caption?.[0])

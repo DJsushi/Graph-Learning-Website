@@ -38,6 +38,7 @@ packages/
     geometry.ts                  edge routing: paths, bends, loops, arrowheads, label anchors
     tween.ts, useTweened.ts      animation between two graph states
     texsvg.ts, rich.ts           math in SVG labels; inline rich text for captions
+    marks.ts, MarkLink.vue       mark links: text spotlights figure elements (registry by figure id)
     QuizBlock.vue                quizzes
     progress.ts, settings.ts     reader state in localStorage
   content/

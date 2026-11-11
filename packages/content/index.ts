@@ -40,7 +40,7 @@ export interface Container {
 }
 
 export interface Figure { id: string; info: Record<string, string>; source: string; raw: string; lesson: Lesson; line: number; endLine: number; parentId?: string }
-export interface Ref { target: string; lesson: Lesson; line: number }
+export interface Ref { target: string; lesson: Lesson; line: number; text?: string }
 
 export interface ContentIndex {
   lessons: Lesson[]
@@ -232,7 +232,13 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
 function scanRefs(text: string, lesson: Lesson, line: number, index: ContentIndex) {
   const re = /\[\[([^\]|]+)(\|[^\]]*)?\]\]/g
   let m: RegExpExecArray | null
-  while ((m = re.exec(text))) index.refs.push({ target: m[1].trim(), lesson, line })
+  while ((m = re.exec(text))) index.refs.push({ target: m[1].trim(), lesson, line, text: m[2]?.slice(1) })
+}
+
+/** `fig:<figure id>#<mark>` (CONTENT_CONVENTIONS.md 6.1): a link that spotlights a mark of a figure. */
+export function parseMarkRef(target: string): { fig: string; mark: string } | undefined {
+  const m = /^fig:([^#\s]+)#([A-Za-z0-9_-]+)$/.exec(target)
+  return m ? { fig: m[1], mark: m[2] } : undefined
 }
 
 /** Resolve a [[target]] to a URL path (without base) and default label. */

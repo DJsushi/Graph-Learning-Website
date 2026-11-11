@@ -249,6 +249,19 @@
 .gv-vertex.color5 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c5) 45%, var(--gv-paper)); } .gv-vertex.color6 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c6) 45%, var(--gv-paper)); }
 .gv-vertex.color7 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c7) 45%, var(--gv-paper)); } .gv-vertex.color8 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c8) 45%, var(--gv-paper)); }
 
+/* spotlight of a mark (MarkLink): marked elements get the accent, the rest of that figure fades to 30% */
+.gv-spot .gv-vertex:not(.gv-marked), .gv-spot .gv-edge:not(.gv-marked), .gv-spot .gv-edge-label:not(.gv-marked),
+.gv-spot .gv-face:not(.gv-marked), .gv-spot .gv-group:not(.gv-marked), .gv-spot .gv-hyperedge:not(.gv-marked), .gv-spot .gv-hyperarc:not(.gv-marked) { opacity: 0.3; }
+.gv-vertex.gv-marked .gv-vertex-shape { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-edge.gv-marked .gv-line { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-edge.gv-marked .gv-arrow { fill: var(--gv-accent); }
+.gv-hyperarc.gv-marked { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-face.gv-marked, .gv-group.gv-marked, .gv-hyperedge.gv-marked { fill: color-mix(in srgb, var(--gv-accent) 22%, transparent); }
+/* the link in the text: a focusable button that looks like a dotted link in the accent colour */
+.vp-doc .ga-mark { all: unset; cursor: pointer; color: var(--gv-accent); border-bottom: 1px dotted currentColor; font-weight: 500; }
+.vp-doc .ga-mark:hover, .vp-doc .ga-mark[aria-pressed="true"] { background: color-mix(in srgb, var(--gv-accent) 14%, transparent); }
+.vp-doc .ga-mark:focus-visible { outline: 2px solid var(--gv-accent); outline-offset: 2px; border-radius: 2px; }
+
 @media (prefers-reduced-motion: reduce) {
   .gv-line, .gv-arrow, .gv-vertex-shape { transition: none; }
 }

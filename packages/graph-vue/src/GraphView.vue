@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The single SVG graph renderer. Pure view + pointer/keyboard event translation; editing logic lives in the widgets.
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
@@ -9,6 +9,7 @@ import { labelToSpans, spansWidth, type TSpan } from './texsvg'
 import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
 import { easeFn } from './easing'
+import { spotOf } from './marks'
 
 const props = withDefaults(defineProps<{
   graph: GraphData
@@ -47,6 +48,11 @@ const emit = defineEmits<{
   'edge-dblclick': [id: Id]
   key: [ev: KeyboardEvent]
 }>()
+
+// a text link (MarkLink) spotlights a mark of this figure: its elements get `gv-marked`, the rest fades (custom.css)
+const spotName = inject<Ref<string | null> | null>('ga-spotlight', null)
+const spot = computed(() => spotOf(props.graph, spotName?.value))
+const marked = (kind: 'vertices' | 'edges' | 'faces' | 'groups', id: Id) => !!spot.value?.[kind].has(id)
 
 const svg = ref<SVGSVGElement>()
 const root = ref<SVGGElement>()
@@ -380,7 +386,7 @@ const describe = computed(() => {
   <svg
     ref="svg"
     class="gv-root"
-    :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none' }"
+    :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none', 'gv-spot': !!spot }"
     :viewBox="viewBox"
     :style="fill ? undefined : { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }"
     :role="selectable !== 'none' || editable ? 'group' : 'img'"
@@ -399,25 +405,25 @@ const describe = computed(() => {
     <g ref="root" :transform="transform">
       <!-- faces -->
       <g class="gv-faces">
-        <path v-for="fc in faceShapes" :key="fc.id" :d="fc.d" class="gv-face" :class="fc.classes" />
+        <path v-for="fc in faceShapes" :key="fc.id" :d="fc.d" class="gv-face" :class="[...fc.classes, { 'gv-marked': marked('faces', fc.id) }]" />
       </g>
       <!-- groups -->
       <g class="gv-groups">
-        <path v-for="gr in groupShapes" :key="gr.id" :d="gr.d" class="gv-group" :class="gr.classes" />
+        <path v-for="gr in groupShapes" :key="gr.id" :d="gr.d" class="gv-group" :class="[...gr.classes, { 'gv-marked': marked('groups', gr.id) }]" />
       </g>
       <!-- hyperedges -->
       <g class="gv-hyper">
         <template v-for="h in hyperShapes" :key="h.id">
-          <path v-if="!h.directed" :d="h.d" class="gv-hyperedge" :class="h.classes" />
+          <path v-if="!h.directed" :d="h.d" class="gv-hyperedge" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
           <template v-else>
-            <line v-for="(t, i) in h.tail" :key="'t' + i" :x1="t.x" :y1="t.y" :x2="h.c.x" :y2="h.c.y" class="gv-line gv-hyperarc" :class="h.classes" />
-            <line v-for="(t, i) in h.head" :key="'h' + i" :x1="h.c.x" :y1="h.c.y" :x2="t.x" :y2="t.y" class="gv-line gv-hyperarc" :class="h.classes" />
+            <line v-for="(t, i) in h.tail" :key="'t' + i" :x1="t.x" :y1="t.y" :x2="h.c.x" :y2="h.c.y" class="gv-line gv-hyperarc" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
+            <line v-for="(t, i) in h.head" :key="'h' + i" :x1="h.c.x" :y1="h.c.y" :x2="t.x" :y2="t.y" class="gv-line gv-hyperarc" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
           </template>
         </template>
       </g>
       <!-- edges -->
       <g class="gv-edges">
-        <g v-for="e in visibleEdges" :key="e.id" class="gv-edge" :class="[...classesOf('edge', e), { 'gv-directed': e.directed }]"
+        <g v-for="e in visibleEdges" :key="e.id" class="gv-edge" :class="[...classesOf('edge', e), { 'gv-directed': e.directed, 'gv-marked': marked('edges', e.id) }]"
           :data-edge="e.id" :style="fadeStyle('e:' + e.id)">
           <template v-if="geoms.get(e.id)">
             <path class="gv-hit" :d="geoms.get(e.id)!.d"
@@ -442,7 +448,7 @@ const describe = computed(() => {
       <!-- edge labels -->
       <g class="gv-edge-labels">
         <template v-for="e in visibleEdges" :key="e.id">
-          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="classesOf('edge', e)" :style="fadeStyle('e:' + e.id)"
+          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="[...classesOf('edge', e), { 'gv-marked': marked('edges', e.id) }]" :style="fadeStyle('e:' + e.id)"
             :x="geoms.get(e.id)!.label.x" :y="geoms.get(e.id)!.label.y" text-anchor="middle" dominant-baseline="central">
             <template v-if="spans(edgeLabel(e)!)">
               <tspan v-for="(s, i) in tspans(spans(edgeLabel(e)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
@@ -467,7 +473,7 @@ const describe = computed(() => {
       </g>
       <!-- vertices -->
       <g class="gv-vertices">
-        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) || ghost?.includes(v.id) }]"
+        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) || ghost?.includes(v.id), 'gv-marked': marked('vertices', v.id) }]"
           :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id" :style="fadeStyle('v:' + v.id)"
           :tabindex="interactiveVertices ? 0 : undefined"
           :role="interactiveVertices ? 'button' : undefined"
@@ -477,7 +483,7 @@ const describe = computed(() => {
           @click="onElementClick('vertex', v.id)"
           @dblclick.stop="emit('vertex-dblclick', v.id)"
           @keydown="onKey($event, 'vertex', v.id)">
-          <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 18)" />
+          <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 22)" />
           <circle class="gv-vertex-shape" :r="radius" />
           <template v-if="vertexLabels.get(v.id)">
             <text v-if="spans(vertexLabels.get(v.id)!)" class="gv-vertex-label" :class="{ 'gv-outside': !labelsInside }" :style="fadeStyle('l:' + v.id)"

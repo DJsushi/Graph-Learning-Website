@@ -4,6 +4,7 @@ import 'katex/dist/katex.min.css'
 import './custom.css'
 import GraphBlock from '@gv/GraphBlock.vue'
 import QuizBlock from '@gv/QuizBlock.vue'
+import MarkLink from '@gv/MarkLink.vue'
 import LessonHeader from './LessonHeader.vue'
 import SiteCredit from './SiteCredit.vue'
 import LessonDone from './LessonDone.vue'
@@ -32,6 +33,7 @@ export default {
   enhanceApp({ app }) {
     app.component('GraphBlock', GraphBlock)
     app.component('QuizBlock', QuizBlock)
+    app.component('MarkLink', MarkLink)
     for (const [name, c] of Object.entries({ HomePage, CourseIndex, PracticeOverview, FlashcardDeck, Flashcard, RandomDrills, QuizSession, Playground, ReferenceSearch, Settings })) app.component(name, c)
   },
 } satisfies Theme
