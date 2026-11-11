@@ -136,7 +136,7 @@ Each task explains every proof on its page.
 
 | ID | Task | Agent | Done |
 |----|------|-------|------|
-| T3.1 | Explain the proofs on `content/theory/trees/leaves.md` (17 and 2 lines). | writer, math-checker | |
+| T3.1 | Explain the proofs on `content/theory/trees/leaves.md` (17 and 2 lines). | writer, math-checker | d944fff |
 | T3.2 | Explain the proof on `content/theory/walks-connectivity/closed-walks.md` (19 lines). | writer with `model: "sonnet"`, math-checker | |
 | T3.3 | Check the two pages at 390px and 1366×768. | visual-qa | |
 
