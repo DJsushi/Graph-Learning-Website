@@ -12,6 +12,9 @@ import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { PREDICATES } from '../packages/graph-core/src/predicates'
 import { PROPERTIES } from '../packages/graph-core/src/properties'
+import { positioned } from '../packages/graph-vue/src/positions'
+import { toScreen } from '../packages/graph-vue/src/geometry'
+import { computeBox } from '../packages/graph-vue/src/viewbox'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const index = loadContent(root)
@@ -63,6 +66,17 @@ for (const f of index.figures) {
   const widget = f.info.widget ?? 'figure'
   if (!WIDGETS.has(widget)) errors.push(`${where(f.lesson.file, f.line)} [${f.id}] unknown widget ${widget}`)
   if (!doc.directives.caption && widget !== 'exercise') warnings.push(`${where(f.lesson.file, f.line)} [${f.id}] no caption`)
+  // natural size over ~1000x538 units shrinks below 26px circles / 14px labels at 1366x768 (see CONTENT_CONVENTIONS: figure size)
+  if (widget === 'figure' || widget === 'stepper') {
+    for (const [i, p] of doc.panels.entries()) {
+      const g = positioned(p.graph)
+      const b = computeBox(g.vertices.map(v => toScreen(v.x ?? 0, v.y ?? 0)), {
+        hasVertices: g.vertices.length > 0, labelsInside: true, hasGroups: g.groups.length > 0, hasBadges: false,
+        hasLoops: g.edges.some(e => !e.hyper && e.tail[0] === e.head[0]),
+      })
+      if (b.w > 1000 || b.h > 538) warnings.push(`${where(f.lesson.file, f.line)} [${f.id}] panel ${i + 1} is ${Math.round(b.w)}x${Math.round(b.h)} units: it will be drawn below the minimum size; split it or move vertices closer`)
+    }
+  }
   const algo = doc.directives.algo?.[0]
   if (algo && !ALGORITHMS[algo]) errors.push(`${where(f.lesson.file, f.line)} [${f.id}] unknown algorithm ${algo}`)
   if (algo && ALGORITHMS[algo]) {

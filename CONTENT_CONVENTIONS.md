@@ -280,6 +280,10 @@ return T                                          // @return
   slide instead of fading; use `merge` / `split` (GRAPH_DSL.md §9.5) for contraction,
   identification and vertex splitting rather than faking them with `remove` and colours, and give
   edges that survive a merge an explicit `id`.
+- A figure is drawn at its natural size, at most 1.25 px per layout unit, so a small graph stays
+  small. Do not spread `@(x,y)` positions to fill the width. A figure wider than about 15 units
+  or taller than 8 shrinks below the minimum readable size (validator warning): split it into
+  panels or steps instead.
 
 ### 6.1 Marks: text that lights up the figure
 

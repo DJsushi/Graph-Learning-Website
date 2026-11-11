@@ -10,6 +10,7 @@ import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
 import { easeFn } from './easing'
 import { spotOf } from './marks'
+import { computeBox, widthStyle, type Box } from './viewbox'
 
 const props = withDefaults(defineProps<{
   graph: GraphData
@@ -150,18 +151,15 @@ const bbox = computed(() => {
   // vertices, curve apexes (edge label points) and group labels all have to fit
   const pts = [...pos.value.values(), ...[...geoms.value.values()].filter(g => !g.loop).map(g => g.label)]
   for (const gr of groupShapes.value) if (gr.label) pts.push({ x: gr.labelAt.x - 40, y: gr.labelAt.y - 6 }, { x: gr.labelAt.x + 40, y: gr.labelAt.y - 6 })
-  if (!pos.value.size) return { x: -100, y: -60, w: 200, h: 120 }
-  let x0 = Math.min(...pts.map(p => p.x)), x1 = Math.max(...pts.map(p => p.x))
-  let y0 = Math.min(...pts.map(p => p.y)), y1 = Math.max(...pts.map(p => p.y))
-  const hasLoops = props.graph.edges.some(e => !e.hyper && e.tail[0] === e.head[0])
-  const pad = (labelsInside.value ? 30 : 38) + (hasLoops ? 42 : 0) + (props.graph.groups.length || props.overlay?.groups.length ? 26 : 0)
-  x0 -= pad; x1 += pad; y0 -= pad; y1 += pad
-  if (props.overlay && Object.keys(props.overlay.vertexBadges).length) { y0 -= 12; x1 += 18 }
-  const w = Math.max(x1 - x0, 140), h = Math.max(y1 - y0, 90)
-  return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h }
+  return computeBox(pts, {
+    hasVertices: pos.value.size > 0,
+    labelsInside: labelsInside.value,
+    hasLoops: props.graph.edges.some(e => !e.hyper && e.tail[0] === e.head[0]),
+    hasGroups: !!(props.graph.groups.length || props.overlay?.groups.length),
+    hasBadges: !!(props.overlay && Object.keys(props.overlay.vertexBadges).length),
+  })
 })
 // while editing, the box only grows (fill mode: fixed until "fit"), so the drawing does not rescale under the cursor
-type Box = { x: number; y: number; w: number; h: number }
 const frozen = ref<Box | null>(null)
 const box = computed<Box>(() => {
   const b = bbox.value
@@ -213,6 +211,12 @@ const fadeStyle = (k: string) => (props.fade?.[k] === undefined ? undefined : { 
 // an enlarged-figure dialog provides 'ga-zoomable' so every graph inside it can zoom and pan
 const zoomAll = inject('ga-zoomable', false)
 const canZoom = computed(() => props.zoomable || zoomAll)
+// width follows the box: capped in px per unit so small graphs stay small; the enlarge dialog and editors are uncapped
+const sizeStyle = computed(() => {
+  if (props.fill) return undefined
+  const mh = typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight
+  return { width: widthStyle(props.animate ? shownBox.value : box.value, mh, !!zoomAll || props.editable), maxHeight: mh }
+})
 const view = ref({ tx: 0, ty: 0, k: 1 })
 const transform = computed(() => (canZoom.value ? `translate(${view.value.tx},${view.value.ty}) scale(${view.value.k})` : undefined))
 function resetView() {
@@ -388,7 +392,7 @@ const describe = computed(() => {
     class="gv-root"
     :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none', 'gv-spot': !!spot }"
     :viewBox="viewBox"
-    :style="fill ? undefined : { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }"
+    :style="sizeStyle"
     :role="selectable !== 'none' || editable ? 'group' : 'img'"
     :aria-label="ariaLabel ?? 'Graph'"
     @wheel="onWheel"
