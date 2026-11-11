@@ -435,3 +435,111 @@ describe('Closed walks page', () => {
     expect(c1.has(byEnds(g, 'bx')[0].id)).toBe(false)
   })
 })
+
+describe('Erdős–Gallai walkthroughs', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  // vertex ids are v1..vn; everything is indexed from 1 like the proof
+  const st = (g: GraphData, d: number[]) => {
+    const ix = new GraphIndex(g), n = d.length, id = (i: number) => `v${i}`
+    const deg = [0], e = [0], nb: number[][] = [[]]
+    for (let i = 1; i <= n; i++) {
+      deg.push(ix.degree(id(i))); e.push(d[i - 1] - deg[i])
+      nb.push(ix.neighbors(id(i)).map(v => Number(v.slice(1))).sort())
+    }
+    const r = e.findIndex((x, i) => i > 0 && x > 0)
+    const adj = (i: number, j: number) => nb[i].includes(j)
+    // the case of the proof that applies, in its order
+    let c = 'done'
+    if (r > 0) {
+      if ([...Array(n + 1).keys()].some(k => k > r && e[k] > 0 && !adj(r, k))) c = '1'
+      else if ([...Array(r).keys()].some(i => i > 0 && !adj(r, i))) c = '2'
+      else {
+        let pair = false
+        for (let i = 1; i <= r; i++) for (let j = i + 1; j <= r; j++) if (!adj(i, j)) pair = true
+        const strict = [...Array(n + 1).keys()].filter(k => k > r && nb[k].filter(i => i <= r).length < Math.min(d[k - 1], r))
+        c = pair && strict.length ? '3ab' : pair ? '3a' : '3b'
+      }
+    }
+    return { deg: deg.slice(1), e: e.slice(1), nb, r, er: e[r], c, adj, m: ix.m }
+  }
+  const S = [4, 4, 4, 4, 2, 2]
+  const eg = (d: number[], k: number) => {
+    const l = d.slice(0, k).reduce((z, x) => z + x, 0), r = k * (k - 1) + d.slice(k).reduce((z, x) => z + Math.min(x, k), 0)
+    return [l, r]
+  }
+  it('check figure and necessity: (3,3,3,2,1), inequalities 3<=4, 6<=7, 9<=9, 11<=13, 12<=20', () => {
+    for (const id of ['t01-erdos-gallai-check', 't01-erdos-gallai-necessity']) expect(A.degreeSequence(new GraphIndex(steps(id)[0]))).toEqual([3, 3, 3, 2, 1])
+    const d = [3, 3, 3, 2, 1]
+    expect([1, 2, 3, 4, 5].map(k => eg(d, k))).toEqual([[3, 4], [6, 7], [9, 9], [11, 13], [12, 20]])
+    const g = st(steps('t01-erdos-gallai-necessity')[0], d)
+    expect([g.m, g.nb[3].filter(i => i <= 2).length, g.nb[4].filter(i => i <= 2).length, g.nb[5].filter(i => i <= 2).length]).toEqual([6, 2, 1, 1])
+    expect([g.adj(1, 2), g.adj(3, 4)]).toEqual([true, true])
+  })
+  it('(4,4,4,4,2,2), (4,4,4,2,2,2) satisfy Erdős–Gallai; sums 20 and 18', () => {
+    for (const d of [S, [4, 4, 4, 2, 2, 2]]) for (let k = 1; k <= 6; k++) { const [l, r] = eg(d, k); expect(l).toBeLessThanOrEqual(r) }
+    expect(S.reduce((z, x) => z + x)).toBe(20)
+  })
+  it('run: edgeless, r = 1; v1 full, r = 2; v1..v3 and v5 full, r = 4; realisation; every change is Case 1', () => {
+    const s = steps('t01-erdos-gallai-run').map(g => st(g, S))
+    expect([s[0].m, s[0].r, s[1].r, s[2].r, s[2].deg[0], s[3].r, s[3].deg[4]]).toEqual([0, 1, 1, 2, 4, 4, 2])
+    expect([s[4].c, s[4].deg]).toEqual(['done', S])
+    for (const x of s.slice(0, 4)) expect(x.c).toBe('1')
+  })
+  it('facts: degrees (4,3,4,3,2,2), deficiency 2, r = 2, e_r = 1, v4 deficient', () => {
+    const g = st(steps('t01-erdos-gallai-facts')[0], S)
+    expect([g.deg, g.e, g.r, g.er, 20 - g.deg.reduce((z, x) => z + x)]).toEqual([[4, 3, 4, 3, 2, 2], [0, 1, 0, 1, 0, 0], 2, 1, 2])
+  })
+  it('case 1: degrees (4,2,4,1,2,1), r = 2, v4 and v6 deficient non-neighbours; v2 goes to 3', () => {
+    const s = steps('t01-erdos-gallai-case-1').map(g => st(g, S))
+    expect([s[0].deg, s[0].r, s[0].c, s[0].adj(2, 4), s[0].adj(2, 6), s[0].e[5]]).toEqual([[4, 2, 4, 1, 2, 1], 2, '1', false, false, 1])
+    expect(s.at(-1)!.deg).toEqual([4, 3, 4, 2, 2, 1])
+  })
+  it('case 2, e_r = 2: degrees (4,2,4,2,2,2), N(v1) = 3456, N(v2) = 34, v2 reaches 4', () => {
+    const s = steps('t01-erdos-gallai-case-2-two').map(g => st(g, S))
+    expect([s[0].deg, s[0].r, s[0].er, s[0].c, s[0].nb[1], s[0].nb[2]]).toEqual([[4, 2, 4, 2, 2, 2], 2, 2, '2', [3, 4, 5, 6], [3, 4]])
+    expect(s.at(-1)!.deg).toEqual([4, 4, 4, 2, 2, 2])
+  })
+  it('case 2, e_r = 1: v4 ~ v2, v1 ~ v4, w in {v5, v6}; result realises S', () => {
+    const s = steps('t01-erdos-gallai-case-2-one').map(g => st(g, S))
+    const g = s[0]
+    expect([g.deg, g.r, g.er, g.c, g.adj(2, 4), g.adj(1, 4), g.nb[4]]).toEqual([[4, 3, 4, 3, 2, 2], 2, 1, '2', true, true, [1, 2, 3]])
+    expect(g.nb[1].filter(w => w !== 4 && !g.adj(4, w))).toEqual([5, 6])
+    expect(g.nb[1].filter(w => w !== 4 && g.adj(4, w))).toEqual([3])
+    expect(s.at(-1)!.deg).toEqual(S)
+  })
+  it('case 3: r = 3, count 11 = 2*2 + 3 + 2 + 2, bound 13, only the pair v1 v2 is strict', () => {
+    const g = st(steps('t01-erdos-gallai-case-3')[0], S)
+    expect([g.deg, g.r, g.er, g.c, g.adj(3, 5), g.adj(3, 6), g.e[4], g.e[5]]).toEqual([[4, 4, 3, 3, 2, 2], 3, 1, '3a', false, false, 0, 0])
+    const inA = [4, 5, 6].map(k => g.nb[k].filter(i => i <= 3).length)
+    expect([g.deg[0] + g.deg[1] + g.deg[2], inA, eg(S, 3)]).toEqual([11, [3, 2, 2], [12, 13]])
+  })
+  it('case 3a, e_r = 2: (4,4,4,2,2,2), X = {4,5,6} for v1 and v2, result realises it', () => {
+    const d = [4, 4, 4, 2, 2, 2], s = steps('t01-erdos-gallai-case-3a-two').map(g => st(g, d)), g = s[0]
+    expect([g.deg, g.r, g.er, g.c]).toEqual([[4, 4, 2, 2, 2, 2], 3, 2, '3a'])
+    const X = (x: number) => g.nb[x].filter(y => y !== 3 && !g.adj(3, y))
+    expect([X(1), X(2), g.nb[3]]).toEqual([[4, 5, 6], [4, 5, 6], [1, 2]])
+    expect(s.at(-1)!.deg).toEqual(d)
+  })
+  it('case 3a, e_r = 1: v4 deficient ~ v3, w in {5,6}, X(v2) = {5,6}; both choices realise S', () => {
+    const s = steps('t01-erdos-gallai-case-3a-one').map(g => st(g, S)), g = s[0]
+    expect([g.deg, g.r, g.er, g.c, g.adj(3, 4), g.nb[4]]).toEqual([[4, 4, 3, 3, 2, 2], 3, 1, '3a', true, [1, 2, 3]])
+    expect([g.nb[1].filter(w => w !== 4 && !g.adj(4, w)), g.nb[2].filter(y => y !== 3 && !g.adj(3, y))]).toEqual([[5, 6], [5, 6]])
+    expect([s[4].deg, s[5].deg, s[5].nb[5]]).toEqual([S, S, [3, 4]])
+  })
+  it('case 3b, v_k not adjacent to v_r: v5 has 1 neighbour in A, x = v6; v3 -> 4, v6 -> 1', () => {
+    const s = steps('t01-erdos-gallai-case-3b-far').map(g => st(g, S)), g = s[0]
+    expect([g.deg, g.r, g.c, g.nb[5], g.adj(3, 5), g.e[4]]).toEqual([[4, 4, 3, 3, 2, 2], 3, '3b', [2, 6], false, 0])
+    expect(s.at(-1)!.deg).toEqual([4, 4, 4, 3, 2, 1])
+  })
+  it('case 3b, deficient v_k: v4 ~ v3 only, X(v1) = {5,6}; v3 -> 4, v4 -> 2', () => {
+    const s = steps('t01-erdos-gallai-case-3b-deficient').map(g => st(g, S)), g = s[0]
+    expect([g.deg, g.r, g.c, g.nb[4], g.nb[1].filter(y => y !== 3 && !g.adj(3, y))]).toEqual([[4, 4, 3, 1, 2, 2], 3, '3b', [3], [5, 6]])
+    expect(s.at(-1)!.deg).toEqual([4, 4, 4, 2, 2, 2])
+  })
+  it('case 3b, full v_k: r = 2, v3 full with 1 neighbour in A, X(v1) = {5,6}, x = v6 or v5; r then 4', () => {
+    const s = steps('t01-erdos-gallai-case-3b-full').map(g => st(g, S)), g = s[0]
+    expect([g.deg, g.r, g.c, g.e[2], g.adj(2, 3), g.adj(1, 3), g.nb[3].filter(i => i > 2)]).toEqual([[4, 3, 4, 3, 2, 2], 2, '3b', 0, true, false, [4, 5, 6]])
+    expect(g.nb[1].filter(y => y !== 2 && !g.adj(2, y))).toEqual([5, 6])
+    expect([s[4].deg, s[5].deg, s[6].r]).toEqual([[4, 4, 4, 3, 2, 1], [4, 4, 4, 3, 1, 2], 4])
+  })
+})
