@@ -125,7 +125,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 | ID | Task | Agent | Read | Backlog | Done |
 |----|------|-------|------|---------|------|
 | T2.1 | Parser: `mark`, `set`, reserved words, marks per step; tests. | coder | DSL §16 | C3 F9 | cb8bacc |
-| T2.2 | Marks end to end: registry by figure id, spotlight in `GraphView.vue`, link component, the `[[fig:id#mark\|text]]` rule, vertex hit area. | coder | CC §6.1 | C2 FA2 F11 | |
+| T2.2 | Marks end to end: registry by figure id, spotlight in `GraphView.vue`, link component, the `[[fig:id#mark\|text]]` rule, vertex hit area. | coder | CC §6.1 | C2 FA2 F11 | c072fee |
 | T2.3 | Walkthrough: containers, component, sticky layout, scroll sync, stepper driven from outside, keyboard, the "This proof uses" line. A walkthrough without a figure is a numbered list. | coder (opus) | CC §9 | C1 FA1 | |
 | T2.4 | Validator rules for walkthroughs and mark links. | coder | R §4.1 | | |
 | T2.5 | Acceptance: a test page with a five-step walkthrough, three mark links and a walkthrough without a figure; mouse, keyboard, touch emulation; light and dark; 390px, 1366×768, 1920×1080; reduced motion. Fix what fails; delete the page. | coder, then visual-qa | CC §9, §6.1 | | |
@@ -436,7 +436,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   - At 390px the active sidebar item on `/algorithms/mst/kruskal` is visible but not centred (scrollTop 0). Minor.
   - The Chrome window cannot be resized; visual-qa measures 390/1366 in iframes.
 - Carry-over notes from coders (2026-11-11):
-  - T2.2: `mark` errors at parse time on an unknown element, so marks only name elements that exist in that step. Skip marks whose element is absent from a step. `set class=` adds the class (DSL §16.2 says replace; decide on purpose or align). `GraphData.marks: Record<string,string[]>`; a ref is a vertex id, `@edgeId`, `face:id` or a group id.
+  - T2.2 done. Open for T2.3: `[[fig:x#m|t]]` inside a figure's own caption or step text is not rendered as a link (only page markdown). Not browser-tested; no content figure uses a mark yet (T2.5 covers it).
+  - T2.2 (done): `mark` errors at parse time on an unknown element, so marks only name elements that exist in that step. Skip marks whose element is absent from a step. `set class=` adds the class (DSL §16.2 says replace; decide on purpose or align). `GraphData.marks: Record<string,string[]>`; a ref is a vertex id, `@edgeId`, `face:id` or a group id.
   - T1.7/T1.8: `scripts/lock-entries.ts` with no argument overwrites the whole lock and would erase the verbatim proof after the split. Use `--accept <key>` only.
   - T2.3: the proof-closing rule in `.vitepress/markdown.ts` listens for `container_walkthrough_open`, which is not registered yet. Register `walkthrough` and check the "next proof after the walkthrough" matching.
   - T2.4: the validator finds walkthroughs by regex on page source (`walkthrough ... for=`); switch to the container type once T2.3 registers it.
