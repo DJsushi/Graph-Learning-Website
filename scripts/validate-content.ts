@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 import { loadContent, loadTopics, resolveTarget, sourceTag } from '../packages/content/index'
 import { REFERENCE_KINDS } from '../packages/content/pages'
 import { entryHashes, lockErrors } from '../packages/content/lock'
+import { structureChecks } from '../packages/content/structure'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { PREDICATES } from '../packages/graph-core/src/predicates'
@@ -24,6 +25,10 @@ for (const p of index.problems) errors.push(`${p.lesson ? where(p.lesson.file, p
 const lockFile = path.join(root, 'content/entries.lock.json')
 if (fs.existsSync(lockFile)) errors.push(...lockErrors(JSON.parse(fs.readFileSync(lockFile, 'utf8')), entryHashes(index)))
 else errors.push('content/entries.lock.json is missing (node --import tsx scripts/lock-entries.ts)')
+
+const structure = structureChecks(root, index, loadTopics(root))
+errors.push(...structure.errors)
+warnings.push(...structure.warnings)
 
 for (const c of index.containers) {
   if (c.attrs.source && !sourceTag(c.attrs.source))
