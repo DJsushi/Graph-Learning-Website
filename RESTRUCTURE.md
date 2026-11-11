@@ -444,6 +444,13 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   - T2.4: the validator finds walkthroughs by regex on page source (`walkthrough ... for=`); switch to the container type once T2.3 registers it.
   - T1.2: `index.lessons` holds concept pages with `lecture: 0`; lecture-only consumers filter them out (`lectureLessons`).
 
+- T3.3 visual-qa (2026-11-11), pages `/theory/trees/leaves` and `/theory/walks-connectivity/closed-walks`:
+  - FAIL, open: `closed-walks` figures `fig-t03-closed-walk-base` (18px vertex circles, 9.8px labels) and `fig-t03-closed-walk-no-repeat` (24.5px, 13.2px) render tiny at 1366×768 (934×226 box; minimum 26px and 14px). The writer must change their layout or size.
+  - Walkthrough step trigger sits about 70% down the viewport; at 390px a tall active step can extend 30px past the bottom. Not fixed.
+  - `closed-walks` has no "This proof uses" line (no `uses` attribute in the source). Fine unless the owner wants one.
+  - Not run: reduced motion; real touch; Safari. Chrome window cannot be resized, so measured in iframes. Console only read for the top-level tab.
+  - Passed: no console errors, no horizontal scroll, at most 74 characters per line, figures follow steps, mark hover/focus, arrow keys / Next / Previous / First / Last after scrolling, Enlarge closes with Escape, sticky offset 64px (1366) and 48px (390).
+
 ### Needs reported by writers
 
 (empty)
