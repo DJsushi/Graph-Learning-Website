@@ -36,7 +36,7 @@ Info-string attributes:
 |-----------|----------|---------|
 | `id`      | yes      | Unique across the whole site, kebab-case, prefixed by lesson slug where practical (`t01-handshake-example`). Never renamed once published (exercises and progress refer to it). |
 | `widget`  | no       | `figure` (default), `player`, `editable`, `exercise`, `stepper`. See §9. |
-| `height`  | no       | `small` (≈180px), `medium` (default, ≈300px), `large` (≈450px). |
+| `height`  | no       | `small`, `medium` (default), `large`. Sets no size any more (§16.5). |
 
 Attribute values may be quoted (`caption="..."`) only if they contain spaces; in the info
 string this is rarely needed.

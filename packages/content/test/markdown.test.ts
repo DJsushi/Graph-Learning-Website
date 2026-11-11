@@ -1,7 +1,7 @@
 import { expect, it, vi } from 'vitest'
 import { createMarkdownRenderer } from 'vitepress'
 import * as content from '../index'
-import { setupMarkdown } from '../../../.vitepress/markdown'
+import { setupMarkdown, proofOnConceptPage } from '../../../.vitepress/markdown'
 
 vi.mock('../index', async importOriginal => {
   const real = await importOriginal<typeof import('../index')>()
@@ -36,3 +36,18 @@ it('heads a box with kind, title and the source tag, without a number', async ()
   expect(html).toContain('Slides 01, p. 5')
   expect(html).not.toMatch(/Theorem [TA]?\d/)
 }, 30_000)
+
+it('closes long proofs on concept pages and keeps short ones open', async () => {
+  const md = await createMarkdownRenderer(process.cwd(), { attrs: { disable: true }, config: m => setupMarkdown(m) })
+  const proof = (n: number) => ['::: theorem {#thm:x}', 'T.', ':::', '', '::: proof', ...Array.from({ length: n }, (_, i) => `Line ${i}.`), ':::'].join('\n')
+  const concept = { frontmatter: { chapter: 'trees' } }
+  expect(md.render(proof(10), concept)).toContain('<details class="ga-proof" open><summary>Proof</summary>')
+  expect(md.render(proof(11), concept)).toContain('<details class="ga-proof"><summary>Proof</summary>')
+  // lecture pages keep today's behaviour
+  expect(md.render(proof(11), { frontmatter: { lecture: 1 } })).toContain('<details class="ga-proof" open>')
+}, 30_000)
+
+it('names a proof with a walkthrough "Compact proof" and closes it', () => {
+  expect(proofOnConceptPage(3, true)).toEqual({ closed: true, summary: 'Compact proof' })
+  expect(proofOnConceptPage(3, false)).toEqual({ closed: false, summary: 'Proof' })
+})

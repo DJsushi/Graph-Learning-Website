@@ -146,6 +146,19 @@ export function setupMarkdown(md: MarkdownIt) {
     })
   }
 
+  // ---- proofs: source length and walkthrough, for proofOnConceptPage ----
+  // shortcut: a walkthrough counts for the next proof after it (the order of CONTENT_CONVENTIONS.md §9), not matched by for=
+  md.core.ruler.push('ga_proof_meta', state => {
+    let walkthrough = false
+    for (const t of state.tokens) {
+      if (t.type === 'container_walkthrough_open') walkthrough = true
+      if (t.type === 'container_proof_open') {
+        t.meta = { lines: t.map ? t.map[1] - t.map[0] - 1 : 0, walkthrough }
+        walkthrough = false
+      }
+    }
+  })
+
   // ---- quizzes: task-list choices and `answer:` lines ----
   md.core.ruler.push('ga_quiz', state => {
     const toks = state.tokens
@@ -180,6 +193,11 @@ export function setupMarkdown(md: MarkdownIt) {
   })
 }
 
+/** Concept pages (CONTENT_CONVENTIONS.md §4.3): a proof of more than 10 source lines, or one with a walkthrough, renders closed. */
+export function proofOnConceptPage(lines: number, walkthrough: boolean): { closed: boolean; summary: string } {
+  return { closed: walkthrough || lines > 10, summary: walkthrough ? 'Compact proof' : 'Proof' }
+}
+
 function openContainer(type: string, rest: string, env: any, tok: any): string {
   const index = contentFor(env)
   const { id, attrs } = parseContainerInfo(rest)
@@ -191,9 +209,10 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
   const anchor = id ? ` id="${anchorId(id)}"` : ''
   switch (type) {
     case 'proof': {
-      const t = attrs.title ? inlineMath(attrs.title, where) : 'Proof'
-      const isRef = env?.frontmatter?.referencePage
-      return `<details class="ga-proof"${isRef ? '' : ' open'}><summary>${t}</summary><div class="ga-proof-body">\n`
+      const concept = env?.frontmatter?.chapter ? proofOnConceptPage(tok.meta?.lines ?? 0, !!tok.meta?.walkthrough) : undefined
+      const t = attrs.title ? inlineMath(attrs.title, where) : concept?.summary ?? 'Proof'
+      const closed = concept ? concept.closed : env?.frontmatter?.referencePage
+      return `<details class="ga-proof"${closed ? '' : ' open'}><summary>${t}</summary><div class="ga-proof-body">\n`
     }
     case 'hint':
     case 'solution':

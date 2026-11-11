@@ -7,7 +7,7 @@ import StepControls from './StepControls.vue'
 import { applyPositions, unionPositions } from '../positions'
 import { useTweened } from '../useTweened'
 
-const props = defineProps<{ doc: GraphDoc; height: number }>()
+const props = defineProps<{ doc: GraphDoc; height: number | string }>()
 const panel = computed(() => props.doc.panels[0])
 const frames = computed(() => {
   const p = panel.value

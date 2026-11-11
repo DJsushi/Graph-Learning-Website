@@ -7,7 +7,7 @@ import GraphView from '../GraphView.vue'
 import RichText from '../RichText.vue'
 import { positioned, positionsOf } from '../positions'
 
-const props = defineProps<{ doc: GraphDoc; height: number }>()
+const props = defineProps<{ doc: GraphDoc; height: number | string }>()
 
 const sync = computed(() => props.doc.directives['layout-sync']?.[0] === 'true')
 const draggable = computed(() => (props.doc.directives.interactive?.[0] ?? '').includes('drag'))
@@ -40,7 +40,7 @@ function up() { dragging = null }
   <div class="ga-panels" :class="{ 'ga-panels-multi': graphs.length > 1 }">
     <div v-for="(g, i) in graphs" :key="i" class="ga-panel">
       <div v-if="doc.panels[i].title" class="ga-panel-title"><RichText :text="doc.panels[i].title!" /></div>
-      <GraphView :graph="g" :max-height="graphs.length > 1 ? Math.min(height, 240) : height" :editable="draggable"
+      <GraphView :graph="g" :max-height="graphs.length > 1 ? (typeof height === 'number' ? Math.min(height, 240) : '35vh') : height" :editable="draggable"
         :aria-label="doc.directives.caption?.[0]?.replace(/\$/g, '') ?? 'Graph figure'"
         @vertex-down="(id) => down(i, id)" @move="(p) => move(i, p)" @up="up" />
     </div>

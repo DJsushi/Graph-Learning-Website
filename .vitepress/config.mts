@@ -54,6 +54,10 @@ export default defineConfig({
     '.claude/**',
     'resources/**', 'packages/**', 'scripts/**', 'node_modules/**',
   ],
+  // concept pages are short: no right-hand outline
+  transformPageData(page) {
+    if (page.frontmatter.chapter) page.frontmatter.aside = false
+  },
   rewrites: {
     'content/:course/:page': ':course/:page',
     'content/:course/:chapter/:page': ':course/:chapter/:page',

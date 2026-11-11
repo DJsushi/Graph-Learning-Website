@@ -18,7 +18,7 @@ type Sel = { vertices: Id[]; edges: Id[] }
 const props = withDefaults(defineProps<{
   modelValue: GraphData
   tools?: Tool[]
-  height?: number
+  height?: number | string
   fill?: boolean
   original?: GraphData
   overlay?: Overlay

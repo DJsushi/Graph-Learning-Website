@@ -19,7 +19,7 @@ const props = withDefaults(defineProps<{
   preview?: { from: Id; to: Pt } | null
   /** box selection rectangle, model coordinates */
   marquee?: { a: Pt; b: Pt } | null
-  maxHeight?: number
+  maxHeight?: number | string
   fill?: boolean
   zoomable?: boolean
   backgroundPan?: boolean
@@ -382,7 +382,7 @@ const describe = computed(() => {
     class="gv-root"
     :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none' }"
     :viewBox="viewBox"
-    :style="fill ? undefined : { maxHeight: `${maxHeight}px` }"
+    :style="fill ? undefined : { maxHeight: typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight }"
     :role="selectable !== 'none' || editable ? 'group' : 'img'"
     :aria-label="ariaLabel ?? 'Graph'"
     @wheel="onWheel"
