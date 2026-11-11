@@ -115,7 +115,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 | T1.4 | Labels without numbers and the `source` tag. | coder | R §4.3 | S11 S14 S22 | 424a7cd |
 | T1.5 | Reading layout: prose width, statement tint, long proofs closed, figure size, enlarge button. | coder | R §4.3, §4.4 | S23 S24 FL1 C4 FT1 | 31c23ec |
 | T1.6 | Validator: checks for concept pages, exit codes, the extra checks, the list of long proofs without a walkthrough. | coder | R §4.1 | S7 S19 S20 | 0df8efc |
-| T1.7 | `scripts/split.ts` with tests. Do not run it on `content/` yet. | coder | R §4.1 | | |
+| T1.7 | `scripts/split.ts` with tests. Do not run it on `content/` yet. | coder | R §4.1 | | 9db22f9 |
 | T1.8 | Run the split on all 8 lecture files. Fix what breaks. Check a theory page, an algorithms page with a player, a lecture page and Ctrl-K search at 390px and 1366×768. Delete `scripts/split.ts` and `scripts/split-map.yaml`. | coder, then visual-qa | R §4.1 | S10 | |
 
 **Gate A.** See §6.
