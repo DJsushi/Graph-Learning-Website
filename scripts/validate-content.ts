@@ -3,7 +3,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadContent, loadTopics, resolveTarget } from '../packages/content/index'
+import { loadContent, loadTopics, resolveTarget, sourceTag } from '../packages/content/index'
 import { REFERENCE_KINDS } from '../packages/content/pages'
 import { entryHashes, lockErrors } from '../packages/content/lock'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
@@ -24,6 +24,11 @@ for (const p of index.problems) errors.push(`${p.lesson ? where(p.lesson.file, p
 const lockFile = path.join(root, 'content/entries.lock.json')
 if (fs.existsSync(lockFile)) errors.push(...lockErrors(JSON.parse(fs.readFileSync(lockFile, 'utf8')), entryHashes(index)))
 else errors.push('content/entries.lock.json is missing (node --import tsx scripts/lock-entries.ts)')
+
+for (const c of index.containers) {
+  if (c.attrs.source && !sourceTag(c.attrs.source))
+    errors.push(`${where(c.lesson.file, c.line)} source="${c.attrs.source}" should be "<theory|algorithms>/<document> p<page>", e.g. theory/2026-09-29 p1–2`)
+}
 
 for (const r of index.refs) {
   if (!resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)

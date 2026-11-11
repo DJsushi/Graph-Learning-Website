@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { courseChapters, lectureLessons, loadContent, resolveTarget, type Topic } from '../index'
+import { courseChapters, lectureLessons, loadContent, resolveTarget, sourceTag, type Topic } from '../index'
 
 function site(files: Record<string, string[]>): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'))
@@ -106,5 +106,27 @@ describe('lectureLessons and courseChapters', () => {
     expect(courseChapters(ix, topics, 'theory').map(c => [c.topic.slug, c.pages.map(p => p.path)]))
       .toEqual([['trees', ['theory/trees/a', 'theory/trees/b']], ['degrees', ['theory/degrees/c']]])
     expect(courseChapters(ix, topics, 'algorithms')).toEqual([])
+  })
+})
+
+describe('labels and source tag', () => {
+  it('labels carry kind and title, never a number', () => {
+    const ix = loadContent(site({
+      'content/theory/03-trees.md': [...lecture, '::: theorem {#thm:a title="Cut property"}', 'x', ':::', '::: lemma {#lem:b}', 'y', ':::'],
+      'content/theory/04-more.md': [...lecture.slice(0, 3), 'lecture: 3', 'slug: t04', '---', '::: theorem {#thm:c}', 'z', ':::'],
+    }))
+    expect(resolveTarget(ix, 'thm:a')?.label).toBe('Theorem (Cut property)')
+    expect(resolveTarget(ix, 'lem:b')?.label).toBe('Lemma')
+    expect(resolveTarget(ix, 'thm:c')?.label).toBe('Theorem')
+    expect('number' in ix.byId.get('thm:a')!).toBe(false)
+  })
+
+  it('formats source as lecture or slides and rejects other shapes', () => {
+    expect(sourceTag('theory/2026-09-29 p1')).toBe('Lecture 2026-09-29, p. 1')
+    expect(sourceTag('algorithms/01 p5')).toBe('Slides 01, p. 5')
+    expect(sourceTag('algorithms/03 p18, p20–21')).toBe('Slides 03, pp. 18, 20–21')
+    expect(sourceTag('theory/2026-09-15 p7; theory/2026-09-22 p1–2')).toBe('Lecture 2026-09-15, p. 7; Lecture 2026-09-22, pp. 1–2')
+    for (const bad of ['', 'theory/2026-09-29', 'theory 2026-09-29 p1', 'lecture/01 p1', 'algorithms/01 p'])
+      expect(sourceTag(bad)).toBeUndefined()
   })
 })

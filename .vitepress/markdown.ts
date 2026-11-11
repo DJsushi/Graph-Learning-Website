@@ -5,8 +5,8 @@ import container from 'markdown-it-container'
 import { tex } from '@mdit/plugin-tex'
 import type { MarkdownRenderer as MarkdownIt } from 'vitepress'
 import {
-  loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES,
-  type Course, type ContentIndex,
+  loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES, sourceTag,
+  type ContentIndex,
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { KATEX_MACROS } from '../packages/graph-vue/src/katexMacros'
@@ -34,11 +34,6 @@ export function inlineMath(text: string, where = ''): string {
   ).join('')
 }
 
-function courseOf(env: any): Course | undefined {
-  const c = env?.frontmatter?.course
-  return c === 'theory' || c === 'algorithms' ? c : undefined
-}
-
 function b64(s: string): string {
   return Buffer.from(s, 'utf8').toString('base64')
 }
@@ -53,9 +48,9 @@ function contentFor(env: any): ContentIndex {
 }
 
 /** Replace [[target]] by markdown links, for text that is rendered at runtime (graph block captions etc.). */
-function linkRefs(index: ContentIndex, text: string, course?: Course): string {
+function linkRefs(index: ContentIndex, text: string): string {
   return text.replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, t: string, label?: string) => {
-    const r = resolveTarget(index, t.trim(), course)
+    const r = resolveTarget(index, t.trim())
     return r ? `[${label ?? r.label}](${r.href})` : `[[${t}]]`
   })
 }
@@ -100,7 +95,7 @@ export function setupMarkdown(md: MarkdownIt) {
       const pseudoId = algo && ALGORITHMS[algo] ? ALGORITHMS[algo].pseudocode ?? `alg:${algo}` : undefined
       const pseudo = pseudoId ? index.pseudocode.get(pseudoId) : undefined
       const payload = {
-        id: kv.id, info: kv, source: linkRefs(index, token.content, courseOf(env)),
+        id: kv.id, info: kv, source: linkRefs(index, token.content),
         pseudocode: pseudo ? { id: pseudoId, html: renderPseudo(pseudo).replace(' v-pre', '') } : undefined,
       }
       const anchor = kv.id ? ` id="fig-${anchorId(kv.id)}"` : ''
@@ -117,7 +112,7 @@ export function setupMarkdown(md: MarkdownIt) {
     if (!m) return false
     if (!silent) {
       const index = contentFor(state.env)
-      const r = resolveTarget(index, m[1].trim(), courseOf(state.env))
+      const r = resolveTarget(index, m[1].trim())
       if (r) {
         const open = state.push('link_open', 'a', 1)
         open.attrs = [['href', r.href], ['class', 'ga-ref']]
@@ -191,10 +186,7 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
   const where = env?.relativePath ?? ''
   const name = KIND_NAMES[type] ?? type
   const c = id ? index.byId.get(id) : undefined
-  const pageCourse = courseOf(env)
-  const prefix = c && pageCourse !== c.lesson.course ? (c.lesson.course === 'theory' ? 'T' : 'A') : ''
-  const num = c?.number ? ` ${prefix}${c.number}` : ''
-  const title = attrs.title ? ` <span class="ga-box-title">(${inlineMath(attrs.title, where)})</span>` : ''
+  const title = attrs.title ? `<span class="ga-box-title">${inlineMath(attrs.title, where)}</span>` : ''
   const extra = attrs.extra === 'true' ? ' <span class="ga-badge" title="Not covered in the lectures; added for completeness">beyond the lectures</span>' : ''
   const anchor = id ? ` id="${anchorId(id)}"` : ''
   switch (type) {
@@ -221,7 +213,9 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
       const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="${BASE}${c.lesson.path}#${anchorId(id!)}">${c.lesson.kind === 'concept' ? c.lesson.title : `in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}`}</a>` : ''
       const dataId = id ? ` data-ref="${escapeHtml(id)}"` : ''
       const cls = `ga-box ga-${type}${kindClass}${attrs.extra === 'true' ? ' ga-extra' : ''}`
-      const head = `<span class="ga-box-kind">${name}${num}</span>${title}`
+      const src = attrs.source && sourceTag(attrs.source)
+      const srcTag = src ? ` <span class="ga-box-src" title="Where this is in the course material">${escapeHtml(src)}</span>` : ''
+      const head = `<span class="ga-box-kind">${name}</span>${title ? ' · ' + title : ''}${srcTag}`
       // topic pages: the head is an h4 with the anchor, on one line, so the local search indexes each entry
       if (env?.frontmatter?.topicPage && c && !c.parentId && (kindClass || type === 'definition' || type === 'algorithm')) {
         const a = anchorId(id!)

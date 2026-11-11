@@ -166,8 +166,7 @@ A **graph** is a pair $G = (V, E)$ where ...
 
 - Ids are **semantic** (`thm:handshake`), unique site-wide, kebab-case after the prefix, and
   never renamed.
-- Entries are shown by kind and name: "Theorem · Cut property". There are no numbers
-  (*planned, Phase 1*: until then the site still generates "Theorem 3.2"). Every entry that
+- Entries are shown by kind and name: "Theorem · Cut property". There are no numbers. Every entry that
   appears in the reference needs a `title`.
 
 ### 4.2 Attributes
@@ -175,9 +174,9 @@ A **graph** is a pair $G = (V, E)$ where ...
 | Attribute | On | Meaning |
 |-----------|----|---------|
 | `#id` | all numbered containers | Stable id. |
-| `title` | optional | Name shown after the number: "Theorem 2.3 (Handshake lemma)". |
+| `title` | optional | Name shown in the box head: "Theorem · Handshake lemma". |
 | `aka` | optional | Alternative names, for search: `aka="degree sum formula"`. |
-| `source` | optional | Where it appears in the lecture material: `source="theory/2026-09-22 p2"`. |
+| `source` | optional | Where it appears in the lecture material: `source="theory/2026-09-22 p2"`. Shown as a tag ("Lecture 2026-09-22, p. 2"; "Slides 01, p. 5" for algorithms) and validated: `<theory\|algorithms>/<document> p<page>`, also `p1–2`, `p6, p5`, several joined by `; `. |
 | `extra` | optional flag | `extra=true` marks material **not covered in the lectures** (added for completeness/intuition). Rendered with an "extra" badge so students know it is beyond the lectures. |
 | `defines` | definitions | Comma-separated list of the terms (or phrases) defined, for search and link linting: `defines="loop, parallel edges"`. |
 

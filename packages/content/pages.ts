@@ -28,9 +28,9 @@ export function intuitionsFor(ix: ContentIndex, id: string): Container[] {
   return ix.containers.filter(c => c.type === 'intuition' && c.forId === id && c.parentId === undefined)
 }
 
-/** Label with the course prefix and title, e.g. "Theorem T3.2 (Two leaves)". */
+/** Kind and title, e.g. "Theorem (Two leaves)". */
 function entryLabel(c: Container): string {
-  return `${containerLabel(c, c.lesson.course === 'theory' ? 'algorithms' : 'theory')}${c.title ? ` (${c.title})` : ''}`
+  return `${containerLabel(c)}${c.title ? ` (${c.title})` : ''}`
 }
 
 const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -122,7 +122,7 @@ export function flashcardMarkdown(ix: ContentIndex): string {
   // entries live on lecture pages or, after the split, on concept pages
   for (const l of [...lectureLessons(ix), ...ix.lessons.filter(x => x.kind === 'concept')]) {
     for (const c of ix.containers.filter(x => x.lesson === l && FLASHCARD_TYPES.includes(x.type) && x.id && !x.parentId)) {
-      const label = containerLabel(c, l.course === 'theory' ? 'algorithms' : 'theory')
+      const label = containerLabel(c)
       const title = (c.title ?? '').replace(/"/g, '&quot;')
       const extra = c.attrs.extra === 'true' ? ' extra' : ''
       out.push(`<Flashcard id="${c.id}" course="${l.course}" label="${label}" title="${title}" href="/${l.path}#${c.id!.replace(/[^A-Za-z0-9_-]/g, '-')}"${extra}>`, '')

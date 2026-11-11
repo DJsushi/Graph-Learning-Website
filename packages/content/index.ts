@@ -30,7 +30,6 @@ export interface Container {
   id?: string
   attrs: Record<string, string>
   title?: string
-  number?: string       // e.g. "1.3"
   lesson: Lesson
   line: number          // first line (the opening fence), 1-based
   endLine: number       // last line (the closing fence)
@@ -62,10 +61,8 @@ export const KIND_NAMES: Record<string, string> = {
   hint: 'Hint', solution: 'Solution', explanation: 'Explanation',
 }
 export const STATEMENT_TYPES = new Set(['theorem', 'lemma', 'proposition', 'corollary', 'observation', 'claim'])
-const COUNTER: Record<string, string> = {
-  theorem: 'stmt', lemma: 'stmt', proposition: 'stmt', corollary: 'stmt', observation: 'stmt', claim: 'stmt',
-  definition: 'def', algorithm: 'alg', example: 'ex', exercise: 'exr',
-}
+// types that need an id (claims may go without)
+const NEEDS_ID = new Set(['theorem', 'lemma', 'proposition', 'corollary', 'observation', 'claim', 'definition', 'algorithm', 'example', 'exercise'])
 export const CONTAINER_TYPES = new Set(Object.keys(KIND_NAMES))
 export const COURSE_NAMES: Record<Course, string> = { theory: 'Graph Theory', algorithms: 'Graph Algorithms' }
 
@@ -153,7 +150,6 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
     index.problems.push({ lesson, line: 1, message: 'page has neither chapter (concept page) nor a numeric lecture (lecture page)' })
   const lines = text.split('\n')
   const offset = text.split('\n').length - fm.content.split('\n').length
-  const counters: Record<string, number> = {}
   // lastStatement: the statement a proof without for= proves, the last one among its siblings (S3)
   const stack: { c: Container; colons: number; start: number; lastStatement?: Container }[] = []
   const outer: { lastStatement?: Container } = {}
@@ -197,11 +193,6 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
         type, id, attrs, title: attrs.title, lesson, line: lineNo, endLine: lineNo, body: '', raw: '',
         parentId: stack.at(-1)?.c.id,
       }
-      const counter = COUNTER[type]
-      if (counter && id) {
-        counters[counter] = (counters[counter] ?? 0) + 1
-        c.number = `${lesson.lecture}.${counters[counter]}`
-      }
       if (type === 'proof') {
         const stmt = frame().lastStatement
         c.forId = attrs.for ?? stmt?.id
@@ -214,7 +205,7 @@ function scanLesson(file: string, root: string, index: ContentIndex) {
       if (id) {
         if (index.byId.has(id)) index.problems.push({ lesson, line: lineNo, message: `duplicate id ${id}` })
         else index.byId.set(id, c)
-      } else if (counter && type !== 'claim') {
+      } else if (NEEDS_ID.has(type) && type !== 'claim') {
         index.problems.push({ lesson, line: lineNo, message: `${type} without id` })
       }
       index.containers.push(c)
@@ -245,7 +236,7 @@ function scanRefs(text: string, lesson: Lesson, line: number, index: ContentInde
 }
 
 /** Resolve a [[target]] to a URL path (without base) and default label. */
-export function resolveTarget(index: ContentIndex, target: string, fromCourse?: Course): { href: string; label: string } | undefined {
+export function resolveTarget(index: ContentIndex, target: string): { href: string; label: string } | undefined {
   if (target.startsWith('fig:')) {
     const f = index.figureById.get(target.slice(4))
     if (!f) return undefined
@@ -253,11 +244,8 @@ export function resolveTarget(index: ContentIndex, target: string, fromCourse?: 
   }
   const c = index.byId.get(target)
   if (c) {
-    const coursePrefix = fromCourse && fromCourse !== c.lesson.course ? (c.lesson.course === 'theory' ? 'T' : 'A') : ''
-    const name = KIND_NAMES[c.type] ?? c.type
-    const num = c.number ? ` ${coursePrefix}${c.number}` : ''
     const title = c.title ? ` (${c.title})` : ''
-    return { href: `/${c.lesson.path}#${anchorId(c.id!)}`, label: `${name}${num}${title}` }
+    return { href: `/${c.lesson.path}#${anchorId(c.id!)}`, label: `${KIND_NAMES[c.type] ?? c.type}${title}` }
   }
   const l = index.lessons.find(x => x.path === target)
   if (l) return { href: `/${l.path}`, label: l.title }
@@ -269,7 +257,17 @@ export function anchorId(id: string): string {
   return id.replace(/[^A-Za-z0-9_-]/g, '-')
 }
 
-export function containerLabel(c: Container, fromCourse?: Course): string {
-  const coursePrefix = fromCourse && fromCourse !== c.lesson.course ? (c.lesson.course === 'theory' ? 'T' : 'A') : ''
-  return `${KIND_NAMES[c.type] ?? c.type}${c.number ? ` ${coursePrefix}${c.number}` : ''}`
+export function containerLabel(c: Container): string {
+  return KIND_NAMES[c.type] ?? c.type
+}
+
+/** `source` attribute: `<course>/<document> p<pages>`, several joined by "; " (pages: `p5`, `p1–2`, `p6, p5`). */
+const SOURCE_PART = /^(theory|algorithms)\/(\S+) (p\d+(?:–\d+)?(?:, p\d+(?:–\d+)?)*)$/
+export function sourceTag(source: string): string | undefined {
+  const parts = source.split(/;\s*/).map(p => SOURCE_PART.exec(p.trim()))
+  if (!parts.length || parts.includes(null)) return undefined
+  return parts.map(m => {
+    const [, course, doc, pages] = m!
+    return `${course === 'theory' ? 'Lecture' : 'Slides'} ${doc}, ${/[–,]/.test(pages) ? 'pp.' : 'p.'} ${pages.replace(/p/g, '')}`
+  }).join('; ')
 }

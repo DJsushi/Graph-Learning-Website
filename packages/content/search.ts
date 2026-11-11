@@ -1,13 +1,13 @@
 // Token scoring for the reference search (pure, used in the browser).
 
-export interface SearchFields { label: string; title: string; aka: string; defines: string; text: string }
+export interface SearchFields { title: string; aka: string; defines: string; text: string }
 
 const norm = (s: string) => ` ${s.toLowerCase().replace(/[^a-z0-9.]+/g, ' ')} `
 export const tokens = (q: string) => norm(q).split(' ').map(t => t.replace(/^\.+|\.+$/g, '')).filter(Boolean)
 
-/** Every token must start a word somewhere (labels also match without the T/A prefix); label/title hits weigh 10, aka/defines 4, text 1. 0 means no match. */
+/** Every token must start a word somewhere; title hits weigh 10, aka/defines 4, text 1. 0 means no match. */
 export function scoreEntry(e: SearchFields, toks: string[]): number {
-  const strong = norm(`${e.label} ${e.label.slice(1)} ${e.title}`), mid = norm(`${e.aka} ${e.defines}`), weak = norm(e.text)
+  const strong = norm(e.title), mid = norm(`${e.aka} ${e.defines}`), weak = norm(e.text)
   let score = 0
   for (const t of toks) {
     const w = ` ${t}`

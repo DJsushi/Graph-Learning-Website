@@ -8,7 +8,7 @@ import { inlineMath, setupMarkdown } from '../markdown'
 import { BASE } from '../base'
 
 export interface RefEntry {
-  label: string; title: string; aka: string; defines: string
+  title: string; aka: string; defines: string
   kind: string; course: 'theory' | 'algorithms'; topic: string; text: string; link: string
 }
 export interface RefPreview { head: string; html: string; lesson: string; entry?: RefEntry }
@@ -36,13 +36,13 @@ export default defineLoader({
       // figures are interactive components; the popover only shows the text
       const body = c.body.replace(/```graph[\s\S]*?```/g, '*(figure in the lesson)*')
       out[anchorId(c.id)] = {
-        head: `${containerLabel(c)}${c.attrs.title ? ` (${inlineMath(c.attrs.title)})` : ''}`,
+        head: `${containerLabel(c)}${c.attrs.title ? ` · ${inlineMath(c.attrs.title)}` : ''}`,
         html: md.render(body, env),
         lesson: `${c.lesson.course === 'theory' ? 'Graph Theory' : 'Graph Algorithms'} · ${c.lesson.kind === 'concept' ? c.lesson.title : `Lesson ${c.lesson.lecture}`}`,
       }
       const t = topicOf.get(c.id)
       if (t) out[anchorId(c.id)].entry = {
-        label: c.number ? `${c.lesson.course === 'theory' ? 'T' : 'A'}${c.number}` : '', title: c.title ?? '',
+        title: c.title ?? '',
         aka: c.attrs.aka ?? '', defines: c.attrs.defines ?? '', kind: kindOf(c.type), course: c.lesson.course,
         topic: t.title, text: plain(c.body), link: `/reference/${t.slug}#${anchorId(c.id)}`,
       }
