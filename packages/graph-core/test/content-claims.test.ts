@@ -244,3 +244,57 @@ describe('theory lessons', () => {
     expect(steps.length).toBeGreaterThan(5)
   })
 })
+
+describe('Leaves page', () => {
+  // longest path length (edges) and all longest paths, by brute force
+  const longest = (g: GraphData) => {
+    const ix = new GraphIndex(g)
+    let best = 0, paths: string[][] = []
+    const go = (p: string[]) => {
+      const len = p.length - 1
+      if (len > best) { best = len; paths = [] }
+      if (len === best) paths.push(p)
+      for (const n of ix.neighbors(p[p.length - 1])) if (!p.includes(n)) go([...p, n])
+    }
+    for (const v of g.vertices) go([v.id])
+    return { best, paths }
+  }
+  const deg = (g: GraphData, v: string) => new GraphIndex(g).degree(v)
+  it('case (a): 5 vertices, no edges, all of degree 0', () => {
+    const g = fig('t03-two-leaves-case-a')
+    expect(g.vertices.length).toBe(5)
+    expect(g.edges.length).toBe(0)
+    expect(longest(g).best).toBe(0)
+  })
+  it('case (b): u..v is the unique longest path (4 edges), x prolongs it to 5, u p1 p2 is a 3-cycle', () => {
+    const doc = parseGraph(index.figureById.get('t03-two-leaves-case-b')!.source)
+    const g = doc.panels[0].graph, steps = doc.panels[0].steps
+    expect(A.isAcyclic(new GraphIndex(g))).toBe(true)
+    const { best, paths } = longest(g)
+    expect(best).toBe(4)
+    expect(paths.map(p => p.join(' ')).sort()).toEqual(['u p1 p2 p3 v', 'v p3 p2 p1 u'])
+    expect([deg(g, 'u'), deg(g, 'v')]).toEqual([1, 1])
+    expect(longest(steps[3].graph).best).toBe(5)
+    const s5 = new GraphIndex(steps[5].graph)
+    expect(A.isAcyclic(s5)).toBe(false)
+    expect(A.girth(s5)).toBe(3)
+    const last = steps[6].graph
+    expect(last.edges.length).toBe(g.edges.length)
+    expect([deg(last, 'u'), deg(last, 'v')]).toEqual([1, 1])
+  })
+  it('leaf example: leaves a e f g, d has degree 2, z degree 0', () => {
+    const g = fig('t03-leaf-example'), ix = new GraphIndex(g)
+    expect(g.vertices.filter(v => ix.degree(v.id) === 1).map(v => v.id).sort()).toEqual(['a', 'e', 'f', 'g'])
+    expect([ix.degree('d'), ix.degree('z')]).toEqual([2, 0])
+    expect(A.isAcyclic(ix)).toBe(true)
+  })
+  it('corollary figure: tree on 7 vertices, a longest path a b c d g of length 4, a and g leaves', () => {
+    const g = fig('t03-tree-leaf-proof')
+    expect(A.isTree(new GraphIndex(g))).toBe(true)
+    expect(g.vertices.length).toBe(7)
+    const { best, paths } = longest(g)
+    expect(best).toBe(4)
+    expect(paths.map(p => p.join(' '))).toContain('a b c d g')
+    expect([deg(g, 'a'), deg(g, 'g')]).toEqual([1, 1])
+  })
+})
