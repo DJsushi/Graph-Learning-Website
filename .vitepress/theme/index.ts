@@ -5,6 +5,8 @@ import './custom.css'
 import GraphBlock from '@gv/GraphBlock.vue'
 import QuizBlock from '@gv/QuizBlock.vue'
 import MarkLink from '@gv/MarkLink.vue'
+import Walkthrough from '@gv/Walkthrough.vue'
+import WalkthroughStep from '@gv/WalkthroughStep.vue'
 import LessonHeader from './LessonHeader.vue'
 import SiteCredit from './SiteCredit.vue'
 import LessonDone from './LessonDone.vue'
@@ -34,6 +36,8 @@ export default {
     app.component('GraphBlock', GraphBlock)
     app.component('QuizBlock', QuizBlock)
     app.component('MarkLink', MarkLink)
+    app.component('Walkthrough', Walkthrough)
+    app.component('WalkthroughStep', WalkthroughStep)
     for (const [name, c] of Object.entries({ HomePage, CourseIndex, PracticeOverview, FlashcardDeck, Flashcard, RandomDrills, QuizSession, Playground, ReferenceSearch, Settings })) app.component(name, c)
   },
 } satisfies Theme

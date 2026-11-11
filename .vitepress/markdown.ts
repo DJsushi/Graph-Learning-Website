@@ -146,20 +146,52 @@ export function setupMarkdown(md: MarkdownIt) {
           return openContainer(type, tok.info.trim().slice(type.length), env, tok)
         }
         opened.pop()
-        return closeContainer(type)
+        return closeContainer(type, tok)
       },
     })
   }
 
-  // ---- proofs: source length and walkthrough, for proofOnConceptPage ----
-  // shortcut: a walkthrough counts for the next proof after it (the order of CONTENT_CONVENTIONS.md §9), not matched by for=
+  // ---- walkthroughs (CONTENT_CONVENTIONS.md §9) and proofs: source length and walkthrough, for proofOnConceptPage ----
+  // A walkthrough with for= belongs to the next top-level proof of that statement (§8: walkthrough, then the proof).
+  // The last walkthrough of that proof gets the "This proof uses" line.
   md.core.ruler.push('ga_proof_meta', state => {
-    let walkthrough = false
+    const src = state.src.split('\n')
+    const waiting: { for: string; close: any }[] = []
+    let wt: { open: any; steps: any[]; closes: any[] } | undefined
+    let statement: string | undefined
     for (const t of state.tokens) {
-      if (t.type === 'container_walkthrough_open') walkthrough = true
-      if (t.type === 'container_proof_open') {
+      if (wt) {
+        const inner = t.level === wt.open.level + 1
+        if (inner && t.type === 'fence' && /^graph(\s|$)/.test(t.info.trim())) wt.open.meta.figure = true
+        if (inner && t.type === 'container_step_open') wt.steps.push(t)
+        if (inner && t.type === 'container_step_close') wt.closes.push(t)
+        if (t.type === 'container_walkthrough_close' && t.level === wt.open.level) {
+          const live = wt.open.meta.figure
+          wt.steps.forEach((s, i) => (s.meta = { index: i, first: i === 0, live }))
+          wt.closes.forEach((c, i) => (c.meta = { last: i === wt!.closes.length - 1, live }))
+          t.meta = { figure: live }
+          const f = wt.open.meta.for
+          if (f) waiting.push({ for: f, close: t })
+          wt = undefined
+        }
+        continue
+      }
+      const open = /^container_(\w+)_open$/.exec(t.type)?.[1]
+      const info = () => parseContainerInfo(t.info.trim().slice(open!.length))
+      if (open === 'walkthrough') { wt = { open: t, steps: [], closes: [] }; t.meta = { figure: false, for: info().attrs.for }; continue }
+      if (open && t.level === 0 && STATEMENT_TYPES.has(open)) statement = info().id
+      if (open === 'proof') {
+        let walkthrough = false
+        if (t.level === 0) {
+          const proves = info().attrs.for ?? statement
+          const mine = waiting.filter(w => w.for === proves)
+          if (mine.length) {
+            walkthrough = true
+            for (const w of mine) waiting.splice(waiting.indexOf(w), 1)
+            if (t.map) mine.at(-1)!.close.meta.uses = proofUses(contentFor(state.env), src.slice(t.map[0], t.map[1]).join('\n'), proves)
+          }
+        }
         t.meta = { lines: t.map ? t.map[1] - t.map[0] - 1 : 0, walkthrough }
-        walkthrough = false
       }
     }
   })
@@ -203,7 +235,20 @@ export function proofOnConceptPage(lines: number, walkthrough: boolean): { close
   return { closed: walkthrough || lines > 10, summary: walkthrough ? 'Compact proof' : 'Proof' }
 }
 
+/** The entries a proof links to ([[refs]]), except the statement it proves and claims it states itself: links for "This proof uses". */
+export function proofUses(index: ContentIndex, proof: string, proves?: string): string[] {
+  const own = new Set([...proof.matchAll(/\{[^}]*#([\w:.\-']+)/g)].map(m => m[1]))
+  const ids = new Set([...proof.matchAll(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g)].map(m => m[1].trim()))
+  return [...ids].filter(id => id !== proves && !own.has(id) && index.byId.has(id)).map(id => {
+    const r = resolveTarget(index, id)!
+    return `<a class="ga-ref" href="${BASE}${r.href.slice(1)}">${inlineMath(r.label)}</a>`
+  })
+}
+
 function openContainer(type: string, rest: string, env: any, tok: any): string {
+  // a walkthrough with a figure drives it from its steps (Walkthrough.vue); without one it is a numbered list
+  if (type === 'walkthrough') return tok.meta?.figure ? '<Walkthrough>\n' : '<div class="ga-walkthrough ga-wt-plain">\n'
+  if (type === 'step' && tok.meta) return `${tok.meta.first ? '<ol class="ga-wt-steps">' : ''}${tok.meta.live ? `<WalkthroughStep :index="${tok.meta.index}">` : '<li class="ga-wt-step">'}\n`
   const index = contentFor(env)
   const { id, attrs } = parseContainerInfo(rest)
   const where = env?.relativePath ?? ''
@@ -250,7 +295,12 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
   }
 }
 
-function closeContainer(type: string): string {
+function closeContainer(type: string, tok: any): string {
+  if (type === 'walkthrough') {
+    const uses = tok.meta?.uses?.length ? `<p class="ga-wt-uses">This proof uses: ${tok.meta.uses.join(', ')}</p>\n` : ''
+    return `${tok.meta?.figure ? '</Walkthrough>' : '</div>'}\n${uses}`
+  }
+  if (type === 'step' && tok.meta) return `${tok.meta.live ? '</WalkthroughStep>' : '</li>'}${tok.meta.last ? '</ol>' : ''}\n`
   switch (type) {
     case 'proof': return '<span class="ga-qed" aria-label="end of proof">∎</span></div></details>\n'
     case 'hint': case 'solution': return '</div></details>\n'

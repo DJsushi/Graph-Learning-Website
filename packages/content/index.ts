@@ -58,7 +58,7 @@ export const KIND_NAMES: Record<string, string> = {
   definition: 'Definition', theorem: 'Theorem', lemma: 'Lemma', proposition: 'Proposition', corollary: 'Corollary',
   observation: 'Observation', claim: 'Claim', algorithm: 'Algorithm', example: 'Example', exercise: 'Exercise',
   proof: 'Proof', remark: 'Remark', intuition: 'Intuition', pitfall: 'Pitfall', quiz: 'Quiz',
-  hint: 'Hint', solution: 'Solution', explanation: 'Explanation',
+  hint: 'Hint', solution: 'Solution', explanation: 'Explanation', walkthrough: 'Walkthrough', step: 'Step',
 }
 export const STATEMENT_TYPES = new Set(['theorem', 'lemma', 'proposition', 'corollary', 'observation', 'claim'])
 // types that need an id (claims may go without)

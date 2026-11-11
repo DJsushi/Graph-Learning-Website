@@ -30,8 +30,9 @@ provide('ga-spotlight', computed(() => (payload.value.id ? spotlights[payload.va
 const doc = computed(() => parseGraph(payload.value.source, payload.value.info))
 const widget = computed(() => payload.value.info.widget ?? 'figure')
 const caption = computed(() => doc.value.directives.caption?.[0])
-// The info-string `height` stays valid but sets no size: figures fill their column up to 70% of the viewport height.
-const height = '70vh'
+// The info-string `height` stays valid but sets no size: figures fill their column up to 70% of the viewport height
+// (a walkthrough sets --ga-fig-h to fit its sticky figure).
+const height = 'var(--ga-fig-h, 70vh)'
 const WIDGETS = { figure: FigureWidget, stepper: StepperWidget, player: PlayerWidget, editable: SandboxWidget, exercise: ExerciseWidget } as Record<string, Component>
 const widgetProps = (name: string, h: number | string) => ({
   doc: doc.value, height: h,

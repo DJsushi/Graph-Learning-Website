@@ -39,6 +39,7 @@ packages/
     tween.ts, useTweened.ts      animation between two graph states
     texsvg.ts, rich.ts           math in SVG labels; inline rich text for captions
     marks.ts, MarkLink.vue       mark links: text spotlights figure elements (registry by figure id)
+    walkthrough.ts, Walkthrough.vue, WalkthroughStep.vue   walkthrough: steps drive the stepper inside (provide/inject)
     QuizBlock.vue                quizzes
     progress.ts, settings.ts     reader state in localStorage
   content/

@@ -676,3 +676,33 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 :root { --vp-layout-max-width: 100vw; }
 .VPDoc.has-aside .content-container { max-width: none !important; }
 .VPDoc .container, .VPDoc .content { max-width: none !important; }
+
+/* ---------- walkthrough (CONTENT_CONVENTIONS.md 9) ---------- */
+/* sticky offset: below 960px only the local nav (48px) sticks; 960-1279px the nav and the local nav; from 1280px the nav */
+.ga-walkthrough { --ga-wt-top: 48px; container-type: inline-size; margin: 1.6em 0; }
+@media (min-width: 960px) { .ga-walkthrough { --ga-wt-top: calc(var(--vp-nav-height) + 48px); } }
+@media (min-width: 1280px) { .ga-walkthrough { --ga-wt-top: var(--vp-nav-height); } }
+/* one column: the figure sticks at the top, at most 45% of the viewport high */
+.ga-wt-body { --ga-fig-h: calc(45vh - 7.5em); }
+.ga-wt-body > .ga-figure-anchor {
+  position: sticky; top: var(--ga-wt-top); z-index: 1; max-height: 45vh; overflow-y: auto;
+  background: var(--vp-c-bg); padding-bottom: 0.4em;
+}
+.ga-wt-body > .ga-figure-anchor figure.ga-graph { margin: 0; }
+/* the step text is beside the figure; the stepper's own caption stays for screen readers */
+.ga-wt-body .ga-graph-frame .ga-step-message {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+@container (min-width: 960px) {
+  .ga-wt-body { --ga-fig-h: calc(100vh - var(--ga-wt-top) - 8em); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 0 2em; align-items: start; }
+  .ga-wt-body > .ga-figure-anchor { grid-column: 2; grid-row: 1; max-height: none; overflow: visible; padding-top: 0.5em; }
+  .ga-wt-body > .ga-wt-steps { grid-column: 1; grid-row: 1; }
+}
+.vp-doc .ga-wt-steps { margin: 0.8em 0; padding-left: 1.8em; }
+.vp-doc .ga-wt-step { margin: 0.4em 0; padding: 0.5em 0.8em; border-left: 3px solid transparent; border-radius: 0 6px 6px 0; }
+.vp-doc .ga-wt-step > :first-child { margin-top: 0; }
+.vp-doc .ga-wt-step > :last-child { margin-bottom: 0; }
+.ga-walkthrough:not(.ga-wt-plain) .ga-wt-step { cursor: pointer; }
+.vp-doc .ga-wt-step.ga-wt-active { border-left-color: var(--gv-accent); background: var(--gv-accent-soft); }
+.vp-doc .ga-wt-step:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.vp-doc .ga-wt-uses { margin: -0.6em 0 1.2em; font-size: 0.9em; color: var(--vp-c-text-2); }
