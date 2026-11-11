@@ -127,7 +127,7 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 | T2.1 | Parser: `mark`, `set`, reserved words, marks per step; tests. | coder | DSL §16 | C3 F9 | cb8bacc |
 | T2.2 | Marks end to end: registry by figure id, spotlight in `GraphView.vue`, link component, the `[[fig:id#mark\|text]]` rule, vertex hit area. | coder | CC §6.1 | C2 FA2 F11 | c072fee |
 | T2.3 | Walkthrough: containers, component, sticky layout, scroll sync, stepper driven from outside, keyboard, the "This proof uses" line. A walkthrough without a figure is a numbered list. | coder (opus) | CC §9 | C1 FA1 | 94317ce |
-| T2.4 | Validator rules for walkthroughs and mark links. | coder | R §4.1 | | |
+| T2.4 | Validator rules for walkthroughs and mark links. | coder | R §4.1 | | 3ac06fc |
 | T2.5 | Acceptance: a test page with a five-step walkthrough, three mark links and a walkthrough without a figure; mouse, keyboard, touch emulation; light and dark; 390px, 1366×768, 1920×1080; reduced motion. Fix what fails; delete the page. | coder, then visual-qa | CC §9, §6.1 | | |
 
 ### Phase 3: two exemplar pages
