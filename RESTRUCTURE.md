@@ -137,7 +137,7 @@ Each task explains every proof on its page.
 | ID | Task | Agent | Done |
 |----|------|-------|------|
 | T3.1 | Explain the proofs on `content/theory/trees/leaves.md` (17 and 2 lines). | writer, math-checker | d944fff |
-| T3.2 | Explain the proof on `content/theory/walks-connectivity/closed-walks.md` (19 lines). | writer with `model: "sonnet"`, math-checker | |
+| T3.2 | Explain the proof on `content/theory/walks-connectivity/closed-walks.md` (19 lines). | writer with `model: "sonnet"`, math-checker | d7f336b |
 | T3.3 | Check the two pages at 390px and 1366×768. | visual-qa | |
 
 **Gate B.** See §6.
@@ -450,4 +450,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Open questions for the owner
 
-(empty)
+- `theory/walks-connectivity/closed-walks.md` (T3.2): the theorem statement links "cycle" to
+  `def:cycle-graph` (n ≥ 3, simple graphs), but its base cases count loops and parallel edges
+  as cycles. No container defines that multigraph convention; it is only a plain paragraph at
+  `theory/trees/forests-and-trees.md:23`. Should that paragraph become a definition box (and
+  the statement link to it)?
