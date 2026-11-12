@@ -217,7 +217,7 @@ the rows at any time.
 | T4.28 | `theory/chordal/interval-graphs.md` | 6, not in the notes | skip |
 | T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. | | |
 | T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | 548b857 |
-| T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches; t02: 1 mismatch, 5 additions (§6, Audit). | | |
+| T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches; t02: 1 mismatch, 5 additions; t03: 0 mismatches (§6, Audit). | | |
 | T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
 
 **Gate C.** See §6.
@@ -593,3 +593,11 @@ or keep and say so on the page. None changes a result.
   - Additions beyond the notes, same meaning: `walks-and-paths.md:11–18` (walks in multigraphs, "length k", "closed"; the notes: simple graphs only); `connected-components.md:20–21` ("connected = exactly one component"); `distance.md:14` (dist = ∞ across components); `bipartite-graphs.md:12` (A ∩ B = ∅, equivalent); `bipartite-graphs.md:39` ("proposition", the notes: CLAIM).
   - No mismatch: `basics/subgraphs.md`, `basics/cliques-and-independent-sets.md`, the shortest-walk claim, the bipartite ⇔ K_{m,n} claim, the statement and ⇒ proof of `odd-cycles.md`.
   - Not comparable: `walks-connectivity/breadth-first-search.md` (no `source`, BFS not in the scan; kept by Scope).
+- t03 (scan 2026-09-29 p1–8; 9 pages): no mismatch; every `source` page is right. Additions beyond the notes, same meaning:
+  `girth-and-regular-graphs.md:12` (girth ∞ if acyclic; d-regular as its own definition);
+  `regular-graphs-of-large-girth.md:15` (d ≥ 0, k ≥ 1), `:360–362` (extra base cases d = 0, 1, k ≤ 3, k = 4), `:367` (⌈k/2⌉ for the notes' k/2), `:374–391` (the argument that F is simple, d-regular, girth ≥ k; the notes give the construction picture only);
+  `cayley-formula.md:298–321` (invariant, injectivity of the triples, converse);
+  `closed-walks.md:15` ("possibly both", has a REVIEW), `:229–233` (base cases for k ≤ 2 written out);
+  `leaves.md:127`, `:137`, `:173` (small added reasons), `:153` (`def:leaf` has no source: the notes never define a leaf);
+  `small-degree-test.md:12` ("non-empty"), `:116`, `:119` (one-vertex case, loop and digon degrees);
+  `unique-paths.md:114`, `:117–121` (direct argument instead of contradiction, E(P1) = E(P2) ⇒ P1 = P2).
