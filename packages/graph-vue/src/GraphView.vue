@@ -1,6 +1,6 @@
 <script setup lang="ts">
 // The single SVG graph renderer. Pure view + pointer/keyboard event translation; editing logic lives in the widgets.
-import { computed, inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type Ref } from 'vue'
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
@@ -9,6 +9,8 @@ import { labelToSpans, spansWidth, type TSpan } from './texsvg'
 import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
 import { easeFn } from './easing'
+import { spotOf } from './marks'
+import { computeBox, widthStyle, type Box } from './viewbox'
 
 const props = withDefaults(defineProps<{
   graph: GraphData
@@ -19,7 +21,7 @@ const props = withDefaults(defineProps<{
   preview?: { from: Id; to: Pt } | null
   /** box selection rectangle, model coordinates */
   marquee?: { a: Pt; b: Pt } | null
-  maxHeight?: number
+  maxHeight?: number | string
   fill?: boolean
   zoomable?: boolean
   backgroundPan?: boolean
@@ -47,6 +49,11 @@ const emit = defineEmits<{
   'edge-dblclick': [id: Id]
   key: [ev: KeyboardEvent]
 }>()
+
+// a text link (MarkLink) spotlights a mark of this figure: its elements get `gv-marked`, the rest fades (custom.css)
+const spotName = inject<Ref<string | null> | null>('ga-spotlight', null)
+const spot = computed(() => spotOf(props.graph, spotName?.value))
+const marked = (kind: 'vertices' | 'edges' | 'faces' | 'groups', id: Id) => !!spot.value?.[kind].has(id)
 
 const svg = ref<SVGSVGElement>()
 const root = ref<SVGGElement>()
@@ -144,18 +151,15 @@ const bbox = computed(() => {
   // vertices, curve apexes (edge label points) and group labels all have to fit
   const pts = [...pos.value.values(), ...[...geoms.value.values()].filter(g => !g.loop).map(g => g.label)]
   for (const gr of groupShapes.value) if (gr.label) pts.push({ x: gr.labelAt.x - 40, y: gr.labelAt.y - 6 }, { x: gr.labelAt.x + 40, y: gr.labelAt.y - 6 })
-  if (!pos.value.size) return { x: -100, y: -60, w: 200, h: 120 }
-  let x0 = Math.min(...pts.map(p => p.x)), x1 = Math.max(...pts.map(p => p.x))
-  let y0 = Math.min(...pts.map(p => p.y)), y1 = Math.max(...pts.map(p => p.y))
-  const hasLoops = props.graph.edges.some(e => !e.hyper && e.tail[0] === e.head[0])
-  const pad = (labelsInside.value ? 30 : 38) + (hasLoops ? 42 : 0) + (props.graph.groups.length || props.overlay?.groups.length ? 26 : 0)
-  x0 -= pad; x1 += pad; y0 -= pad; y1 += pad
-  if (props.overlay && Object.keys(props.overlay.vertexBadges).length) { y0 -= 12; x1 += 18 }
-  const w = Math.max(x1 - x0, 140), h = Math.max(y1 - y0, 90)
-  return { x: (x0 + x1) / 2 - w / 2, y: (y0 + y1) / 2 - h / 2, w, h }
+  return computeBox(pts, {
+    hasVertices: pos.value.size > 0,
+    labelsInside: labelsInside.value,
+    hasLoops: props.graph.edges.some(e => !e.hyper && e.tail[0] === e.head[0]),
+    hasGroups: !!(props.graph.groups.length || props.overlay?.groups.length),
+    hasBadges: !!(props.overlay && Object.keys(props.overlay.vertexBadges).length),
+  })
 })
 // while editing, the box only grows (fill mode: fixed until "fit"), so the drawing does not rescale under the cursor
-type Box = { x: number; y: number; w: number; h: number }
 const frozen = ref<Box | null>(null)
 const box = computed<Box>(() => {
   const b = bbox.value
@@ -207,6 +211,12 @@ const fadeStyle = (k: string) => (props.fade?.[k] === undefined ? undefined : { 
 // an enlarged-figure dialog provides 'ga-zoomable' so every graph inside it can zoom and pan
 const zoomAll = inject('ga-zoomable', false)
 const canZoom = computed(() => props.zoomable || zoomAll)
+// width follows the box: capped in px per unit so small graphs stay small; the enlarge dialog and editors are uncapped
+const sizeStyle = computed(() => {
+  if (props.fill) return undefined
+  const mh = typeof props.maxHeight === 'number' ? `${props.maxHeight}px` : props.maxHeight
+  return { width: widthStyle(props.animate ? shownBox.value : box.value, mh, !!zoomAll || props.editable), maxHeight: mh }
+})
 const view = ref({ tx: 0, ty: 0, k: 1 })
 const transform = computed(() => (canZoom.value ? `translate(${view.value.tx},${view.value.ty}) scale(${view.value.k})` : undefined))
 function resetView() {
@@ -230,7 +240,9 @@ function zoomBy(f: number) {
   view.value = { k, tx: p.x - ((p.x - view.value.tx) * k) / k0, ty: p.y - ((p.y - view.value.ty) * k) / k0 }
 }
 const zoom = computed(() => view.value.k)
-defineExpose({ resetView, svg, clientPoint, zoomBy, zoom })
+/** drop the grow-only editing box so the view shrinks back to the drawing (no-op in fill mode) */
+const refit = () => { if (!props.fill) frozen.value = null }
+defineExpose({ resetView, refit, svg, clientPoint, zoomBy, zoom })
 watch(() => props.graph.vertices.length === 0, () => { if (props.fill) resetView() })
 onMounted(() => { if (props.fill) resetView() })
 
@@ -378,9 +390,9 @@ const describe = computed(() => {
   <svg
     ref="svg"
     class="gv-root"
-    :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none' }"
+    :class="{ 'gv-fill': fill, 'gv-editable': editable, 'gv-selectable': selectable !== 'none', 'gv-spot': !!spot }"
     :viewBox="viewBox"
-    :style="fill ? undefined : { maxHeight: `${maxHeight}px` }"
+    :style="sizeStyle"
     :role="selectable !== 'none' || editable ? 'group' : 'img'"
     :aria-label="ariaLabel ?? 'Graph'"
     @wheel="onWheel"
@@ -397,25 +409,25 @@ const describe = computed(() => {
     <g ref="root" :transform="transform">
       <!-- faces -->
       <g class="gv-faces">
-        <path v-for="fc in faceShapes" :key="fc.id" :d="fc.d" class="gv-face" :class="fc.classes" />
+        <path v-for="fc in faceShapes" :key="fc.id" :d="fc.d" class="gv-face" :class="[...fc.classes, { 'gv-marked': marked('faces', fc.id) }]" />
       </g>
       <!-- groups -->
       <g class="gv-groups">
-        <path v-for="gr in groupShapes" :key="gr.id" :d="gr.d" class="gv-group" :class="gr.classes" />
+        <path v-for="gr in groupShapes" :key="gr.id" :d="gr.d" class="gv-group" :class="[...gr.classes, { 'gv-marked': marked('groups', gr.id) }]" />
       </g>
       <!-- hyperedges -->
       <g class="gv-hyper">
         <template v-for="h in hyperShapes" :key="h.id">
-          <path v-if="!h.directed" :d="h.d" class="gv-hyperedge" :class="h.classes" />
+          <path v-if="!h.directed" :d="h.d" class="gv-hyperedge" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
           <template v-else>
-            <line v-for="(t, i) in h.tail" :key="'t' + i" :x1="t.x" :y1="t.y" :x2="h.c.x" :y2="h.c.y" class="gv-line gv-hyperarc" :class="h.classes" />
-            <line v-for="(t, i) in h.head" :key="'h' + i" :x1="h.c.x" :y1="h.c.y" :x2="t.x" :y2="t.y" class="gv-line gv-hyperarc" :class="h.classes" />
+            <line v-for="(t, i) in h.tail" :key="'t' + i" :x1="t.x" :y1="t.y" :x2="h.c.x" :y2="h.c.y" class="gv-line gv-hyperarc" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
+            <line v-for="(t, i) in h.head" :key="'h' + i" :x1="h.c.x" :y1="h.c.y" :x2="t.x" :y2="t.y" class="gv-line gv-hyperarc" :class="[...h.classes, { 'gv-marked': marked('edges', h.id) }]" />
           </template>
         </template>
       </g>
       <!-- edges -->
       <g class="gv-edges">
-        <g v-for="e in visibleEdges" :key="e.id" class="gv-edge" :class="[...classesOf('edge', e), { 'gv-directed': e.directed }]"
+        <g v-for="e in visibleEdges" :key="e.id" class="gv-edge" :class="[...classesOf('edge', e), { 'gv-directed': e.directed, 'gv-marked': marked('edges', e.id) }]"
           :data-edge="e.id" :style="fadeStyle('e:' + e.id)">
           <template v-if="geoms.get(e.id)">
             <path class="gv-hit" :d="geoms.get(e.id)!.d"
@@ -440,7 +452,7 @@ const describe = computed(() => {
       <!-- edge labels -->
       <g class="gv-edge-labels">
         <template v-for="e in visibleEdges" :key="e.id">
-          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="classesOf('edge', e)" :style="fadeStyle('e:' + e.id)"
+          <text v-if="edgeLabel(e) !== undefined && geoms.get(e.id)" class="gv-edge-label" :class="[...classesOf('edge', e), { 'gv-marked': marked('edges', e.id) }]" :style="fadeStyle('e:' + e.id)"
             :x="geoms.get(e.id)!.label.x" :y="geoms.get(e.id)!.label.y" text-anchor="middle" dominant-baseline="central">
             <template v-if="spans(edgeLabel(e)!)">
               <tspan v-for="(s, i) in tspans(spans(edgeLabel(e)!)!)" :key="i" :class="{ 'gv-it': s.italic }"
@@ -465,7 +477,7 @@ const describe = computed(() => {
       </g>
       <!-- vertices -->
       <g class="gv-vertices">
-        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) || ghost?.includes(v.id) }]"
+        <g v-for="v in visibleVertices" :key="v.id" class="gv-vertex" :class="[...classesOf('vertex', v), { 'gv-dot': !labelsInside, 'gv-gooed': goo?.includes(v.id) || ghost?.includes(v.id), 'gv-marked': marked('vertices', v.id) }]"
           :transform="`translate(${pos.get(v.id)!.x},${pos.get(v.id)!.y})`" :data-vertex="v.id" :style="fadeStyle('v:' + v.id)"
           :tabindex="interactiveVertices ? 0 : undefined"
           :role="interactiveVertices ? 'button' : undefined"
@@ -475,7 +487,7 @@ const describe = computed(() => {
           @click="onElementClick('vertex', v.id)"
           @dblclick.stop="emit('vertex-dblclick', v.id)"
           @keydown="onKey($event, 'vertex', v.id)">
-          <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 18)" />
+          <circle class="gv-vertex-hit" :r="Math.max(radius + 6, 22)" />
           <circle class="gv-vertex-shape" :r="radius" />
           <template v-if="vertexLabels.get(v.id)">
             <text v-if="spans(vertexLabels.get(v.id)!)" class="gv-vertex-label" :class="{ 'gv-outside': !labelsInside }" :style="fadeStyle('l:' + v.id)"

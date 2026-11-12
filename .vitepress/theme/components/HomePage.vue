@@ -14,7 +14,14 @@ const theory = data.lessons.filter(l => l.course === 'theory')
 const algorithms = data.lessons.filter(l => l.course === 'algorithms')
 onMounted(loadProgress)
 // reads progress.visited so it updates once loadProgress has run
-const resume = computed(() => (Object.keys(progress.visited).length ? data.lessons.find(l => l.path === lastVisited()) : undefined))
+const resume = computed(() => {
+  if (!Object.keys(progress.visited).length) return undefined
+  const p = lastVisited()
+  const lecture = data.lessons.find(l => l.path === p)
+  if (lecture) return { path: lecture.path, text: `${lecture.course === 'theory' ? 'T' : 'A'}${lecture.lecture} · ${lecture.title}` }
+  const page = data.pages.find(l => l.path === p)
+  return page ? { path: page.path, text: page.title } : undefined
+})
 </script>
 
 <template>
@@ -28,7 +35,7 @@ const resume = computed(() => (Object.keys(progress.visited).length ? data.lesso
           and a picture you can play with wherever a picture helps.
         </p>
         <div class="ga-hero-actions">
-          <a v-if="resume" class="ga-btn ga-btn-primary ga-btn-lg" :href="withBase(`/${resume.path}`)">Continue: {{ resume.course === 'theory' ? 'T' : 'A' }}{{ resume.lecture }} · {{ resume.title }}</a>
+          <a v-if="resume" class="ga-btn ga-btn-primary ga-btn-lg" :href="withBase(`/${resume.path}`)">Continue: {{ resume.text }}</a>
           <a class="ga-btn ga-btn-lg" :class="{ 'ga-btn-primary': !resume }" :href="withBase('/theory/')">{{ resume ? 'Graph Theory' : 'Start with Graph Theory' }}</a>
           <a class="ga-btn ga-btn-lg" :href="withBase('/algorithms/')">Graph Algorithms</a>
         </div>

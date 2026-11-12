@@ -27,7 +27,8 @@
   --gv-group: rgba(47, 93, 138, 0.10);
 
   --ga-def: #2f5d8a;
-  --ga-stmt: #3c3f46;
+  --ga-stmt: #9a3a4f;
+  --ga-stmt-bg: #fbf1f3;
   --ga-alg: #6a4c93;
   --ga-ex: #17804f;
   --ga-warn: #a35a00;
@@ -59,7 +60,8 @@
   --gv-group: rgba(140, 184, 228, 0.12);
 
   --ga-def: #8cb8e4;
-  --ga-stmt: #c8ccd4;
+  --ga-stmt: #e69aab;
+  --ga-stmt-bg: #2b2025;
   --ga-alg: #b9a2e0;
   --ga-ex: #55c993;
   --ga-warn: #f0b35a;
@@ -95,6 +97,7 @@
 .vp-doc .ga-box-body > :last-child { margin-bottom: 0.5em; }
 .vp-doc .ga-definition { border-left-color: var(--ga-def); }
 .vp-doc .ga-definition .ga-box-kind { color: var(--ga-def); }
+.vp-doc .ga-statement { background: var(--ga-stmt-bg); }
 .vp-doc .ga-statement .ga-box-body { font-style: normal; }
 .vp-doc .ga-algorithm { border-left-color: var(--ga-alg); }
 .vp-doc .ga-algorithm .ga-box-kind { color: var(--ga-alg); }
@@ -111,6 +114,7 @@
   border: 1px solid var(--vp-c-divider); border-radius: 999px; color: var(--vp-c-text-2); vertical-align: 0.1em;
 }
 .vp-doc .ga-difficulty { margin-left: 0.5em; color: var(--ga-ex); font-size: 0.8em; letter-spacing: 0.1em; }
+.vp-doc .ga-box-src { margin-left: 0.6em; padding: 0 0.5em; font-size: 0.75em; font-weight: 500; color: var(--vp-c-text-2); border: 1px solid var(--vp-c-divider); border-radius: 999px; white-space: nowrap; }
 .vp-doc .ga-box-source { margin-left: 0.6em; font-size: 0.8em; font-weight: 500; }
 
 .vp-doc .ga-proof { margin: 0.6em 0 1.4em; padding: 0 0 0 1.1em; border-left: 1px dashed var(--vp-c-divider); }
@@ -147,14 +151,17 @@
 .ga-caption { margin-top: 0.5em; font-size: 0.92em; color: var(--vp-c-text-2); line-height: 1.55; display: flex; flex-wrap: wrap; gap: 0.3em 1em; align-items: baseline; }
 .ga-caption .ga-rich { flex: 1 1 22em; }
 .ga-figure-actions { display: inline-flex; gap: 1em; margin-left: auto; font-size: 0.85em; white-space: nowrap; }
-.ga-link-btn { padding: 0; border: 0; background: none; color: var(--vp-c-brand-1); font: inherit; cursor: pointer; }
-.ga-link-btn:hover, .vp-doc .ga-figure-actions a:hover { text-decoration: underline; }
+.vp-doc .ga-figure-actions a:hover { text-decoration: underline; }
 .vp-doc .ga-figure-actions a { text-decoration: none; }
-.ga-link-btn:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; border-radius: 3px; }
+.ga-graph-frame { position: relative; }
+.ga-enlarge { position: absolute; top: 6px; right: 6px; z-index: 2; min-height: 30px; min-width: 30px; background: var(--vp-c-bg); opacity: 0.85; }
+.ga-enlarge:hover { opacity: 1; }
+.ga-graph-static { cursor: zoom-in; border-radius: 6px; }
+.ga-graph-static:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
 .ga-graph-error { color: var(--ga-no); font-size: 0.9em; }
 
 .ga-panels { display: flex; flex-wrap: wrap; gap: 0.5em 1.2em; justify-content: center; }
-.ga-panel { flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.ga-panel { flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; align-items: center; }
 .ga-panels:not(.ga-panels-multi) .ga-panel { flex-basis: 100%; }
 .ga-panel-title { font-size: 0.9em; color: var(--vp-c-text-2); text-align: center; margin-bottom: 0.2em; }
 
@@ -242,6 +249,21 @@
 .gv-vertex.color5 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c5) 45%, var(--gv-paper)); } .gv-vertex.color6 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c6) 45%, var(--gv-paper)); }
 .gv-vertex.color7 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c7) 45%, var(--gv-paper)); } .gv-vertex.color8 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c8) 45%, var(--gv-paper)); }
 
+/* spotlight of a mark (MarkLink): marked elements get the accent, the rest of that figure fades to 30% */
+.gv-spot .gv-vertex:not(.gv-marked), .gv-spot .gv-edge:not(.gv-marked), .gv-spot .gv-edge-label:not(.gv-marked),
+.gv-spot .gv-face:not(.gv-marked), .gv-spot .gv-group:not(.gv-marked), .gv-spot .gv-hyperedge:not(.gv-marked), .gv-spot .gv-hyperarc:not(.gv-marked) { opacity: 0.3; }
+.gv-vertex.gv-marked .gv-vertex-shape { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-edge.gv-marked .gv-line { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-edge.gv-marked .gv-arrow { fill: var(--gv-accent); }
+.gv-hyperarc.gv-marked { stroke: var(--gv-accent); stroke-width: 3.6; }
+.gv-face.gv-marked, .gv-group.gv-marked, .gv-hyperedge.gv-marked { fill: color-mix(in srgb, var(--gv-accent) 22%, transparent); }
+/* the link in the text: a focusable button that looks like a dotted link in the accent colour */
+.vp-doc .ga-mark { all: unset; cursor: pointer; color: var(--gv-accent); border-bottom: 1px dotted currentColor; font-weight: 500; }
+.vp-doc .ga-mark:hover, .vp-doc .ga-mark[aria-pressed="true"] { background: color-mix(in srgb, var(--gv-accent) 14%, transparent); }
+.vp-doc .ga-mark.ga-mark-inert { color: var(--vp-c-text-3); border-bottom-color: var(--vp-c-divider); font-weight: inherit; cursor: default; }
+.vp-doc .ga-mark.ga-mark-inert:hover { background: none; }
+.vp-doc .ga-mark:focus-visible { outline: 2px solid var(--gv-accent); outline-offset: 2px; border-radius: 2px; }
+
 @media (prefers-reduced-motion: reduce) {
   .gv-line, .gv-arrow, .gv-vertex-shape { transition: none; }
 }
@@ -272,11 +294,11 @@
   color: var(--vp-c-text-1); font-size: 0.86rem; font-weight: 500; line-height: 1; cursor: pointer; white-space: nowrap;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.ga-btn:hover:not(:disabled) { background: var(--ga-ctl-hover); }
+.ga-btn:hover:not(:disabled):not([aria-disabled="true"]) { background: var(--ga-ctl-hover); }
 .ga-btn:focus-visible, .ga-tab:focus-visible, select:focus-visible, .ga-field input:focus-visible, .ga-code:focus-visible, .ga-chip:focus-visible {
   outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px;
 }
-.ga-btn:disabled { opacity: 0.4; cursor: default; }
+.ga-btn:disabled, .ga-btn[aria-disabled="true"] { opacity: 0.4; cursor: default; }
 .ga-btn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .ga-icon-btn { padding: 0; }
 .ga-btn-primary { background: var(--vp-c-brand-1); border-color: var(--vp-c-brand-1); color: var(--vp-c-white); }
@@ -564,6 +586,17 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 /* lesson done / resume */
 .ga-lesson-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
 .ga-lesson-top .ga-lesson-eyebrow { margin: 0; }
+.ga-lesson-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0; }
+.ga-lesson-tag { padding: 0.1rem 0.6rem; border: 1px solid var(--vp-c-divider); border-radius: 999px; font-size: 0.82rem; color: var(--vp-c-text-2); text-decoration: none; }
+.ga-lesson-tag:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.ga-status { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem 0.6rem; margin: 0.6rem 0 0; font-size: 0.88rem; color: var(--vp-c-text-2); }
+.ga-status-tag { padding: 0.1rem 0.6rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
+.ga-status.reviewed .ga-status-tag { color: var(--ga-ok); }
+.ga-status.draft .ga-status-tag { color: var(--ga-warn); }
+.ga-status .ga-status-tag.audited { color: var(--ga-ok); }
+.ga-lesson-pages { margin-top: 1rem; }
+.ga-lesson-pages a { color: var(--vp-c-brand-1); text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
+.ga-lesson-pages ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }
 .ga-done-btn.active { color: var(--ga-ok); background: color-mix(in srgb, var(--ga-ok) 12%, transparent); }
 .ga-done-footer { display: flex; justify-content: center; margin: 2.5rem 0 0.5rem; }
 .ga-done-mark { color: var(--ga-ok); font-weight: 700; }
@@ -641,7 +674,48 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-settings-easing-side .ga-seg { flex-wrap: wrap; }
 .ga-settings-css { font-size: 0.8rem; }
 
+/* reading width: text and boxes stop at 68ch, figures and walkthroughs use the column (RESTRUCTURE.md 4.4) */
+.vp-doc :is(.ga-box, .ga-proof, .ga-reveal) { max-width: 68ch; }
+/* prose measure: <= 75 chars/line, counted as width / (font-size / 2); ch is ~0.63em in this font so 68ch gave 85 */
+.vp-doc :is(p, ul, ol, blockquote) { max-width: 37em; }
+
 /* lessons use the full screen width (VitePress caps the layout at 1440px and the doc column at 688px) */
 :root { --vp-layout-max-width: 100vw; }
 .VPDoc.has-aside .content-container { max-width: none !important; }
 .VPDoc .container, .VPDoc .content { max-width: none !important; }
+
+/* ---------- walkthrough (CONTENT_CONVENTIONS.md 9) ---------- */
+/* sticky offset: below 960px only the local nav (48px) sticks; 960-1279px the nav and the local nav; from 1280px the nav */
+.ga-walkthrough { --ga-wt-top: 48px; container-type: inline-size; margin: 1.6em 0; }
+@media (min-width: 960px) { .ga-walkthrough { --ga-wt-top: calc(var(--vp-nav-height) + 48px); } }
+@media (min-width: 1280px) { .ga-walkthrough { --ga-wt-top: var(--vp-nav-height); } }
+/* one column: the figure sticks at the top, at most 45% of the viewport high */
+.ga-wt-body { --ga-fig-h: calc(45vh - 7.5em); }
+.ga-wt-body > .ga-figure-anchor {
+  position: sticky; top: var(--ga-wt-top); z-index: 1; max-height: 45vh; overflow-y: auto;
+  background: var(--vp-c-bg); padding-bottom: 0.4em;
+}
+.ga-wt-body > .ga-figure-anchor figure.ga-graph { margin: 0; }
+/* the step text is beside the figure; the stepper's own caption stays for screen readers */
+.ga-wt-body .ga-graph-frame .ga-step-message {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+/* one column: a short control row (the text steps are the navigation) with the enlarge button beside it, not over the drawing */
+@container (max-width: 959.98px) {
+  .ga-wt-body .ga-controls .ga-slider, .ga-wt-body .ga-controls .ga-speed { display: none; }
+  .ga-wt-body .ga-controls .ga-step-count { min-width: 0; padding: 0 0.4em; }
+  .ga-wt-body .ga-enlarge { top: auto; bottom: 10px; }
+}
+@container (min-width: 960px) {
+  .ga-wt-body { --ga-fig-h: calc(100vh - var(--ga-wt-top) - 8em); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 0 2em; align-items: start; }
+  .ga-wt-body > .ga-figure-anchor { grid-column: 2; grid-row: 1; max-height: none; overflow: visible; padding-top: 0.5em; }
+  .ga-wt-body > .ga-wt-steps { grid-column: 1; grid-row: 1; }
+}
+.vp-doc .ga-wt-steps { margin: 0.8em 0; padding-left: 1.8em; }
+.vp-doc .ga-wt-step { margin: 0.4em 0; padding: 0.5em 0.8em; border-left: 3px solid transparent; border-radius: 0 6px 6px 0; }
+.vp-doc .ga-wt-step > :first-child { margin-top: 0; }
+.vp-doc .ga-wt-step > :last-child { margin-bottom: 0; }
+.ga-walkthrough:not(.ga-wt-plain) .ga-wt-step { cursor: pointer; }
+.vp-doc .ga-wt-step.ga-wt-active { border-left-color: var(--gv-accent); background: var(--gv-accent-soft); }
+.vp-doc .ga-wt-step:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
+.vp-doc .ga-wt-uses { margin: -0.6em 0 1.2em; font-size: 0.9em; color: var(--vp-c-text-2); }

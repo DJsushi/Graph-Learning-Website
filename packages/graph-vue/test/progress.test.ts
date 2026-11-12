@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { exportProgress, importProgress, lastVisited, markVisited, progress, resetProgress, toggleDone } from '@gv/progress'
+import { normalizeProgress, exportProgress, importProgress, lastVisited, markVisited, progress, resetProgress, toggleDone } from '@gv/progress'
 
 describe('progress', () => {
   it('tracks visits and done lessons and round-trips them', async () => {
@@ -19,5 +19,10 @@ describe('progress', () => {
   })
   it('rejects files that are not progress objects', () => {
     expect(() => importProgress('3')).toThrow()
+  })
+  it('drops malformed entries', () => {
+    expect(normalizeProgress({ done: { a: 5, b: 'x' }, cards: { c: { box: 1, seen: 2 }, d: 3 }, visited: [1], solved: null }))
+      .toEqual({ solved: {}, attempted: {}, cards: { c: { box: 1, seen: 2 } }, visited: {}, done: { a: 5 } })
+    expect(normalizeProgress('junk')).toEqual({ solved: {}, attempted: {}, cards: {}, visited: {}, done: {} })
   })
 })

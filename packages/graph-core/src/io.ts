@@ -1,4 +1,4 @@
-// Import / export: DSL, JSON, TikZ, adjacency matrix and list, share URLs (PLAN.md §10).
+// Import / export: DSL, JSON, TikZ, adjacency matrix and list, share URLs.
 import LZString from 'lz-string'
 import { emptyGraph, ends, type AttrValue, type GraphData, type Id } from './model'
 import { parseGraph, KNOWN_DIRECTIVES } from './dsl/parser'
@@ -43,6 +43,7 @@ export function serialize(g: GraphData, opts: { positions?: boolean } = {}): str
   })
   for (const f of g.faces) out.push(`face ${f.id}${f.outer ? ' outer' : ''}: ${f.walk.join(' ')}${attrs([['label', f.label], ['class', f.classes.join(' ') || undefined]])}`)
   for (const gr of g.groups) out.push(`group ${gr.id}: ${gr.members.join(' ')}${attrs([['label', gr.label], ['class', gr.classes.join(' ') || undefined]])}`)
+  for (const [name, refs] of Object.entries(g.marks ?? {})) out.push(`mark ${name}: ${refs.join(' ')}`)
   return out.join('\n') + '\n'
 }
 
@@ -61,7 +62,7 @@ export function fromJSON(text: string): GraphData {
     ...base, ...g,
     vertices: g.vertices.map((v: any) => ({ classes: [], data: {}, ...v })),
     edges: g.edges.map((e: any) => ({ classes: [], data: {}, hyper: false, directed: false, ...e })),
-    faces: g.faces ?? [], groups: g.groups ?? [], meta: g.meta ?? {},
+    faces: g.faces ?? [], groups: g.groups ?? [], marks: g.marks ?? {}, meta: g.meta ?? {},
   }
 }
 

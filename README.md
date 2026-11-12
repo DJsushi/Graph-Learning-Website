@@ -1,7 +1,10 @@
 # Graph Atlas
 
 Learning site for Graph Theory (P. Hliněný) and MA015 Graph Algorithms (Jan Obdržálek), FI MUNI.
-VitePress + Vue 3 + TypeScript. See PLAN.md, GRAPH_DSL.md, CONTENT_CONVENTIONS.md.
+VitePress + Vue 3 + TypeScript. See ARCHITECTURE.md, CONTENT_CONVENTIONS.md, GRAPH_DSL.md.
+
+The lessons are being rebuilt from one page per lecture into one page per concept: see
+RESTRUCTURE.md (plan and task board) and BACKLOG.md (known defects and missing features).
 
 ## Run
 
@@ -9,11 +12,12 @@ VitePress + Vue 3 + TypeScript. See PLAN.md, GRAPH_DSL.md, CONTENT_CONVENTIONS.m
     npm run dev        # http://localhost:5173/
     npm test           # graph-core tests (checks numbers claimed in lessons)
     npm run validate   # content validator
+    npm run check      # validator + tests + type check (run before every commit)
     npm run build      # validate + static build into .vitepress/dist
 
 ## What is here
 
-- `/theory/`, `/algorithms/`: 7 lessons with numbered definitions and theorems, full proofs, figures,
+- `/theory/`, `/algorithms/`: 8 lecture pages with definitions and theorems, full proofs, figures,
   step-by-step algorithm players, editable sandboxes, exercises and quick checks.
 - `/reference/`: definitions, theorems (with collapsible proofs) and algorithms, generated from the lessons.
 - `/practice/`: exercises per lesson with progress (saved in the browser, exportable), random drills.
@@ -23,7 +27,7 @@ VitePress + Vue 3 + TypeScript. See PLAN.md, GRAPH_DSL.md, CONTENT_CONVENTIONS.m
 
 ## Adding a lecture
 
-Add `content/<course>/NN-title.md` following CONTENT_CONVENTIONS.md, then `npm run validate` and `npm test`.
+Follow CONTENT_CONVENTIONS.md (§1 for where files go), then `npm run check`.
 New algorithms, exercise checks or live properties go into the registries in `packages/graph-core/src/`.
 
 ## Deploy

@@ -10,7 +10,7 @@ import { positioned, positionsOf } from '../positions'
 import { useTweened } from '../useTweened'
 
 // bare: the host shows the algorithm name itself (playground)
-const props = defineProps<{ doc: GraphDoc; height: number; pseudocode?: string; graph?: GraphData; params?: Record<string, string>; algo?: string; bare?: boolean }>()
+const props = defineProps<{ doc: GraphDoc; height: number | string; pseudocode?: string; graph?: GraphData; params?: Record<string, string>; algo?: string; bare?: boolean }>()
 
 const algoId = computed(() => props.algo ?? props.doc.directives.algo?.[0] ?? '')
 const def = computed(() => ALGORITHMS[algoId.value])

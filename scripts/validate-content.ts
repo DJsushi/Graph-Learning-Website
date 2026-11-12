@@ -1,13 +1,20 @@
 // Validates content/: container ids, [[refs]], graph blocks (DSL parse), and registry names (algo/check/live).
 // Exits with code 1 on errors. Run: npm run validate
+import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadContent, loadTopics, resolveTarget } from '../packages/content/index'
+import { loadContent, loadTopics, resolveTarget, sourceTag, parseMarkRef } from '../packages/content/index'
+import { markRefErrors } from '../packages/content/marks'
 import { REFERENCE_KINDS } from '../packages/content/pages'
+import { entryHashes, lockErrors } from '../packages/content/lock'
+import { structureChecks } from '../packages/content/structure'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { PREDICATES } from '../packages/graph-core/src/predicates'
 import { PROPERTIES } from '../packages/graph-core/src/properties'
+import { positioned } from '../packages/graph-vue/src/positions'
+import { toScreen } from '../packages/graph-vue/src/geometry'
+import { computeBox } from '../packages/graph-vue/src/viewbox'
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const index = loadContent(root)
@@ -18,8 +25,22 @@ const where = (file: string, line?: number) => `${path.relative(root, file)}${li
 
 for (const p of index.problems) errors.push(`${p.lesson ? where(p.lesson.file, p.line) : ''} ${p.message}`)
 
+// Entry lock: statements and proofs must keep their text (see scripts/lock-entries.ts).
+const lockFile = path.join(root, 'content/entries.lock.json')
+if (fs.existsSync(lockFile)) errors.push(...lockErrors(JSON.parse(fs.readFileSync(lockFile, 'utf8')), entryHashes(index)))
+else errors.push('content/entries.lock.json is missing (node --import tsx scripts/lock-entries.ts)')
+
+const structure = structureChecks(root, index, loadTopics(root))
+errors.push(...structure.errors)
+warnings.push(...structure.warnings)
+
+for (const c of index.containers) {
+  if (c.attrs.source && !sourceTag(c.attrs.source))
+    errors.push(`${where(c.lesson.file, c.line)} source="${c.attrs.source}" should be "<theory|algorithms>/<document> p<page>", e.g. theory/2026-09-29 p1–2`)
+}
+
 for (const r of index.refs) {
-  if (!resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)
+  if (!parseMarkRef(r.target) && !resolveTarget(index, r.target)) errors.push(`${where(r.lesson.file, r.line)} broken reference [[${r.target}]]`)
 }
 
 const resolveFigure = (id: string, panel?: number) => {
@@ -27,6 +48,14 @@ const resolveFigure = (id: string, panel?: number) => {
   if (!f) return undefined
   return parseGraph(f.source, f.info).panels[(panel ?? 1) - 1]?.graph
 }
+
+const marksOf = (f: { source: string; info: Record<string, string> }) => {
+  const names = new Set<string>()
+  for (const p of parseGraph(f.source, f.info, { resolveFigure }).panels)
+    for (const g of [p.graph, ...p.steps.map(s => s.graph)]) for (const n of Object.keys(g.marks)) names.add(n)
+  return names
+}
+for (const e of markRefErrors(index, marksOf)) errors.push(`${where(e.lesson.file, e.line)} ${e.message}`)
 
 const WIDGETS = new Set(['figure', 'player', 'editable', 'exercise', 'stepper'])
 for (const f of index.figures) {
@@ -37,6 +66,17 @@ for (const f of index.figures) {
   const widget = f.info.widget ?? 'figure'
   if (!WIDGETS.has(widget)) errors.push(`${where(f.lesson.file, f.line)} [${f.id}] unknown widget ${widget}`)
   if (!doc.directives.caption && widget !== 'exercise') warnings.push(`${where(f.lesson.file, f.line)} [${f.id}] no caption`)
+  // natural size over ~1000x538 units shrinks below 26px circles / 14px labels at 1366x768 (see CONTENT_CONVENTIONS: figure size)
+  if (widget === 'figure' || widget === 'stepper') {
+    for (const [i, p] of doc.panels.entries()) {
+      const g = positioned(p.graph)
+      const b = computeBox(g.vertices.map(v => toScreen(v.x ?? 0, v.y ?? 0)), {
+        hasVertices: g.vertices.length > 0, labelsInside: true, hasGroups: g.groups.length > 0, hasBadges: false,
+        hasLoops: g.edges.some(e => !e.hyper && e.tail[0] === e.head[0]),
+      })
+      if (b.w > 1000 || b.h > 538) warnings.push(`${where(f.lesson.file, f.line)} [${f.id}] panel ${i + 1} is ${Math.round(b.w)}x${Math.round(b.h)} units: it will be drawn below the minimum size; split it or move vertices closer`)
+    }
+  }
   const algo = doc.directives.algo?.[0]
   if (algo && !ALGORITHMS[algo]) errors.push(`${where(f.lesson.file, f.line)} [${f.id}] unknown algorithm ${algo}`)
   if (algo && ALGORITHMS[algo]) {

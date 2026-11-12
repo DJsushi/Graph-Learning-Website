@@ -36,7 +36,7 @@ Info-string attributes:
 |-----------|----------|---------|
 | `id`      | yes      | Unique across the whole site, kebab-case, prefixed by lesson slug where practical (`t01-handshake-example`). Never renamed once published (exercises and progress refer to it). |
 | `widget`  | no       | `figure` (default), `player`, `editable`, `exercise`, `stepper`. See §9. |
-| `height`  | no       | `small` (≈180px), `medium` (default, ≈300px), `large` (≈450px). |
+| `height`  | no       | `small`, `medium` (default), `large`. Sets no size any more (§16.5). |
 
 Attribute values may be quoted (`caption="..."`) only if they contain spaces; in the info
 string this is rarely needed.
@@ -206,7 +206,7 @@ hyperedge {a b c} [id=h1 class=color2]
 ```
 
 Rendered as a translucent hull around its vertices (undirected) or as a multi-tail,
-multi-head arrow (directed). Hyperedges count as edges in the model (see `PLAN.md`, graph
+multi-head arrow (directed). Hyperedges count as edges in the model (see `packages/graph-core/src/model.ts`, graph
 model).
 
 ### 5.6 Removal
@@ -317,7 +317,7 @@ a -- b [w=4]; a -- h [w=8]; b -- c [w=8]; b -- h [w=11]
 
 | Directive | Meaning |
 |-----------|---------|
-| `algo` | Algorithm id from the registry in `PLAN.md` §6 (e.g. `kruskal`, `jarnik`, `boruvka`, `ford-fulkerson`, `edmonds-karp`, `dinic`, `bfs`, `dfs`). |
+| `algo` | Algorithm id from the registry in `packages/graph-core/src/algorithms/index.ts` (e.g. `kruskal`, `jarnik`, `boruvka`, `ford-fulkerson`, `edmonds-karp`, `dinic`, `bfs`, `dfs`). |
 | `params` | `key=value` list passed to the algorithm, e.g. `params: source=s sink=t`, `params: root=a`, `params: choice=widest` (for Ford–Fulkerson's path choice). |
 | `show` | Optional side panels: `pseudocode`, `state` (queues, sets, heap), `residual` (flows: show residual network next to the original). Default: `pseudocode state`. |
 | `start` | Step index to show initially (default 0). |
@@ -329,7 +329,7 @@ The reader can drag, add and delete vertices and edges; selected properties upda
 
 | Directive | Meaning |
 |-----------|---------|
-| `live` | Comma-separated list of property ids to display, e.g. `live: degree-sequence, degree-sum, edge-count, connected, components, bipartite, is-tree`. Property registry in `PLAN.md` §7. |
+| `live` | Comma-separated list of property ids to display, e.g. `live: degree-sequence, degree-sum, edge-count, connected, components, bipartite, is-tree`. The registry is `packages/graph-core/src/properties.ts`. |
 | `allow` | What the reader may change: any of `add-vertex delete-vertex add-edge delete-edge move edit-attrs`. Default: all. |
 | `reset` | `true` (default) shows a "reset to original" button. |
 
@@ -339,7 +339,7 @@ The reader can drag, add and delete vertices and edges; selected properties upda
 |-----------|---------|
 | `task` | `select-vertices`, `select-edges`, `select-elements` (both), `build` (reader edits the graph), `simulate` (reader performs algorithm steps), `answer` (numeric/text answer about the figure). |
 | `prompt` | Text shown to the reader (`$math$` allowed). |
-| `check` | Predicate call that decides correctness, from the registry in `PLAN.md` §8: `check: is-mst`, `check: is-path from=s to=t`, `check: degree-sequence seq="3,3,2,2,2"`. Several `check:` lines must all hold. |
+| `check` | Predicate call that decides correctness, from the registry in `packages/graph-core/src/predicates.ts`: `check: is-mst`, `check: is-path from=s to=t`, `check: degree-sequence seq="3,3,2,2,2"`. Several `check:` lines must all hold. |
 | `answer` | For `task: answer`: the expected value (`answer: 23`), compared numerically with tolerance or as trimmed string. |
 | `algo`, `params` | For `task: simulate`: the algorithm whose steps the reader reproduces. |
 | `hint` | Optional; may appear multiple times; revealed one at a time. |
@@ -567,3 +567,86 @@ caption: $K_5 - e$.
 use: K(5)
 remove 1--2
 ```
+
+---
+
+## 16. Planned additions
+
+From `RESTRUCTURE.md`. Not implemented until the phase named.
+
+### 16.1 `mark` (Phase 2)
+
+```
+mark S: a b c
+mark crossing: b--d c--e c--f
+```
+
+A named set of elements (references as in §5.4) with no visual effect of its own. Allowed in
+the base graph and inside steps. Inside a stepper it is cumulative like other statements, and a
+later `mark` with the same name replaces the earlier one. Names use letters, digits, `-` and
+`_`. Text points at a mark with `[[fig:<figure id>#<name>|link text]]`
+(`CONTENT_CONVENTIONS.md` §6.1).
+
+### 16.2 `set` (Phase 2)
+
+```
+step: The flow on this edge grows to 3.
+set a->b [f=3 class=path]
+```
+
+Changes attributes of an existing vertex or edge inside a step. Listed attributes are
+replaced, the others stay; `class=` is the exception: it adds the class, as everywhere else in
+the DSL (`unclass` removes one). Without `set`, writing the edge again in a step adds a second edge.
+
+### 16.3 `state` and `badge` in steppers (deferred)
+
+```
+step: Step 1 has $5 \cdot 4$ choices.
+state choices: $5 \cdot 4$
+badge 4: root
+```
+
+`state <name>: <text>` is a line in the state panel under the figure, the same panel a player
+shows. `badge <vertex>: <text>` is small text next to a vertex. Both are cumulative, allow
+`$math$`, and an empty text removes the entry.
+
+### 16.4 A stepper inside a walkthrough (Phase 2)
+
+A stepper that is the first child of a `walkthrough` container (`CONTENT_CONVENTIONS.md` §9) is
+driven by the walkthrough. The text of each step is in the Markdown `::: step` blocks; the
+`step:` captions stay short and serve as the fallback caption and the screen-reader text. The
+number of `step:` lines must equal the number of `::: step` blocks.
+
+### 16.5 `height` (Phase 1)
+
+`height: small | medium | large` no longer sets a pixel cap. All figures are drawn at one
+scale and shrink only to fit their column or the viewport (`RESTRUCTURE.md` §4.4). The
+directive stays valid.
+
+### 16.6 Reserved words
+
+A vertex cannot be named `group`, `class`, `unclass`, `face`, `remove`, `merge`, `split`,
+`mark`, `set`, `state`, `badge`, `step` or `panel`. The parser reports an error instead of
+reading the line as a statement.
+
+---
+
+## 17. Specified above but not implemented
+
+From the code review of 2026-11-10 (`BACKLOG.md` §3). Only the first two rows were checked
+again by hand.
+
+| Feature | Section | What happens today |
+|---------|---------|--------------------|
+| `layout: planar` | §12 | Falls back to `force`. |
+| `dual(...)` | §11 | Throws "not supported yet". |
+| `layout: layered` | §12 | BFS levels without routing of long edges. |
+| `layout: tree` | §12 | Places by leaf order and ignores non-tree edges. |
+| `interactive: zoom` | §9.1 | Ignored. |
+| `start` | §9.2 | Ignored. |
+| `editable: true` on a player | §9.2 | Ignored. |
+| `reset: false` | §9.3 | Ignored. |
+| `directed-style` on loops | §4 | Ignored. |
+| `check:` predicates | §9.4 | Missing: `is-vertex-cover`, `is-proper-coloring`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. |
+| `live:` properties | §9.3 | Missing: `planar`, `radius`. |
+| `task: simulate` | §9.4 | Works only for `bfs`, `kruskal` and `jarnik`. |

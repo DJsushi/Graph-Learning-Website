@@ -15,7 +15,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div v-if="frontmatter.course && frontmatter.lecture" :class="{ 'ga-done-footer': footer }">
+  <div v-if="frontmatter.course && (frontmatter.lecture || frontmatter.chapter)" :class="{ 'ga-done-footer': footer }">
   <button type="button" class="ga-btn ga-done-btn" :class="{ active: done }" :aria-pressed="done" @click="toggleDone(path)">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="done ? 'M5 12.5l4.5 4.5L19 7.5' : 'M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16z'" /></svg>
     {{ done ? 'Done' : 'Mark as done' }}

@@ -5,8 +5,8 @@ import container from 'markdown-it-container'
 import { tex } from '@mdit/plugin-tex'
 import type { MarkdownRenderer as MarkdownIt } from 'vitepress'
 import {
-  loadContent, parseContainerInfo, resolveTarget, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES,
-  type Course,
+  loadContent, parseContainerInfo, resolveTarget, parseMarkRef, anchorId, KIND_NAMES, CONTAINER_TYPES, STATEMENT_TYPES, sourceTag,
+  type ContentIndex,
 } from '../packages/content/index'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { KATEX_MACROS } from '../packages/graph-vue/src/katexMacros'
@@ -34,20 +34,23 @@ export function inlineMath(text: string, where = ''): string {
   ).join('')
 }
 
-function courseOf(env: any): Course | undefined {
-  const c = env?.frontmatter?.course
-  return c === 'theory' || c === 'algorithms' ? c : undefined
-}
-
 function b64(s: string): string {
   return Buffer.from(s, 'utf8').toString('base64')
 }
 
+// One index per page render (S1): loadContent re-reads every content directory on each call.
+const perRender = new WeakMap<object, ContentIndex>()
+function contentFor(env: any): ContentIndex {
+  if (!env || typeof env !== 'object') return loadContent(ROOT)
+  let ix = perRender.get(env)
+  if (!ix) perRender.set(env, ix = loadContent(ROOT))
+  return ix
+}
+
 /** Replace [[target]] by markdown links, for text that is rendered at runtime (graph block captions etc.). */
-function linkRefs(text: string, course?: Course): string {
-  const index = loadContent(ROOT)
+function linkRefs(index: ContentIndex, text: string): string {
   return text.replace(/\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/g, (_, t: string, label?: string) => {
-    const r = resolveTarget(index, t.trim(), course)
+    const r = resolveTarget(index, t.trim())
     return r ? `[${label ?? r.label}](${r.href})` : `[[${t}]]`
   })
 }
@@ -85,14 +88,14 @@ export function setupMarkdown(md: MarkdownIt) {
     const token = tokens[idx]
     const info = token.info.trim()
     if (/^graph(\s|$)/.test(info)) {
-      const index = loadContent(ROOT)
+      const index = contentFor(env)
       const kv: Record<string, string> = {}
       info.slice(5).replace(/([A-Za-z_][\w-]*)\s*=\s*("([^"]*)"|\S+)/g, (_, k, v, q) => (kv[k] = q ?? v, ''))
       const algo = /^algo:\s*(\S+)/m.exec(token.content)?.[1]
       const pseudoId = algo && ALGORITHMS[algo] ? ALGORITHMS[algo].pseudocode ?? `alg:${algo}` : undefined
       const pseudo = pseudoId ? index.pseudocode.get(pseudoId) : undefined
       const payload = {
-        id: kv.id, info: kv, source: linkRefs(token.content, courseOf(env)),
+        id: kv.id, info: kv, source: linkRefs(index, token.content),
         pseudocode: pseudo ? { id: pseudoId, html: renderPseudo(pseudo).replace(' v-pre', '') } : undefined,
       }
       const anchor = kv.id ? ` id="fig-${anchorId(kv.id)}"` : ''
@@ -108,9 +111,14 @@ export function setupMarkdown(md: MarkdownIt) {
     const m = /^\[\[([^\]|]+)(?:\|([^\]]*))?\]\]/.exec(src)
     if (!m) return false
     if (!silent) {
-      const index = loadContent(ROOT)
-      const r = resolveTarget(index, m[1].trim(), courseOf(state.env))
-      if (r) {
+      const index = contentFor(state.env)
+      const mark = parseMarkRef(m[1].trim())
+      const r = mark ? undefined : resolveTarget(index, m[1].trim())
+      if (mark && m[2]) {
+        // a mark link spotlights part of a figure (MarkLink.vue); the validator checks figure, mark and page
+        const t = state.push('html_inline', '', 0)
+        t.content = `<MarkLink fig="${escapeHtml(mark.fig)}" mark="${escapeHtml(mark.mark)}">${inlineMath(m[2])}</MarkLink>`
+      } else if (r) {
         const open = state.push('link_open', 'a', 1)
         open.attrs = [['href', r.href], ['class', 'ga-ref']]
         const t = state.push('html_inline', '', 0)
@@ -138,10 +146,55 @@ export function setupMarkdown(md: MarkdownIt) {
           return openContainer(type, tok.info.trim().slice(type.length), env, tok)
         }
         opened.pop()
-        return closeContainer(type)
+        return closeContainer(type, tok)
       },
     })
   }
+
+  // ---- walkthroughs (CONTENT_CONVENTIONS.md §9) and proofs: source length and walkthrough, for proofOnConceptPage ----
+  // A walkthrough with for= belongs to the next top-level proof of that statement (§8: walkthrough, then the proof).
+  // The last walkthrough of that proof gets the "This proof uses" line.
+  md.core.ruler.push('ga_proof_meta', state => {
+    const src = state.src.split('\n')
+    const waiting: { for: string; close: any }[] = []
+    let wt: { open: any; steps: any[]; closes: any[] } | undefined
+    let statement: string | undefined
+    for (const t of state.tokens) {
+      if (wt) {
+        const inner = t.level === wt.open.level + 1
+        if (inner && t.type === 'fence' && /^graph(\s|$)/.test(t.info.trim())) wt.open.meta.figure = true
+        if (inner && t.type === 'container_step_open') wt.steps.push(t)
+        if (inner && t.type === 'container_step_close') wt.closes.push(t)
+        if (t.type === 'container_walkthrough_close' && t.level === wt.open.level) {
+          const live = wt.open.meta.figure
+          wt.steps.forEach((s, i) => (s.meta = { index: i, first: i === 0, live }))
+          wt.closes.forEach((c, i) => (c.meta = { last: i === wt!.closes.length - 1, live }))
+          t.meta = { figure: live }
+          const f = wt.open.meta.for
+          if (f) waiting.push({ for: f, close: t })
+          wt = undefined
+        }
+        continue
+      }
+      const open = /^container_(\w+)_open$/.exec(t.type)?.[1]
+      const info = () => parseContainerInfo(t.info.trim().slice(open!.length))
+      if (open === 'walkthrough') { wt = { open: t, steps: [], closes: [] }; t.meta = { figure: false, for: info().attrs.for }; continue }
+      if (open && t.level === 0 && STATEMENT_TYPES.has(open)) statement = info().id
+      if (open === 'proof') {
+        let walkthrough = false
+        if (t.level === 0) {
+          const proves = info().attrs.for ?? statement
+          const mine = waiting.filter(w => w.for === proves)
+          if (mine.length) {
+            walkthrough = true
+            for (const w of mine) waiting.splice(waiting.indexOf(w), 1)
+            if (t.map) mine.at(-1)!.close.meta.uses = proofUses(contentFor(state.env), src.slice(t.map[0], t.map[1]).join('\n'), proves)
+          }
+        }
+        t.meta = { lines: t.map ? t.map[1] - t.map[0] - 1 : 0, walkthrough }
+      }
+    }
+  })
 
   // ---- quizzes: task-list choices and `answer:` lines ----
   md.core.ruler.push('ga_quiz', state => {
@@ -177,23 +230,39 @@ export function setupMarkdown(md: MarkdownIt) {
   })
 }
 
+/** Concept pages (CONTENT_CONVENTIONS.md §4.3): a proof of more than 10 source lines, or one with a walkthrough, renders closed. */
+export function proofOnConceptPage(lines: number, walkthrough: boolean): { closed: boolean; summary: string } {
+  return { closed: walkthrough || lines > 10, summary: walkthrough ? 'Compact proof' : 'Proof' }
+}
+
+/** The entries a proof links to ([[refs]]), except the statement it proves and claims it states itself: links for "This proof uses". */
+export function proofUses(index: ContentIndex, proof: string, proves?: string): string[] {
+  const own = new Set([...proof.matchAll(/\{[^}]*#([\w:.\-']+)/g)].map(m => m[1]))
+  const ids = new Set([...proof.matchAll(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g)].map(m => m[1].trim()))
+  return [...ids].filter(id => id !== proves && !own.has(id) && index.byId.has(id)).map(id => {
+    const r = resolveTarget(index, id)!
+    return `<a class="ga-ref" href="${BASE}${r.href.slice(1)}">${inlineMath(r.label)}</a>`
+  })
+}
+
 function openContainer(type: string, rest: string, env: any, tok: any): string {
-  const index = loadContent(ROOT)
+  // a walkthrough with a figure drives it from its steps (Walkthrough.vue); without one it is a numbered list
+  if (type === 'walkthrough') return tok.meta?.figure ? '<Walkthrough>\n' : '<div class="ga-walkthrough ga-wt-plain">\n'
+  if (type === 'step' && tok.meta) return `${tok.meta.first ? '<ol class="ga-wt-steps">' : ''}${tok.meta.live ? `<WalkthroughStep :index="${tok.meta.index}">` : '<li class="ga-wt-step">'}\n`
+  const index = contentFor(env)
   const { id, attrs } = parseContainerInfo(rest)
   const where = env?.relativePath ?? ''
   const name = KIND_NAMES[type] ?? type
   const c = id ? index.byId.get(id) : undefined
-  const pageCourse = courseOf(env)
-  const prefix = c && pageCourse !== c.lesson.course ? (c.lesson.course === 'theory' ? 'T' : 'A') : ''
-  const num = c?.number ? ` ${prefix}${c.number}` : ''
-  const title = attrs.title ? ` <span class="ga-box-title">(${inlineMath(attrs.title, where)})</span>` : ''
+  const title = attrs.title ? `<span class="ga-box-title">${inlineMath(attrs.title, where)}</span>` : ''
   const extra = attrs.extra === 'true' ? ' <span class="ga-badge" title="Not covered in the lectures; added for completeness">beyond the lectures</span>' : ''
   const anchor = id ? ` id="${anchorId(id)}"` : ''
   switch (type) {
     case 'proof': {
-      const t = attrs.title ? inlineMath(attrs.title, where) : 'Proof'
-      const isRef = env?.frontmatter?.referencePage
-      return `<details class="ga-proof"${isRef ? '' : ' open'}><summary>${t}</summary><div class="ga-proof-body">\n`
+      const concept = env?.frontmatter?.chapter ? proofOnConceptPage(tok.meta?.lines ?? 0, !!tok.meta?.walkthrough) : undefined
+      const t = attrs.title ? inlineMath(attrs.title, where) : concept?.summary ?? 'Proof'
+      const closed = concept ? concept.closed : env?.frontmatter?.referencePage
+      return `<details class="ga-proof"${closed ? '' : ' open'}><summary>${t}</summary><div class="ga-proof-body">\n`
     }
     case 'hint':
     case 'solution':
@@ -210,10 +279,12 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
     default: {
       const kindClass = STATEMENT_TYPES.has(type) && type !== 'claim' ? ' ga-statement' : ''
       const diff = attrs.difficulty ? ` <span class="ga-difficulty" title="difficulty ${attrs.difficulty} of 3">${'●'.repeat(Number(attrs.difficulty))}${'○'.repeat(3 - Number(attrs.difficulty))}</span>` : ''
-      const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="${BASE}${c.lesson.path}#${anchorId(id!)}">in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}</a>` : ''
+      const back = env?.frontmatter?.referencePage && c ? ` <a class="ga-box-source" href="${BASE}${c.lesson.path}#${anchorId(id!)}">${c.lesson.kind === 'concept' ? c.lesson.title : `in lesson ${c.lesson.course === 'theory' ? 'T' : 'A'}${c.lesson.lecture}`}</a>` : ''
       const dataId = id ? ` data-ref="${escapeHtml(id)}"` : ''
       const cls = `ga-box ga-${type}${kindClass}${attrs.extra === 'true' ? ' ga-extra' : ''}`
-      const head = `<span class="ga-box-kind">${name}${num}</span>${title}`
+      const src = attrs.source && sourceTag(attrs.source)
+      const srcTag = src ? ` <span class="ga-box-src" title="Where this is in the course material">${escapeHtml(src)}</span>` : ''
+      const head = `<span class="ga-box-kind">${name}</span>${title ? ' · ' + title : ''}${srcTag}`
       // topic pages: the head is an h4 with the anchor, on one line, so the local search indexes each entry
       if (env?.frontmatter?.topicPage && c && !c.parentId && (kindClass || type === 'definition' || type === 'algorithm')) {
         const a = anchorId(id!)
@@ -224,7 +295,12 @@ function openContainer(type: string, rest: string, env: any, tok: any): string {
   }
 }
 
-function closeContainer(type: string): string {
+function closeContainer(type: string, tok: any): string {
+  if (type === 'walkthrough') {
+    const uses = tok.meta?.uses?.length ? `<p class="ga-wt-uses">This proof uses: ${tok.meta.uses.join(', ')}</p>\n` : ''
+    return `${tok.meta?.figure ? '</Walkthrough>' : '</div>'}\n${uses}`
+  }
+  if (type === 'step' && tok.meta) return `${tok.meta.live ? '</WalkthroughStep>' : '</li>'}${tok.meta.last ? '</ol>' : ''}\n`
   switch (type) {
     case 'proof': return '<span class="ga-qed" aria-label="end of proof">∎</span></div></details>\n'
     case 'hint': case 'solution': return '</div></details>\n'

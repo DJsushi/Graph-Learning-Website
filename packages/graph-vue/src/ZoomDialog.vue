@@ -6,6 +6,7 @@ import RichText from './RichText.vue'
 defineProps<{ caption?: string }>()
 const emit = defineEmits<{ close: [] }>()
 provide('ga-zoomable', true)
+provide('ga-fig-id', null)   // the enlarged copy does not report which marks the figure defines
 const dlg = ref<HTMLDialogElement>()
 onMounted(() => dlg.value?.showModal())
 </script>

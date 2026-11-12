@@ -94,9 +94,15 @@ function stripComment(line: string): string {
 
 function value(raw: string): AttrValue {
   if (raw === 'inf') return Infinity
+  if (raw === '-inf') return -Infinity
   if (/^-?(\d+\.?\d*|\.\d+)(e[+-]?\d+)?$/i.test(raw)) return Number(raw)
   return raw
 }
+
+/** Words that start a statement; a vertex cannot have one of these ids (GRAPH_DSL.md 16.6). */
+export const RESERVED_WORDS = new Set([
+  'group', 'class', 'unclass', 'face', 'remove', 'merge', 'split', 'mark', 'set', 'state', 'badge', 'step', 'panel',
+])
 
 const IDENT = /^[A-Za-z0-9_][A-Za-z0-9_']*/
 
@@ -373,7 +379,9 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
 
   function ensureVertex(p: PanelState, id: Id) {
     let v = p.graph.vertices.find(x => x.id === id)
-    if (!v) { v = { id, classes: [], data: {} }; p.graph.vertices.push(v) }
+    if (!v) {
+      if (RESERVED_WORDS.has(id)) throw new Error(`"${id}" is a reserved word and cannot be a vertex id`)
+      v = { id, classes: [], data: {} }; p.graph.vertices.push(v) }
     return v
   }
 
@@ -422,7 +430,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
   }
 
   function statement(p: PanelState, st: string) {
-    const kw = /^(hyperedge|face|group|class|unclass|remove|merge|split)\b\s*(.*)$/.exec(st)
+    const kw = /^(hyperedge|face|group|class|unclass|remove|merge|split|mark|set)\b\s*(.*)$/.exec(st)
     if (kw) return keyword(p, kw[1], kw[2])
     const sc = new Scanner(st)
     const first = sc.ident()
@@ -525,6 +533,30 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
 
   function keyword(p: PanelState, kw: string, rest: string) {
     if (kw === 'merge' || kw === 'split') return mergeOrSplit(p, kw, rest)
+    if (kw === 'mark') {
+      const m = /^([A-Za-z0-9_-]+)\s*:\s*(.*)$/.exec(rest)
+      if (!m) throw new Error('expected "mark <name>: <elements>"')
+      const list = refs(p, m[2])
+      if (!list.length) throw new Error(`mark ${m[1]} needs at least one element`)
+      p.graph.marks[m[1]] = list.map(r => (r.kind === 'edge' ? `@${r.id}` : r.kind === 'face' ? `face:${r.id}` : r.id))
+      return
+    }
+    if (kw === 'set') {
+      if (p.openStep === undefined) throw new Error('"set" belongs inside a step')
+      const at = rest.indexOf('[')
+      const list = at < 0 ? [] : refs(p, rest.slice(0, at))
+      if (!list.length) throw new Error('expected "set <element> [attributes]"')
+      const sc = new Scanner(rest.slice(at))
+      const a = sc.attrs() ?? {}
+      if (!sc.eof()) throw new Error(`unexpected "${sc.rest()}"`)
+      if ('id' in a) throw new Error('"set" cannot change an id')
+      for (const r of list) {
+        if (r.kind === 'vertex') applyVertexAttrs(p.graph.vertices.find(v => v.id === r.id)!, a)
+        else if (r.kind === 'edge') applyEdgeAttrs(p.graph.edges.find(e => e.id === r.id)!, a)
+        else throw new Error('"set" works on vertices and edges')
+      }
+      return
+    }
     if (kw === 'remove') {
       for (const r of refs(p, rest)) {
         if (r.kind === 'vertex') {

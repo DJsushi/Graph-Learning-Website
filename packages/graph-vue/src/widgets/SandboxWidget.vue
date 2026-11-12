@@ -7,7 +7,7 @@ import EditableGraph, { type Tool } from '../EditableGraph.vue'
 import RichText from '../RichText.vue'
 import { positioned } from '../positions'
 
-const props = defineProps<{ doc: GraphDoc; height: number }>()
+const props = defineProps<{ doc: GraphDoc; height: number | string }>()
 const original = positioned(props.doc.panels[0].graph)
 const graph = ref<GraphData>(original)
 const live = computed(() => (props.doc.directives.live?.[0] ?? 'vertex-count, edge-count, degree-sequence').split(',').map(s => s.trim()).filter(s => PROPERTIES[s]))

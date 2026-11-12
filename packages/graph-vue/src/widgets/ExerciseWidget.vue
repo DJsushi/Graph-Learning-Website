@@ -10,7 +10,7 @@ import RichText from '../RichText.vue'
 import { positioned } from '../positions'
 import { loadProgress, markAttempted, markSolved, progress } from '../progress'
 
-const props = defineProps<{ doc: GraphDoc; height: number; figId: string }>()
+const props = defineProps<{ doc: GraphDoc; height: number | string; figId: string }>()
 const d = computed(() => props.doc.directives)
 const task = computed(() => d.value.task?.[0] ?? 'select-edges')
 const original = computed(() => positioned(props.doc.panels[0].graph))
