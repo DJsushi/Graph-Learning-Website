@@ -5,10 +5,11 @@ chapter: basics
 order: 1
 lectures: [t01]
 stage: split
-status: draft
+status: reviewed
 ---
 
-Informally, a graph is a **symmetric binary relation**: a set of objects together with the
+<!-- REVIEW: added "irreflexive": a symmetric relation alone would allow pairs (v, v), i.e. loops; a simple graph has none. -->
+Informally, a graph is a **symmetric irreflexive binary relation** (no object is related to itself): a set of objects together with the
 information which pairs of them are related. Unless said otherwise, the word *graph* always
 means a **simple undirected graph**:
 
@@ -24,8 +25,9 @@ write $V(G)$ and $E(G)$ for the vertex set and the edge set of a graph $G$.
 A graph records only *which pairs* of objects are related. An edge is an unordered pair, so $uv$
 and $vu$ are the same edge, and a pair $\set{v, v}$ is not a 2-element set, so no edge joins a
 vertex to itself. Example: $V = \set{1, 2, 3}$ and $E = \set{12, 23}$ is a [[def:path-graph|path]] through $1, 2, 3$;
-the vertices $1$ and $3$ are not related. Weighted graphs and flow networks
-([[def:flow-network]]) in the algorithms course are graphs with extra numbers on the edges.
+the vertices $1$ and $3$ are not related. <!-- REVIEW: a flow network is a directed graph, not a simple undirected one; reworded so the sentence does not call it a "graph" in the page's sense. -->
+Weighted graphs have extra numbers on the edges, and flow networks
+([[def:flow-network]]) in the algorithms course are directed graphs with a source, a sink and capacities.
 :::
 
 ```graph id=t01-graph-examples widget=figure
