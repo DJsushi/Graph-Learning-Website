@@ -23,7 +23,8 @@ and the page:
 The lecturer's examples and drawings are good, and the students know them from the lecture. If
 the lecture shows an example or a picture for this proof, build your figure on it: the same
 graph and the same vertex names. Make your own example when the lecture has none. The lecture
-is the starting point, not the limit: the owner wants more figures than the lecturer drew. Say
+is the starting point, not the limit: the owner wants more figures than the lecturer drew.
+Figures only, though: add no statement, section or proof that the notes do not contain. Say
 in each figure's `intent` whether it comes from the lecture (with the page) or is new. The written proof on the page stays
 the authority for the mathematics: it was typed from these notes and checked against them. If
 the lecture and the page disagree, report it under QUESTIONS. A statement without `source`
@@ -114,6 +115,24 @@ Take the example from the lecture when it has one. Do not change existing figure
 states facts about the graph: compute them and add a test, as for every other number.
 
 When the prompt says "Add example figures on <page>", do only this part.
+
+## New page (only when the prompt says so)
+
+The prompt names a page that does not exist yet and the pages of the notes it covers. Read
+those pages of the notes (scans as images, slides with `pdftotext`) and `CONTENT_CONVENTIONS.md`
+§2, §8, §10, §11, §14 and §15. Then write the page:
+
+- Frontmatter as on the other pages of the chapter: `title`, `course`, `chapter`, `order`,
+  `lectures`, `stage: taught`, `status: draft`, `goal`.
+- Every definition, statement, algorithm and proof on those pages of the notes, with the
+  lecture's names and notation, each with its `source`. Nothing the notes do not contain:
+  no extra statements, no proofs of results the notes only state (write "The lecture states
+  this without proof." instead).
+- A proof the notes give is written out from the notes, with the steps the board skips filled
+  in, and gets a walkthrough as in the default job.
+- Figures as in the default job; the lecturer's drawings first.
+- Add the new ids to `content/topics.yaml` (the chapter the prompt names) and lock them with
+  `node --import tsx scripts/lock-entries.ts --accept <id>`.
 
 ## Taught rewrite (only when the prompt says so)
 

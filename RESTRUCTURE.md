@@ -58,6 +58,7 @@ begin the prompt with "Read `.claude/agents/<name>.md` and follow it."
 | Proofs of a page | `Explain the proofs on content/theory/trees/leaves.md.` The writer also adds example figures for entries that have none. |
 | Figures only | `Add example figures on content/theory/basics/graphs.md.` For a page without proofs. |
 | Full rewrite | `Taught rewrite of content/algorithms/mst/cut-and-cycle-properties.md.` |
+| New page | `New page content/theory/planarity/faces.md, chapter planarity, lecture t06, from theory/2026-10-20 p3 and theory/2026-10-27 p1.` Take the path, chapter, lecture and pages from the row. |
 | Math check | `Check content/theory/trees/leaves.md.` |
 | Visual check | `Check /theory/trees/leaves at http://localhost:5173.` Start `npm run dev` outside the sandbox, in the background, once per session. |
 
@@ -107,9 +108,12 @@ R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 
 ### Scope: only what the lecture notes contain
 
-Decided by the owner on 2026-11-12, after a read of all the notes the content comes from
-(theory scans 2026-09-15 to 2026-10-13, algorithms slides 01 to 03). Nothing that is not in
-the notes is added to the site or explained.
+Decided by the owner on 2026-11-12, after a read of all the notes: theory scans 2026-09-15
+to 2026-11-03 and algorithms slides 01 to 04, including the slide images. Nothing that is not
+in the notes is added to the site or explained. The proofs marked `skip` below appear nowhere
+in the notes, also not in a later lecture (the Menger edge-version proof is not finished
+after 2026-10-13 either). Lectures 1 to 5 and slides 01 to 03 are fully covered by the
+existing pages; theory lectures 6 to 8 and slides 04 get new pages in Phases 6 and 7.
 
 - A proof gets a walkthrough only if the notes give that proof: in full, as a sketch, a
   picture or a one-line argument. A result the notes only state gets no walkthrough. Its
@@ -256,13 +260,66 @@ After Gate C. Same pipeline.
 
 **Gate D.** See §6.
 
+### Phase 6: theory lectures 6 to 8 (planarity, colouring)
+
+New content, written from the notes (Scope). The owner may move this phase before Phase 5.
+Writer rows use the "New page" prompt (§1.2) and the pipeline of §1.4; a page whose notes
+contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 2026-10-20
+(t06), 2026-10-27 (t07), 2026-11-03 (t08), all under `resources/graph-theory/`.
+
+| ID | Task | Agent | Notes | Done |
+|----|------|-------|-------|------|
+| T6.1 | Planarity in the framework: `BACKLOG.md` FS1, FS2, FS12, FL7, FL8, C12. | coder (opus) | | |
+| T6.2 | Colouring in the framework: `BACKLOG.md` C13 and `is-proper-coloring` (FS11). | coder | | |
+| T6.3 | Lecture files `content/theory/06-planarity.md`, `07-planarity-combinatorial.md`, `08-colouring.md` (lectures 6 to 8, slugs t06 to t08, their `sources`), chapters `planarity` and `colouring` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only; no lesson text. | coder | | |
+| T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | |
+| T6.5 | `theory/planarity/polygonal-drawings.md`: drawings with polygonal lines, lemma and proof sketch. | writer | 2026-10-20 p2 | |
+| T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | |
+| T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | |
+| T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | |
+| T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | |
+| T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | |
+| T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | |
+| T6.12 | `theory/colouring/colourings.md`: k-colouring, proper colouring, chromatic number, the two facts. | writer | 2026-11-03 p1 | |
+| T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | |
+| T6.14 | `theory/colouring/three-colouring-and-sat.md`: "3-COL solves SAT", construction and both directions. | writer | 2026-11-03 p2–4 | |
+| T6.15 | `theory/colouring/chromatic-bounds.md`: cliques give a lower bound, small degrees an upper bound (proof of b), χ(K_{m,n}) = 2. | writer | 2026-11-03 p5 | |
+| T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | |
+| T6.17 | Lecture pages t06 to t08: intro, summary, and the exercises the notes give. Only text from the notes. | writer | all three | |
+| T6.18 | Check the pages of T6.4 to T6.17 at 390px and 1366×768. | visual-qa | | |
+
+### Phase 7: algorithms lecture 4 (matchings in general graphs)
+
+Same rules as Phase 6. Notes: `resources/graph-algorithms/04-matchings.pdf` (a04). Slides
+52 to 54 ("Bonus: stable matching") are title slides with no content: nothing to add.
+`def:matching` already exists on `algorithms/flows/matchings-as-flows.md` (02 p56), and slide
+04 p9 (matchings by flows) is that page: link them, do not repeat them.
+
+| ID | Task | Agent | Notes | Done |
+|----|------|-------|-------|------|
+| T7.1 | Matchings in the framework: `BACKLOG.md` C14, `is-perfect-matching` and `is-augmenting-path` (FS11). | coder (opus) | | |
+| T7.2 | Lecture file `content/algorithms/04-matchings.md` (lecture 4, slug a04, its `sources`), chapter `matchings` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only. | coder | | |
+| T7.3 | `algorithms/matchings/matchings.md`: maximum and perfect matchings, covered and exposed vertices, ν(G); the dancing problem and the applications. | writer | 04 p2–7 | |
+| T7.4 | `algorithms/matchings/berge.md`: M-alternating and M-augmenting paths, Berge's theorem with proof, the basic algorithm. | writer | 04 p10–13 | |
+| T7.5 | `algorithms/matchings/alternating-trees.md`: alternating trees, A(T) and B(T), EXTEND, AUGMENT. | writer | 04 p14–16 | |
+| T7.6 | `algorithms/matchings/perfect-bipartite.md`: PERFECTBIPARTITE, frustrated trees, Lemma X with proof, running time O(nm) with its argument ("no perfect matching if frustrated" is asked, not proved). | writer | 04 p18–20 | |
+| T7.7 | `algorithms/matchings/odd-cycles.md`: why odd cycles break the tree, G/C, Lemma A and its corollary (stated only), tight cycles. | writer | 04 p22–25 | |
+| T7.8 | `algorithms/matchings/blossoms.md`: blossoms and stems, CONTRACT, Lemma B (stated only). | writer | 04 p26–29 | |
+| T7.9 | `algorithms/matchings/edmonds-blossom.md`: PERFECTBLOSSOM, derived graphs and pseudovertices, Lemma C (stated only), the correctness argument, the step count. | writer | 04 p30–33 | |
+| T7.10 | `algorithms/matchings/maximum-matchings.md`: the Tutte–Berge formula (stated, p13), from perfect to maximum matchings and its correctness argument. | writer | 04 p13, p35 | |
+| T7.11 | `algorithms/matchings/implementing-blossom.md`: union-find representation, O(nm log n) with its argument. | writer | 04 p36–37 | |
+| T7.12 | `algorithms/matchings/assignment-problem.md`: the two motivating examples, the assignment problem, maximum-weight matching. | writer | 04 p39–42 | |
+| T7.13 | `algorithms/matchings/kuhn-munkres.md`: feasible labellings, equality subgraphs, the Kuhn–Munkres theorem with proof. | writer | 04 p43–44 | |
+| T7.14 | `algorithms/matchings/hungarian.md`: core idea, initial labelling, improving a labelling, Lemma Y (stated only), HUNGARIAN, correctness remark, O(n³) with its argument. | writer | 04 p45–51 | |
+| T7.15 | Lecture page a04: intro and summary from the notes (the slides have no exercises). | writer | | |
+| T7.16 | Check the pages of T7.3 to T7.15 at 390px and 1366×768. | visual-qa | | |
+
 ### Later, only when the owner asks
 
 - A taught rewrite of a page the owner names (the full template, `CONTENT_CONVENTIONS.md` §8).
   Do `BACKLOG.md` D1 first if there are more than a few.
 - The deferred parts in `BACKLOG.md` §14; D4 (proof tasks in exam format) is the most useful.
-- New lectures (planarity, colouring, matchings): they have no content yet. Their
-  `BACKLOG.md` items are marked "Before <chapter>".
+- Lectures given after 2026-11-12: add a phase like Phase 6 from the new notes.
 
 ---
 
