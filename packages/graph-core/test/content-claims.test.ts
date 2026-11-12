@@ -796,3 +796,67 @@ describe('minimal cuts page (t04)', () => {
     expect(chordal(g)).toBe(false)
   })
 })
+
+describe('two simplicial vertices page (t04)', () => {
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const keep = (g: GraphData, K: string[]): GraphData => del(g, g.vertices.map(v => v.id).filter(v => !K.includes(v)))
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const simp = (g: GraphData) => { const ix = new GraphIndex(g); return ix.vertexIds.filter(v => A.isSimplicial(ix, v)).sort() }
+  const nb = (g: GraphData, v: string) => { const ix = new GraphIndex(g); return ix.vertexIds.filter(w => ix.adjacent(v, w)).sort() }
+  const g = fig('t04-two-simplicial-setup')
+  const ix = new GraphIndex(g)
+
+  it('set-up: G has 6 vertices, is chordal, not complete; u, v non-adjacent; X = {c1,c2} is a minimal u-v cut and a clique', () => {
+    expect(g.vertices.length).toBe(6)
+    expect(chordal(g)).toBe(true)
+    expect(ix.adjacent('u', 'v')).toBe(false)
+    expect(A.components(new GraphIndex(del(g, ['c1', 'c2']))).map(c => c.sort().join(',')).sort()).toEqual(['a,u', 'b,v'])
+    for (const X of [['c1'], ['c2']]) expect(A.components(new GraphIndex(del(g, X))).some(c => c.includes('u') && c.includes('v'))).toBe(true)
+    expect(ix.adjacent('c1', 'c2')).toBe(true)
+  })
+
+  it('no edge joins A = {u,a} to {b,v}; G[A u X] and G - A are chordal with 4 vertices', () => {
+    for (const p of ['u', 'a']) for (const q of ['b', 'v']) expect(ix.adjacent(p, q)).toBe(false)
+    const ax = keep(g, ['u', 'a', 'c1', 'c2']), ga = del(g, ['u', 'a'])
+    expect(ax.vertices.length).toBe(4); expect(ga.vertices.length).toBe(4)
+    expect(chordal(ax)).toBe(true); expect(chordal(ga)).toBe(true)
+  })
+
+  it('x: simplicial in G[A u X] are u and c2 (non-adjacent); u in A is simplicial in G with neighbours a, c1 (adjacent); c2 is not simplicial in G', () => {
+    const ax = keep(g, ['u', 'a', 'c1', 'c2'])
+    expect(simp(ax)).toContain('u'); expect(simp(ax)).toContain('c2')
+    expect(ix.adjacent('u', 'c2')).toBe(false)
+    expect(nb(g, 'u')).toEqual(['a', 'c1']); expect(ix.adjacent('a', 'c1')).toBe(true)
+    expect(nb(ax, 'u')).toEqual(nb(g, 'u'))
+    expect(A.isSimplicial(ix, 'u')).toBe(true); expect(A.isSimplicial(ix, 'c2')).toBe(false)
+    expect(nb(ax, 'c2')).toEqual(['a', 'c1'])
+  })
+
+  it('y: simplicial in G - A are v, c1, c2; v, c1 non-adjacent; N(v) = {b} in G and in G - A; c1, c2 neighbours c2/c1 and b adjacent', () => {
+    const ga = del(g, ['u', 'a'])
+    expect(simp(ga)).toEqual(['b', 'c1', 'c2', 'v'].filter(x => simp(ga).includes(x)))
+    for (const x of ['v', 'c1', 'c2']) expect(simp(ga)).toContain(x)
+    expect(ix.adjacent('v', 'c1')).toBe(false)
+    expect(nb(g, 'v')).toEqual(['b']); expect(nb(ga, 'v')).toEqual(['b'])
+    expect(nb(ga, 'c1')).toEqual(['b', 'c2']); expect(ix.adjacent('b', 'c2')).toBe(true)
+    expect(A.isSimplicial(ix, 'v')).toBe(true); expect(A.isSimplicial(ix, 'c1')).toBe(false)
+  })
+
+  it('result: u and v are the simplicial vertices of G, and they are non-adjacent', () => {
+    expect(simp(g)).toEqual(['u', 'v'])
+    expect(ix.adjacent('u', 'v')).toBe(false)
+  })
+
+  it('x and y figures use the same graph as the set-up figure', () => {
+    for (const id of ['t04-two-simplicial-x', 't04-two-simplicial-y']) {
+      const h = fig(id)
+      expect(h.vertices.map(v => v.id).sort()).toEqual(g.vertices.map(v => v.id).sort())
+      expect(h.edges.length).toBe(g.edges.length)
+    }
+  })
+})
