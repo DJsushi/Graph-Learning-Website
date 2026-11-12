@@ -1068,3 +1068,68 @@ describe('Menger, vertex version from edge version (t05)', () => {
     expect(blue2.map(e => ends(e).join('>')).sort()).toEqual(['b>t', 's>b'])
   })
 })
+
+describe('Menger, set version (t05)', () => {
+  const steps = (id: string): GraphData[] => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const pair = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const adj = (g: GraphData, u: string, v: string) => g.edges.some(e => pair(e) === [u, v].sort().join(''))
+  // is t reachable from s in g after deleting the vertices in skip?
+  const reach = (g: GraphData, s: string, t: string, skip: string[] = []) => {
+    const seen = new Set([s]), q = [s]
+    while (q.length) {
+      const u = q.pop()!
+      for (const e of g.edges) {
+        const [a, b] = ends(e)
+        for (const [x, y] of [[a, b], [b, a]]) if (x === u && !seen.has(y) && !skip.includes(y)) { seen.add(y); q.push(y) }
+      }
+    }
+    return seen.has(t)
+  }
+  const color = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(pair).sort()
+
+  it('forward: G is a 2-connected grid (6 vertices, 7 edges), G* has 8 vertices and 11 edges with s, t not adjacent; X = {b} leaves G connected', () => {
+    const st = steps('t05-total-menger-forward')
+    const gs = st[0]
+    expect(gs.vertices.length).toBe(8); expect(gs.edges.length).toBe(11)
+    const G = { ...gs, vertices: gs.vertices.filter(v => !['s', 't'].includes(v.id)), edges: gs.edges.filter(e => !ends(e).some(x => ['s', 't'].includes(x))) }
+    expect(G.vertices.length).toBe(6); expect(G.edges.length).toBe(7)
+    expect(adj(gs, 's', 't')).toBe(false)
+    expect(['a', 'd'].every(v => adj(gs, 's', v)) && ['c', 'f'].every(v => adj(gs, 't', v))).toBe(true)
+    expect(gs.edges.filter(e => ends(e).includes('s')).length).toBe(2); expect(gs.edges.filter(e => ends(e).includes('t')).length).toBe(2)
+    // G is 2-connected: deleting any one vertex leaves it connected
+    for (const x of G.vertices.map(v => v.id)) {
+      const rest = G.vertices.map(v => v.id).filter(v => v !== x)
+      for (const v of rest) expect(reach(G, rest[0], v, [x])).toBe(true)
+    }
+    // no s-t cut of size 1 in G*
+    for (const x of ['a', 'b', 'c', 'd', 'e', 'f']) expect(reach(gs, 's', 't', [x])).toBe(true)
+    // the path of step 5 and the two paths of step 6
+    expect(color(st[4], 'path')).toEqual(['ds', 'de', 'ef', 'ft'].map(p => p.split('').sort().join('')).sort())
+    expect(color(st[5], 'color3')).toEqual(['ab', 'as', 'bc', 'ct'])
+    expect(color(st[5], 'color4')).toEqual(['ds', 'de', 'ef', 'ft'].map(p => p.split('').sort().join('')).sort())
+    for (const c of ['color3', 'color4']) expect(reach({ ...st[5], edges: st[5].edges.filter(e => e.classes.includes(c)) }, 's', 't')).toBe(true)
+    // internally disjoint: inner vertices {a,b,c} and {d,e,f} do not meet
+    expect(st[6].vertices.map(v => v.id).sort()).toEqual(['a', 'b', 'c', 'd', 'e', 'f'])
+    expect(color(st[6], 'color3')).toEqual(['ab', 'bc']); expect(color(st[6], 'color4')).toEqual(['de', 'ef'])
+  })
+
+  it('backward: bowtie (5 vertices, k = 3): X = {m} separates u from v; {p, q} are free so Y = {p}; every u-v path uses m', () => {
+    const st = steps('t05-total-menger-backward')
+    const g = st[0]
+    expect(g.vertices.length).toBe(5); expect(g.edges.length).toBe(6)
+    expect(reach(g, 'u', 'v')).toBe(true); expect(reach(g, 'u', 'v', ['m'])).toBe(false)
+    expect(reach(g, 'u', 'p', ['m'])).toBe(true); expect(reach(g, 'v', 'q', ['m'])).toBe(true)
+    const free = g.vertices.map(v => v.id).filter(v => !['m', 'u', 'v'].includes(v))
+    expect(free.sort()).toEqual(['p', 'q']); expect(free.length).toBeGreaterThanOrEqual(3 - 1 - 1)
+    expect(g.vertices.length).toBeGreaterThanOrEqual(3 + 1)
+    // S = {m, p, u} and T = {m, p, v} have 3 = k vertices each
+    expect(new Set(['m', 'p', 'u']).size).toBe(3); expect(new Set(['m', 'p', 'v']).size).toBe(3)
+    // the vertex m is the only cut vertex: no other single vertex separates u from v
+    for (const x of ['p', 'q']) expect(reach(g, 'u', 'v', [x])).toBe(true)
+  })
+})
