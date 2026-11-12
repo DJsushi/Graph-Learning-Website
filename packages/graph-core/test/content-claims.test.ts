@@ -1005,3 +1005,66 @@ describe('Hamiltonian switch figure (t04)', () => {
     C.forEach((v, i) => expect(ix.adjacent(v, C[(i + 1) % 7])).toBe(true))
   })
 })
+
+describe('Menger, vertex version from edge version (t05)', () => {
+  const steps = (id: string): GraphData[] => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const reach = (g: GraphData, s: string, t: string, skipV: string[] = [], skipE: string[] = []) => {
+    const seen = new Set([s]), q = [s]
+    while (q.length) {
+      const u = q.pop()!
+      for (const e of g.edges) {
+        const [a, b] = ends(e)
+        if (a === u && !seen.has(b) && !skipV.includes(b) && !skipE.includes(e.id)) { seen.add(b); q.push(b) }
+      }
+    }
+    return seen.has(t)
+  }
+  const arcs = (g: GraphData, cls: string) => g.edges.filter(e => e.classes.includes(cls)).map(e => ends(e).join('>')).sort()
+
+  it('construction: G has no arc s>t and no single vertex cut (k = 2); G\' has 6 vertices and 12 arcs; e_x is the only arc out of x- and into x+', () => {
+    const [g, , , h] = steps('t05-b-to-a-construction')
+    expect(g.vertices.length).toBe(4); expect(g.edges.length).toBe(5)
+    expect(g.edges.some(e => ends(e).join('>') === 's>t')).toBe(false)
+    expect(reach(g, 's', 't', ['a'])).toBe(true); expect(reach(g, 's', 't', ['b'])).toBe(true)
+    expect(h.vertices.length).toBe(6); expect(h.edges.length).toBe(2 * 5 + 2)
+    for (const x of ['a', 'b']) {
+      expect(h.edges.filter(e => ends(e)[0] === x + 'm').map(e => ends(e)[1])).toEqual([x + 'p'])
+      expect(h.edges.filter(e => ends(e)[1] === x + 'p').map(e => ends(e)[0])).toEqual([x + 'm'])
+    }
+    for (const [u, v] of [['s', 'am'], ['s', 'bm'], ['ap', 't'], ['bp', 't'], ['ap', 'bm']])
+      expect(h.edges.filter(e => ends(e).join('>') === `${u}>${v}`).length).toBe(2)
+  })
+
+  it('no cut: deleting any one edge of G\' leaves an s-t path, max flow is 2; F = {e_a}, X = {a}, P = s b t lifts to s b- b+ t avoiding F', () => {
+    const g = steps('t05-b-to-a-no-cut')[0]
+    for (const e of g.edges) expect(reach(g, 's', 't', [], [e.id])).toBe(true)
+    const u = { ...g, edges: g.edges.map(e => ({ ...e, data: { ...e.data, c: 1 } })) }
+    expect(maxFlowValue(u, 's', 't').value).toBe(2)
+    expect(reach(steps('t05-b-to-a-no-cut')[0], 's', 't', ['am'], ['ea'])).toBe(true)
+    const last = steps('t05-b-to-a-no-cut')[5]
+    expect(last.edges.some(e => e.id === 'ea')).toBe(false)
+    expect(arcs(last, 'path')).toEqual(['bm>bp', 'bp>t', 's>bm'])
+    expect(reach({ ...last, edges: last.edges.filter(e => e.classes.includes('path')) }, 's', 't')).toBe(true)
+    expect(reach(g, 's', 't', ['a'])).toBe(true) // G - a still has s b t: the same fact in G'
+  })
+
+  it('translating back: two edge-disjoint paths s a- a+ t and s b- b+ t; contracted: s a t and s b t, inner vertices a and b differ, no arc s>t', () => {
+    const st = steps('t05-b-to-a-back')
+    const red = st[1].edges.filter(e => e.classes.includes('color1')), blue = st[1].edges.filter(e => e.classes.includes('color2'))
+    expect(red.map(e => ends(e).join('>')).sort()).toEqual(['am>ap', 'ap>t', 's>am'])
+    expect(blue.map(e => ends(e).join('>')).sort()).toEqual(['bm>bp', 'bp>t', 's>bm'])
+    expect(new Set([...red, ...blue].map(e => e.id)).size).toBe(6)
+    expect(reach({ ...st[1], edges: red }, 's', 't')).toBe(true); expect(reach({ ...st[1], edges: blue }, 's', 't')).toBe(true)
+    expect(st[1].edges.some(e => ends(e).join('>') === 's>t')).toBe(false)
+    expect(st[3].vertices.map(v => v.id).sort()).toEqual(['a', 'b', 's', 't'])
+    expect(st[3].edges.length).toBe(10)
+    const red2 = st[3].edges.filter(e => e.classes.includes('color1')), blue2 = st[3].edges.filter(e => e.classes.includes('color2'))
+    expect(red2.map(e => ends(e).join('>')).sort()).toEqual(['a>t', 's>a'])
+    expect(blue2.map(e => ends(e).join('>')).sort()).toEqual(['b>t', 's>b'])
+  })
+})
