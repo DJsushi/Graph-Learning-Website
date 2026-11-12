@@ -194,7 +194,7 @@ the rows at any time.
 | T4.7 | `theory/trees/small-degree-test.md` | 6 | f2cf457 |
 | T4.8 | `theory/trees/unique-paths.md` | 8 | f9ee9a0 |
 | T4.9 | `theory/trees/cayley-formula.md` | 37 | 5aa25ae |
-| T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
+| T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | 30c1144 |
 | T4.11 | `theory/chordal/minimal-cuts.md` | 22 | |
 | T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | |
@@ -544,7 +544,13 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Needs reported by writers
 
-(empty)
+- T4.10 (`degrees/regular-graphs-of-large-girth.md`): no way to show several graphs side by side in one figure (G, H and F of the construction), so H gets its own step. The steps use a toy instance (k = 5, d = 2) because a real one is too large to draw.
+
+### Open questions from Phase 4 writers
+
+- T4.6 (`bipartite/odd-cycles.md`): the compact proof says "WLOG the edge is in A", but in the page figure and the lecture sketch the edge a1a2 lies in L3, which is in B. The math-checker passed it (WLOG covers it), but the figure and the WLOG do not match.
+- T4.6: the walkthrough reduces to one component, a step the notes do not write out.
+- T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
 
 ### Open questions for the owner
 
