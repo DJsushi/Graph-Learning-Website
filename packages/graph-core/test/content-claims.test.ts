@@ -1549,3 +1549,24 @@ describe('Menger directed example figure (t05)', () => {
     expect(cols).toEqual([['at', 'sa'], ['ab', 'bt', 'sa'], ['bt', 'sb']])
   })
 })
+
+describe('s-t cut example figure (t05)', () => {
+  const conn = (g: GraphData, s: string, t: string, delV: string[], delE: Set<string>) => {
+    const seen = new Set([s]); const q = [s]
+    while (q.length) { const x = q.pop()!; for (const e of g.edges) { if (delE.has(e.id)) continue; const [u, v] = [e.tail[0], e.head[0]]; for (const [p, r] of [[u, v], [v, u]]) if (p === x && !delV.includes(r) && !seen.has(r)) { seen.add(r); q.push(r) } } }
+    return seen.has(t)
+  }
+  const cls = (g: GraphData, c: string) => g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort()
+  it('{a,b} is a cut; {at,bt} is an edge cut; {a} is not a cut and s b t survives', () => {
+    const g0 = fig('t05-st-cut-example', 0), g1 = fig('t05-st-cut-example', 1), g2 = fig('t05-st-cut-example', 2)
+    expect(conn(g0, 's', 't', [], new Set())).toBe(true)
+    expect(cls(g0, 'cut')).toEqual(['a', 'b'])
+    expect(conn(g0, 's', 't', ['a', 'b'], new Set())).toBe(false)
+    const F = g1.edges.filter(e => e.classes.includes('cut'))
+    expect(F.map(e => e.tail[0] + e.head[0]).sort()).toEqual(['at', 'bt'])
+    expect(conn(g1, 's', 't', [], new Set(F.map(e => e.id)))).toBe(false)
+    expect(cls(g2, 'cut')).toEqual(['a'])
+    expect(conn(g2, 's', 't', ['a'], new Set())).toBe(true)
+    expect(g2.edges.filter(e => e.classes.includes('path')).map(e => e.tail[0] + e.head[0]).sort()).toEqual(['bt', 'sb'])
+  })
+})

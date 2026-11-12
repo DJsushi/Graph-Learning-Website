@@ -5,7 +5,7 @@ chapter: menger
 order: 3
 lectures: [t05]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:st-cut title="s–t paths and cuts" defines="s-t path, s-t cut, s-t edge cut, internally disjoint, edge-disjoint" source="theory/2026-10-13 p1"}
@@ -26,6 +26,21 @@ the inclusion-minimal ones. Example: in $C_4 = (1, 2, 3, 4)$ with $s = 1$, $t = 
 the paths $1\,2\,3$ and $1\,4\,3$ are internally disjoint (and edge-disjoint). Non-example: the three paths in
 [[fig:t05-edge-disjoint-paths]] are edge-disjoint but not internally disjoint, as they share $a$ and $b$.
 :::
+
+```graph id=t05-st-cut-example widget=figure
+caption: Left, the set $\set{a, b}$ is an $s$–$t$ cut, since $G - \set{a, b}$ has no $s$–$t$ path. Middle, the edges $at$ and $bt$ form an $s$–$t$ edge cut. Right, $\set{a}$ is not an $s$–$t$ cut, because the path $s\,b\,t$ survives.
+intent: New example for the definition (the lecture, theory/2026-10-13 p1, only draws a cut crossing a route); the right panel is the non-example.
+layout: fixed
+panel: cut $\set{a, b}$
+s [class=source] @(0, 0.5); a [class=cut] @(1, 1); b [class=cut] @(1, 0); t [class=sink] @(2, 0.5)
+s -- a; s -- b; a -- t; b -- t
+panel: edge cut $\set{at, bt}$
+s [class=source] @(0, 0.5); a @(1, 1); b @(1, 0); t [class=sink] @(2, 0.5)
+s -- a; s -- b; a -- t [class=cut]; b -- t [class=cut]
+panel: $\set{a}$ is no cut
+s [class=source] @(0, 0.5); a [class=cut] @(1, 1); b @(1, 0); t [class=sink] @(2, 0.5)
+s -- a; a -- t; s -- b [class=path]; b -- t [class=path]
+```
 
 If $G$ has an edge ([[def:mixed-multigraph|arc]]) from $s$ to $t$, there is no $s$–$t$ (vertex) cut at all, since deleting vertices other than $s, t$ never
 destroys that edge.
