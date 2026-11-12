@@ -1421,3 +1421,25 @@ describe('chordal-graphs example figures (t04)', () => {
     expect(chordal(solid(c))).toBe(false)
   })
 })
+
+describe('simplicial-vertices example figures (t04)', () => {
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  const simplicial = (g: GraphData) => { const ix = new GraphIndex(g); return ix.vertexIds.filter(v => A.isSimplicial(ix, v)).sort() }
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal({ ...g, vertices: g.vertices.filter(v => v.id !== s), edges: g.edges.filter(e => !e.tail.concat(e.head).includes(s)) })
+  }
+  it('strip graph has 9 edges, is chordal, simplicial vertices are exactly 1 and 6 (marked current); C5 is not chordal and has none', () => {
+    const g = fig('t04-chordal-simplicial', 0), c = fig('t04-chordal-simplicial', 1)
+    expect(g.vertices.length).toBe(6)
+    expect(g.edges.map(key).sort()).toEqual(['12', '13', '23', '24', '34', '35', '45', '46', '56'])
+    expect(chordal(g)).toBe(true)
+    expect(simplicial(g)).toEqual(['1', '6'])
+    expect(vclsOf(g, 'current')).toEqual(['1', '6'])
+    expect(c.vertices.length).toBe(5); expect(c.edges.length).toBe(5)
+    expect(chordal(c)).toBe(false)
+    expect(simplicial(c)).toEqual([])
+  })
+})
