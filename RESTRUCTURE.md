@@ -201,7 +201,7 @@ the rows at any time.
 | T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | 2836003 |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | f74097a |
 | T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | 25cbe6d |
-| T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
+| T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | 0a5749a |
 | T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28, not in the notes (2026-10-13 p6 states the claim and stops at "?") | skip |
 | T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16, not in the notes; page removed in T4.0 | skip |
 | T4.18 | `theory/menger/set-version.md` | 12 | |
@@ -558,6 +558,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T4.6 (`bipartite/odd-cycles.md`): WLOG the edge is in A, while the figure has it in B (L3). Decided (main agent, owner delegated, 2026-11-12): keep as is; WLOG covers both sides and the proof text must not change.
 - T4.6: the walkthrough reduces to one component, a step the notes do not write out.
+- T4.15 (`menger/vertex-version-from-edge-version.md`): the proof is attached to `thm:menger-directed`, which lives on `menger/mengers-theorem.md`, so its three walkthroughs have no `for=` and the validator keeps warning "proof of thm:menger-directed has no walkthrough". Open: allow a cross-page `for=` (coder task), or accept the warning.
 - T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
 
 ### Open questions for the owner
