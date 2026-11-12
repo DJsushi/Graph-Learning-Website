@@ -1504,3 +1504,19 @@ describe('hamiltonian-graphs example figures (t04)', () => {
     expect(A.isConnected(new GraphIndex({ ...r, edges: pth }))).toBe(true)
   })
 })
+
+describe('k-connectivity example figure (t05)', () => {
+  // brute force: connectivity after deleting any vertex set / edge set of the given size
+  const conn = (g: GraphData, vs: string[], es: Set<string>) => A.isConnected(new GraphIndex({ ...g, vertices: g.vertices.filter(v => !vs.includes(v.id)), edges: g.edges.filter(e => !es.has(e.id) && !vs.includes(e.tail[0]) && !vs.includes(e.head[0])) }))
+  const lv = (g: GraphData) => [[] as string[], ...g.vertices.map(v => [v.id])]
+  const le = (g: GraphData) => [new Set<string>(), ...g.edges.map(e => new Set([e.id]))]
+  it('bowtie: 2-edge-connected, deleting c disconnects (not 2-connected); pentagon with chord is 2-connected', () => {
+    const l = fig('t05-k-connected-example', 0), r = fig('t05-k-connected-example', 1)
+    expect(l.vertices.length).toBe(5); expect(l.edges.length).toBe(6)
+    expect(le(l).every(es => conn(l, [], es))).toBe(true)
+    expect(lv(l).filter(vs => !conn(l, vs, new Set())).map(vs => vs.join())).toEqual(['c'])
+    expect(A.components(new GraphIndex({ ...l, vertices: l.vertices.filter(v => v.id !== 'c'), edges: l.edges.filter(e => ![e.tail[0], e.head[0]].includes('c')) })).map(c => [...c].sort().join('')).sort()).toEqual(['ab', 'de'])
+    expect(r.vertices.length).toBe(5); expect(r.edges.length).toBe(6)
+    expect(lv(r).every(vs => conn(r, vs, new Set()))).toBe(true)
+  })
+})
