@@ -5,7 +5,7 @@ chapter: chordal
 order: 1
 lectures: [t04]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:chordal title="Chord, chordal graph" defines="chord, chordal graph" source="theory/2026-10-06 p1"}
@@ -54,5 +54,21 @@ vertices, so every chord of a surviving cycle survives too. This is what makes i
 work: delete a vertex, and the rest is still chordal. Non-example: for **non-induced** subgraphs it fails;
 deleting the diagonal of $K_4 - e$ (a $4$-cycle plus one chord) leaves $C_4$.
 :::
+
+```graph id=t04-chordal-induced-subgraph widget=figure
+caption: The triangulated pentagon $G$ (left) is chordal. Deleting vertex $2$ leaves the induced subgraph on $\set{1, 3, 4, 5}$ (middle), which is chordal: its only $4$-cycle $1\,3\,4\,5$ keeps the chord $14$. Dropping the edge $14$ as well leaves the non-induced subgraph $C_4$ (right), which is not chordal.
+intent: New figure (the lecture shows no drawing for this entry; p3 only uses the fact). Deleting a vertex keeps the chords, deleting an edge does not.
+layout: fixed
+panel: $G$
+1 @(1, 1.2); 2 @(0, 0.7); 3 @(0.3, 0); 4 @(1.7, 0); 5 @(2, 0.7)
+1 -- 2 -- 3 -- 4 -- 5 -- 1
+1 -- 3 [class=bold]; 1 -- 4 [class=bold]
+panel: $G - 2$ (induced)
+1 @(1, 1.2); 3 @(0.3, 0); 4 @(1.7, 0); 5 @(2, 0.7)
+1 -- 3 [class=bold]; 3 -- 4; 4 -- 5; 5 -- 1; 1 -- 4 [class=bold]
+panel: not induced
+1 @(1, 1.2); 3 @(0.3, 0); 4 @(1.7, 0); 5 @(2, 0.7)
+1 -- 3; 3 -- 4; 4 -- 5; 5 -- 1; 1 -- 4 [class=dashed]
+```
 
 The lecture states this without proof.

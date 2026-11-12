@@ -1397,3 +1397,27 @@ describe('bipartite example figures (t02)', () => {
     expect(k.edges.filter(e => e.classes.includes('dashed')).map(key)).toEqual(['03'])
   })
 })
+
+describe('chordal-graphs example figures (t04)', () => {
+  const solid = (g: GraphData): GraphData => ({ ...g, edges: g.edges.filter(e => !e.classes.includes('dashed')) })
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  it('G is the triangulated pentagon (7 edges, chords 13, 14), chordal; G - 2 is induced, chordal, keeps chord 14; dropping 14 gives C4, not chordal', () => {
+    const g = fig('t04-chordal-induced-subgraph', 0), h = fig('t04-chordal-induced-subgraph', 1), c = fig('t04-chordal-induced-subgraph', 2)
+    expect(g.edges.map(key).sort()).toEqual(['12', '13', '14', '15', '23', '34', '45'])
+    expect(chordal(g)).toBe(true)
+    expect(h.vertices.map(v => v.id).sort()).toEqual(['1', '3', '4', '5'])
+    expect(h.edges.map(key).sort()).toEqual(del(g, ['2']).edges.map(key).sort())
+    expect(chordal(h)).toBe(true)
+    expect(h.edges.filter(e => e.classes.includes('bold')).map(key).sort()).toEqual(['13', '14'])
+    expect(c.edges.filter(e => e.classes.includes('dashed')).map(key)).toEqual(['14'])
+    expect(solid(c).edges.map(key).sort()).toEqual(['13', '15', '34', '45'])
+    expect(chordal(solid(c))).toBe(false)
+  })
+})
