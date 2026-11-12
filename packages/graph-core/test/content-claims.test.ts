@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { loadContent } from '../../content/index'
 import { parseGraph } from '../src/dsl/parser'
 import { ALGORITHMS, collect, cutCapacity, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
-import { GraphIndex, num, type GraphData } from '../src/model'
+import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
 import { cycle, completeBipartite, complete } from '../src/dsl/generators'
@@ -735,5 +735,64 @@ describe('regular graphs of large girth walkthroughs', () => {
     expect(C.edges().length).toBe(6)
     expect(s[2].edges.filter(e => e.classes.includes('path')).length).toBe(3)
     expect(2 * 3).toBeGreaterThanOrEqual(2 * Math.ceil(5 / 2)); expect(2 * Math.ceil(5 / 2)).toBeGreaterThanOrEqual(5)
+  })
+})
+
+describe('minimal cuts page (t04)', () => {
+  // what the reader sees as edges: dashed edges are the impossible ones
+  const solid = (g: GraphData): GraphData => ({ ...g, edges: g.edges.filter(e => !e.classes.includes('dashed')) })
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const sameComp = (g: GraphData, a: string, b: string) => A.components(new GraphIndex(g)).some(c => c.includes(a) && c.includes(b))
+  const isCut = (g: GraphData, X: string[], u: string, v: string) => !sameComp(del(g, X), u, v)
+  const minimalCuts = (g: GraphData, u: string, v: string) => {
+    const rest = g.vertices.map(x => x.id).filter(x => x !== u && x !== v)
+    const cuts: string[][] = []
+    for (let m = 0; m < 1 << rest.length; m++) cuts.push(rest.filter((_, i) => m >> i & 1))
+    const c = cuts.filter(X => isCut(g, X, u, v))
+    return c.filter(X => !c.some(Y => Y.length < X.length && Y.every(y => X.includes(y)))).map(X => X.sort().join(','))
+  }
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const dist = (g: GraphData, a: string, b: string) => A.bfsDistances(new GraphIndex(g), a).get(b)
+
+  it('example: the chordal panel has {1,3} as its only minimal 2-4 cut, an edge; C_4 has {a,b}, not an edge', () => {
+    const g = fig('t04-minimal-cut-clique-example', 0), h = fig('t04-minimal-cut-clique-example', 1)
+    expect(chordal(g)).toBe(true)
+    expect(minimalCuts(g, '2', '4')).toEqual(['1,3'])
+    expect(new GraphIndex(g).adjacent('1', '3')).toBe(true)
+    expect(chordal(h)).toBe(false)
+    expect(minimalCuts(h, 'u', 'v')).toEqual(['a,b'])
+    expect(new GraphIndex(h).adjacent('a', 'b')).toBe(false)
+  })
+
+  it('part 1: {x,y} is a minimal u-v cut leaving {u,p1,p2} and {v,q1,q2}; P = u p1 x q1 v avoids y; neighbours p1,q1 of x and p2,q2 of y', () => {
+    const g = steps('t04-minimal-cut-neighbours')[0]
+    expect(minimalCuts(g, 'u', 'v')).toContain('x,y')
+    expect(A.components(new GraphIndex(del(g, ['x', 'y']))).map(c => c.sort().join(',')).sort()).toEqual(['p1,p2,u', 'q1,q2,v'])
+    expect(isCut(g, ['y'], 'u', 'v')).toBe(false)
+    const ix = new GraphIndex(g)
+    for (const [a, b] of [['u', 'p1'], ['p1', 'x'], ['x', 'q1'], ['q1', 'v'], ['u', 'p2'], ['p2', 'y'], ['y', 'q2'], ['q2', 'v']]) expect(ix.adjacent(a, b)).toBe(true)
+  })
+
+  it('part 2: Q_u has 3 edges, Q_v 4, both shortest; C has length 7 and no chord; no C_u-C_v edge; x p1 u p2 y has the chord p1p2; not chordal', () => {
+    const s = steps('t04-minimal-cut-cycle'), g = solid(s[0])
+    const ix = new GraphIndex(g)
+    expect(ix.adjacent('x', 'y')).toBe(false)
+    expect(dist(del(g, ['v', 'q1', 'q2']), 'x', 'y')).toBe(3)
+    expect(dist(del(g, ['u', 'p1', 'p2']), 'x', 'y')).toBe(4)
+    const C = new Set(s[3].edges.filter(e => e.classes.includes('cycle')).map(e => e.id))
+    expect(C.size).toBe(7)
+    expect(A.isCycleEdgeSet(s[3], C)).toBe(true)
+    // chordless: the cycle's 7 vertices induce exactly its 7 edges
+    expect(del(g, ['u']).edges.length).toBe(7)
+    for (const a of ['u', 'p1', 'p2']) for (const b of ['v', 'q1', 'q2']) expect(ix.adjacent(a, b)).toBe(false)
+    expect(ix.adjacent('p1', 'u') && ix.adjacent('u', 'p2') && ix.adjacent('p1', 'p2')).toBe(true)
+    expect(s[5].edges.some(e => e.classes.includes('dashed') && ends(e).sort().join() === 'p2,q2')).toBe(true)
+    expect(chordal(g)).toBe(false)
   })
 })
