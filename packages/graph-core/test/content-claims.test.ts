@@ -1133,3 +1133,103 @@ describe('Menger, set version (t05)', () => {
     for (const x of ['p', 'q']) expect(reach(g, 'u', 'v', [x])).toBe(true)
   })
 })
+
+describe('2-connected graphs and cycles walkthroughs (t05)', () => {
+  const steps = (id: string): GraphData[] => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const pair = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const key = (u: string, v: string) => [u, v].sort().join('')
+  const cls = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(pair).sort()
+  const ids = (g: GraphData) => g.vertices.map(v => v.id).sort()
+  // vertex sets after deleting x must stay connected (2-connected grid check)
+  const connected = (g: GraphData, skip: string[]) => {
+    const vs = ids(g).filter(v => !skip.includes(v)), seen = new Set([vs[0]]), q = [vs[0]]
+    while (q.length) { const u = q.pop()!; for (const e of g.edges) { const [a, b] = ends(e); for (const [x, y] of [[a, b], [b, a]]) if (x === u && !skip.includes(y) && !seen.has(y)) { seen.add(y); q.push(y) } } }
+    return seen.size === vs.length
+  }
+  const twoConnected = (g: GraphData) => g.vertices.length >= 3 && connected(g, []) && ids(g).every(x => connected(g, [x]))
+  // a set of edges is a cycle: every touched vertex has degree 2 and the edges are connected
+  const isCycle = (g: GraphData, es: string[]) => {
+    const deg = new Map<string, number>()
+    for (const p of es) for (const v of g.edges.find(e => pair(e) === p)!.tail.concat(g.edges.find(e => pair(e) === p)!.head)) deg.set(v, (deg.get(v) ?? 0) + 1)
+    const sub = { ...g, vertices: g.vertices.filter(v => deg.has(v.id)), edges: g.edges.filter(e => es.includes(pair(e))) }
+    return es.length >= 3 && [...deg.values()].every(d => d === 2) && connected(sub, [])
+  }
+  const simple = (g: GraphData) => new Set(g.edges.map(pair)).size === g.edges.length && g.edges.every(e => ends(e)[0] !== ends(e)[1])
+  const G = (g: GraphData) => g.edges.map(pair)
+
+  it('a forward: the grid is 2-connected (6 vertices, 7 edges); P1 = edge uv, P2 = u q r v; union is the 4-cycle u v r q', () => {
+    const st = steps('t05-two-cycles-a-forward'), g = st[0]
+    expect(g.vertices.length).toBe(6); expect(g.edges.length).toBe(7); expect(simple(g)).toBe(true); expect(twoConnected(g)).toBe(true)
+    expect(G(g)).toContain(key('u', 'v'))
+    expect(cls(st[1], 'color3')).toEqual([key('u', 'v')])
+    expect(cls(st[1], 'color4')).toEqual([key('u', 'q'), key('q', 'r'), key('r', 'v')].sort())
+    expect(isCycle(st[3], cls(st[3], 'cycle'))).toBe(true); expect(cls(st[3], 'cycle').length).toBe(4)
+  })
+
+  it('a backward: outer 6-cycle through the opposite corners u, v splits into u a b v and u c d v', () => {
+    const st = steps('t05-two-cycles-a-backward'), g = st[0]
+    expect(g.vertices.length).toBe(6); expect(g.edges.length).toBe(7)
+    expect(isCycle(st[0], cls(st[0], 'cycle'))).toBe(true); expect(cls(st[0], 'cycle').length).toBe(6)
+    const c3 = cls(st[1], 'color3'), c4 = cls(st[1], 'color4')
+    expect([...c3, ...c4].sort()).toEqual(cls(st[0], 'cycle'))
+    expect(c3).toEqual([key('u', 'a'), key('a', 'b'), key('b', 'v')].sort()); expect(c4).toEqual([key('u', 'c'), key('c', 'd'), key('d', 'v')].sort())
+  })
+
+  // all S-T path systems (two disjoint paths, one per start) in a small graph, by brute force
+  const simplePaths = (g: GraphData, s: string, t: string): string[][] => {
+    const out: string[][] = [], dfs = (p: string[]) => {
+      const u = p[p.length - 1]
+      if (u === t) { out.push(p); return }
+      for (const e of g.edges) { const [a, b] = ends(e); for (const [x, y] of [[a, b], [b, a]]) if (x === u && !p.includes(y)) dfs([...p, y]) }
+    }
+    dfs([s]); return out
+  }
+  const disjointPairs = (g: GraphData, S: string[], T: string[]) => {
+    const res: string[][][] = []
+    for (const [t1, t2] of [[T[0], T[1]], [T[1], T[0]]]) for (const p1 of simplePaths(g, S[0], t1)) for (const p2 of simplePaths(g, S[1], t2))
+      if (p1.every(v => !p2.includes(v)) && p1.slice(0, -1).every(v => !T.includes(v)) && p2.slice(0, -1).every(v => !T.includes(v)) && p1.slice(1).every(v => !S.includes(v)) && p2.slice(1).every(v => !S.includes(v))) res.push([p1, p2])
+    return res
+  }
+
+  it('b forward: e = ab, f = cd are disjoint edges of the grid; the only disjoint S-T paths are a x c and b y d; they close to the outer 6-cycle', () => {
+    const st = steps('t05-two-cycles-b-forward'), g = st[0]
+    expect(g.vertices.length).toBe(6); expect(g.edges.length).toBe(7); expect(twoConnected(g)).toBe(true)
+    expect(G(g)).toEqual(expect.arrayContaining([key('a', 'b'), key('c', 'd')]))
+    expect(new Set(['a', 'b', 'c', 'd']).size).toBe(4)
+    expect(disjointPairs(g, ['a', 'b'], ['c', 'd'])).toEqual([[['a', 'x', 'c'], ['b', 'y', 'd']]])
+    expect(cls(st[2], 'color3')).toEqual([key('a', 'x'), key('x', 'c')].sort()); expect(cls(st[2], 'color4')).toEqual([key('b', 'y'), key('y', 'd')].sort())
+    const cyc = cls(st[4], 'cycle')
+    expect(cyc.length).toBe(6); expect(isCycle(st[4], cyc)).toBe(true)
+    expect(cyc).toEqual(expect.arrayContaining([key('a', 'b'), key('c', 'd')]))
+  })
+
+  it('b forward, shared vertex: e = ab, f = bd; S ∩ T = {b}; the trivial path b and a x d are the disjoint S-T paths; cycle a b d x', () => {
+    const st = steps('t05-two-cycles-b-forward-shared'), g = st[0]
+    expect(g.vertices.length).toBe(6); expect(g.edges.length).toBe(7); expect(twoConnected(g)).toBe(true)
+    expect(G(g)).toEqual(expect.arrayContaining([key('a', 'b'), key('b', 'd')]))
+    // with the trivial path b, the other path must avoid b: the only a-d path avoiding b is a x d
+    const noB = { ...g, edges: g.edges.filter(e => !ends(e).includes('b')) }
+    expect(simplePaths(noB, 'a', 'd')).toEqual([['a', 'x', 'd']])
+    expect(cls(st[3], 'color4')).toEqual([key('a', 'x'), key('x', 'd')].sort())
+    const cyc = cls(st[4], 'cycle')
+    expect(cyc.length).toBe(4); expect(isCycle(st[4], cyc)).toBe(true)
+    // e = f case: G has an edge other than e
+    expect(g.edges.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('b backward: outer 6-cycle contains e = up, f = sv and the vertices u, v; up and sv are distinct edges at u and v', () => {
+    const st = steps('t05-two-cycles-b-backward'), g = st[0]
+    expect(g.vertices.length).toBe(6); expect(g.edges.length).toBe(7)
+    expect(G(g)).toEqual(expect.arrayContaining([key('u', 'p'), key('s', 'v')]))
+    expect(key('u', 'p')).not.toBe(key('s', 'v'))
+    const cyc = cls(st[2], 'cycle')
+    expect(cyc.length).toBe(6); expect(isCycle(st[2], cyc)).toBe(true)
+    expect(cyc).toEqual(expect.arrayContaining([key('u', 'p'), key('s', 'v')]))
+    expect(g.vertices.every(v => !(g.edges.every(e => !ends(e).includes(v.id))))).toBe(true)
+  })
+})
