@@ -89,6 +89,11 @@ Rules:
 - Classes: `highlight`, `muted`, `dashed`, `bold`, `current`, `visited`, `tree`, `path`,
   `cycle`, `cut`, `matched`, `rejected`, `source`, `sink`, `color1` to `color8`.
 - The figure id starts with the prefix of the page's other figures (`t03-`, `a01-`).
+- Size: a walkthrough figure gets a box of about 314×195 px at 1366 wide, and must show
+  vertices of at least 26px and labels of at least 14px there. Use a wide, flat layout
+  (about 3 × 1.3 units or flatter); a near-square layout is limited by the height. Do not
+  use `group` hulls in walkthrough figures: their label padding shrinks the figure. Use
+  `color1` to `color8` and the caption instead. Check the size with `viewbox.ts`.
 - Change nothing else on the page. Never touch the statement or the proof.
 - Compute every number you state with `graph-core` (a short script under `$TMPDIR`, run with
   `node --import tsx`) and add a test for it to

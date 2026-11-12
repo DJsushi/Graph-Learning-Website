@@ -539,7 +539,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   - Not run: reduced motion; real touch; Safari. Chrome window cannot be resized, so measured in iframes. Console only read for the top-level tab.
   - Passed: no console errors, no horizontal scroll, at most 74 characters per line, figures follow steps, mark hover/focus, arrow keys / Next / Previous / First / Last after scrolling, Enlarge closes with Escape, sticky offset 64px (1366) and 48px (390).
 
-- **Gate B decided (2026-11-11, owner).** Pages look good. Writer model: Opus for pages with a proof over 20 lines, Sonnet for shorter ones. `math-checker` is always Opus. If a Sonnet writer fails the checker twice, rerun with Opus (as on T3.2). No change to `.claude/agents/writer.md`. The multigraph cycle convention (see open questions): the owner left it open; no definition box is added, the page states the rule itself.
+- **Gate B decided (2026-11-11, owner).** Pages look good. Writer model: Opus for pages with a proof over 20 lines, Sonnet for shorter ones. `math-checker` is always Opus. If a Sonnet writer fails the checker twice, rerun with Opus (as on T3.2). No change to `.claude/agents/writer.md`. The multigraph cycle convention (see open questions): the owner left it open; no definition box is added, the page states the rule itself. Rule added 2026-11-12 (owner): walkthrough figure size, in `.claude/agents/writer.md`.
 - **Scope decided (2026-11-12, owner).** Only what the notes contain (§2, Scope). One-step consequences the notes state without writing the step (Dirac–Ore from the completion lemma, a simplicial vertex from LEM2, shortest walks are paths) count as not proved: they stay `skip`. The finished walkthroughs of Erdős–Gallai (T4.3) and "trees have leaves" (T3.1) go, in T4.0. Written proofs the notes do not give are deleted too, in T4.0, so the site shows those statements without proof, as the notes do.
 
 - Visual-qa on T4.6–T4.10 (2026-11-12): passed after fixes 7b71be6 (odd-cycles) and the T4.10 layout fix. Lesson for writers: a walkthrough figure gets a box of about 314×195 px at 1366; near-square layouts and group hulls (their label padding) shrink it below 26px vertices / 14px labels. Use wide, flat layouts and colour classes instead of hulls. Minor, not fixed: consecutive walkthrough steps with identical figures (unique-paths, girth).
@@ -552,7 +552,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Open questions from Phase 4 writers
 
-- T4.6 (`bipartite/odd-cycles.md`): the compact proof says "WLOG the edge is in A", but in the page figure and the lecture sketch the edge a1a2 lies in L3, which is in B. The math-checker passed it (WLOG covers it), but the figure and the WLOG do not match.
+- T4.6 (`bipartite/odd-cycles.md`): WLOG the edge is in A, while the figure has it in B (L3). Decided (main agent, owner delegated, 2026-11-12): keep as is; WLOG covers both sides and the proof text must not change.
 - T4.6: the walkthrough reduces to one component, a step the notes do not write out.
 - T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
 
