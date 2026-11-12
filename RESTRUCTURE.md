@@ -195,7 +195,7 @@ the rows at any time.
 | T4.8 | `theory/trees/unique-paths.md` | 8 | f9ee9a0 |
 | T4.9 | `theory/trees/cayley-formula.md` | 37 | 5aa25ae |
 | T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | 30c1144 |
-| T4.11 | `theory/chordal/minimal-cuts.md` | 22 | |
+| T4.11 | `theory/chordal/minimal-cuts.md` | 22 | 3e05d7d |
 | T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | |
 | T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | |
