@@ -19,13 +19,13 @@ also the combinatorial heart of the [[thm:maxflow-mincut|max-flow min-cut theore
 ## Summary
 
 - $k$-connected: removing $< k$ vertices keeps $G$ [[def:component|connected]]; $k$-edge-connected: removing $< k$ edges does
-  ([[def:k-connected]]). A cut vertex (bridge) is a single vertex (edge) whose removal disconnects $G$ ([[def:cut-vertex-bridge]]).
+  ([[def:k-connected]]).
 - Menger: maximum number of [[def:st-cut|internally disjoint]] (edge-disjoint) $s$–$t$ [[def:path-graph|paths]] $=$ minimum size of an
   $s$–$t$ cut (edge cut) ([[thm:menger-directed]]); globally, $k$-connected iff $k$ internally disjoint paths between every two
   vertices ([[thm:menger]]).
-- Proof strategy: vertex version via vertex splitting; edge version via [[def:d-flow|d-flows]] and augmenting paths
+- Proof strategy: vertex version via vertex splitting; edge version via [[def:d-flow|d-flows]]
   ([[claim:d-flow-paths]]).
-- In flow terms: Menger B is max-flow min-cut with unit capacities ([[thm:maxflow-mincut]], [[cor:integrality]]), and A follows by
+- In flow terms: Menger B is max-flow min-cut with unit capacities ([[thm:maxflow-mincut]]), and A follows by
   splitting vertices ([[exr:a02-vertex-capacities]]).
 - Set version: $k$ disjoint paths between any two $k$-sets ([[thm:total-menger]]).
 - $2$-connected iff every two vertices (edges) lie on a common [[def:cycle-graph|cycle]] ([[thm:two-connected-cycles]]) iff it has an ear decomposition
@@ -60,15 +60,6 @@ vertex of both paths; and only one of the paths can be the edge $st$). By [[thm:
 :::
 ::::
 
-:::: exercise {#exr:t05-bridge-cycle title="Bridges" difficulty=1}
-Show that an edge $e$ of a connected graph is a [[def:cut-vertex-bridge|bridge]] if and only if $e$ lies on no [[def:cycle-graph|cycle]].
-
-::: solution
-If $e = uv$ lies on a cycle $C$, then after deleting $e$ the rest of $C$ is still a $u$–$v$ path, and every [[def:walk|walk]] that used $e$ can be rerouted, so $G - e$ is
-connected. If $e$ lies on no cycle, then $G - e$ has no $u$–$v$ path (such a path plus $e$ would be a cycle), so $G - e$ is disconnected.
-:::
-::::
-
 :::: exercise {#exr:t05-hypercube-connectivity title="Connectivity of the cube" difficulty=2}
 The cube $Q_3$ has the $8$ strings $x_1 x_2 x_3 \in \set{0, 1}^3$ as vertices, two of them adjacent iff they differ in exactly one position
 (the vertices and edges of an ordinary cube). Show that $Q_3$ is $3$-connected by exhibiting, for the two vertices $000$ and $111$, three internally disjoint paths. (By symmetry, together with a
@@ -98,8 +89,8 @@ Which [[def:forest-tree|trees]] on at least 3 vertices are 2-connected?
 - [x] None
 
 ::: explanation
-A tree on $\ge 3$ vertices has a vertex of [[def:degree|degree]] $\ge 2$, which is a [[def:cut-vertex-bridge|cut vertex]]: removing it disconnects its neighbours (they are joined only through
-it, by uniqueness of paths). Also, trees have no cycles, so [[thm:two-connected-cycles]] fails.
+A tree on $\ge 3$ vertices has a vertex of [[def:degree|degree]] $\ge 2$, which is a cut vertex: removing it disconnects its neighbours (they are joined only through
+it, by uniqueness of paths). Also, trees have no [[def:cycle-graph|cycles]], so [[thm:two-connected-cycles]] fails.
 :::
 ::::
 

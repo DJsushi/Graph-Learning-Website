@@ -16,11 +16,7 @@ $$\lambda(G) = \min(\lambda(G_{vw}), \lambda(G; v, w)),$$
 where $\lambda(G_{vw}) = \infty$ if $G_{vw}$ has only one vertex.
 :::
 
-::: proof
-By [[obs:identification-cuts]], every cut of $G_{vw}$ is a cut of $G$, so $\lambda(G_{vw}) \ge \lambda(G)$, and clearly $\lambda(G; v, w) \ge \lambda(G)$.
-A minimum cut of $G$ either separates $v$ and $w$, and then $\lambda(G) = \lambda(G; v, w)$, or it does not, and then it is a cut of $G_{vw}$ with the
-same capacity, so $\lambda(G) = \lambda(G_{vw})$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 The minimum cut either separates $v$ from $w$ or it does not. In the first case one $v$–$w$ cut computation finds it; in the second, gluing $v$ and $w$

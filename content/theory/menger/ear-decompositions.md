@@ -18,7 +18,7 @@ between two distinct existing vertices, whose inner vertices are new. (An ear ma
 Ear decompositions build every $2$-connected graph step by step from a cycle, keeping $2$-connectivity at every step, so
 statements about $2$-connected graphs can be proved by induction on the number of ears. Example: [[fig:t05-ear-decomposition]].
 Non-example: attaching a "closed ear", a cycle through a single existing vertex $x$, makes $x$ a
-[[def:cut-vertex-bridge|cut vertex]]; this is why the two ends of an ear must be distinct. Attaching a pendant path (only one end in
+cut vertex; this is why the two ends of an ear must be distinct. Attaching a pendant path (only one end in
 the graph) fails for the same reason.
 :::
 

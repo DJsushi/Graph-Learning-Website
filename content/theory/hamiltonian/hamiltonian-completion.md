@@ -90,14 +90,6 @@ unclass path: wj--wj1
 class cycle: x--w2 w2--w3 w3--wj wj--y y--w6 w6--wj1 wj1--x
 ```
 
-::: proof {title="Proof of the theorem" for=thm:dirac-ore}
-As noted, a) implies b), so assume b). We show that $K_n$ is a Hamiltonian completion of $G$. Starting from
-$H = G$, as long as $H \ne K_n$, pick any non-adjacent pair $u, v$ of $H$. They are non-adjacent in $G$ as well, so
-$d_H(u) + d_H(v) \ge d_G(u) + d_G(v) \ge n$ by b), and $H + uv$ is a one-step Hamiltonian completion of $H$. After
-finitely many steps we reach $K_n$, which is Hamiltonian for $n \ge 3$. By [[lem:hamiltonian-completion]], $G$ is
-Hamiltonian.
-:::
-
 ::: remark
 The graph obtained by adding edges as long as possible (it does not depend on the order) is the
 **Bondy–Chvátal closure** of $G$. The lemma shows: $G$ is Hamiltonian iff its closure is. Dirac's and Ore's conditions

@@ -25,8 +25,7 @@ Ore.
   or has two non-adjacent simplicial vertices ([[lem:two-simplicial]]).
 - $G$ is chordal iff it has a [[def:simplicial-decomposition|simplicial decomposition]] ([[thm:chordal-decomposition]]).
 - Dirac: $\delta \ge n/2$ ([[def:minimum-degree]]), Ore: $d(u) + d(v) \ge n$ for non-adjacent $u, v$; each implies Hamiltonian for $n \ge 3$
-  ([[thm:dirac-ore]]), proved via [[def:hamiltonian-completion|Hamiltonian completions]] ([[lem:hamiltonian-completion]]). $K_{k,k+1}$ shows
-  tightness.
+  ([[thm:dirac-ore]]). $K_{k,k+1}$ shows tightness.
 
 ## Exercises
 

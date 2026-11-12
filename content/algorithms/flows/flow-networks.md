@@ -32,7 +32,7 @@ value, and they can be removed without changing the maximum flow value.
 <!-- REVIEW: added that for networks with edges into s or out of t (residual networks G_f always have such edges once |f| > 0, and Lemma A / thm:unit-dinic apply max-flow arguments to G_f) the value is the net flow; the two sums in def:flow then agree and lem:flow-across-cut holds with the same proof. -->
 Sometimes such edges cannot be avoided: a [[def:residual-network|residual network]] $G_f$ has them as soon as $\abs{f} > 0$, and
 [[thm:unit-dinic]] uses $G_f$ as a network. Then the value of a flow is the **net** flow out of $s$,
-$\sum_{(s,v) \in E} f(s, v) - \sum_{(u,s) \in E} f(u, s)$, which equals the net flow into $t$; [[lem:flow-across-cut]] and its proof
+$\sum_{(s,v) \in E} f(s, v) - \sum_{(u,s) \in E} f(u, s)$, which equals the net flow into $t$; weak duality and its proof
 remain valid.
 
 ```graph id=a02-network widget=figure

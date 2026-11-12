@@ -30,8 +30,8 @@ all spanning trees $T$ of $G$.
 ::: intuition
 Among the many spanning trees of $G$ we want the cheapest one. Why a tree at all: if a connected spanning subgraph
 contained a [[def:cycle-graph|cycle]], deleting one edge of the cycle would keep it connected and, as weights are positive,
-make it cheaper; so the cheapest connected spanning subgraph is acyclic, i.e. a spanning tree
-([[prop:spanning-tree-exists]], [[thm:tree-characterisations]]). Example: a triangle with weights $1, 2, 3$ has three
+make it cheaper; so the cheapest connected spanning subgraph is acyclic, i.e. a spanning tree.
+Example: a triangle with weights $1, 2, 3$ has three
 spanning trees (any two of its edges), of weights $3$, $4$ and $5$; the MST consists of the edges of weight $1$ and $2$.
 :::
 

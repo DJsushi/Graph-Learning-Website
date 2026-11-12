@@ -48,12 +48,4 @@ $(\set{0, 2}, \set{1, 3})$ and is a subgraph of $K_{2,2} \cong C_4$. Non-example
 subgraph of any $K_{m,n}$.
 :::
 
-::: proof
-If $(A, B)$ is a bipartition of $G$, let $m = \abs{A}$ and $n = \abs{B}$, and identify $A$ with $V_m$ and $B$
-with $V_n$ in $K_{m,n}$ ([[def:complete-bipartite]]) by any bijections. Every edge of $G$ joins $A$ and $B$,
-so it is an edge of $K_{m,n}$; hence $G$ becomes a subgraph of $K_{m,n}$.
-
-Conversely, $(V_m, V_n)$ is a bipartition of $K_{m,n}$, and a subgraph inherits it: a set that is
-independent in $K_{m,n}$ is independent in every subgraph, since the subgraph has fewer edges.
-(Vertices of $K_{m,n}$ that are not in the subgraph are simply dropped from $V_m$ and $V_n$.)
-:::
+The lecture states this without proof.

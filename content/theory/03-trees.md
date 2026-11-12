@@ -22,9 +22,7 @@ a surprising existence theorem about graphs without short cycles.
   $\ge 2$ vertices has two vertices of [[def:degree|degree]] $\le 1$ ([[thm:two-leaves]]); trees have [[def:leaf|leaves]] ([[cor:tree-leaf]]).
 - A [[def:walk|closed walk]] contains a [[def:cycle-graph|cycle]] or traverses every edge an even number of times
   ([[lem:closed-walk-cycle]]); hence [[def:path-graph|paths]] in trees are unique ([[cor:tree-unique-path]]).
-- Trees: connected + acyclic ⟺ unique paths ⟺ minimally connected ⟺ maximally acyclic ⟺ connected
-  with $n-1$ edges ⟺ acyclic with $n-1$ edges ([[thm:tree-characterisations]]).
-- Every connected graph has a [[def:spanning-tree|spanning tree]] ([[prop:spanning-tree-exists]]); it is the starting point
+- A [[def:spanning-tree|spanning tree]] is the starting point
   of the [[def:mst|minimum spanning tree]] problem. $K_n$ has $n^{n-2}$ of them ([[thm:cayley]]).
 - For all $d, k$ there is a $d$-regular graph of [[def:girth|girth]] $\ge k$ ([[thm:regular-large-girth]]).
 
@@ -62,8 +60,7 @@ Induction on $n$: some $d_i$ must equal $1$, and some $d_j$ must be at least $2$
 For $n = 2$: $d_1 = d_2 = 1$, and $K_2$ works. Let $n \ge 3$. Since the sum is $2n - 2 < 2n$, some $d_i = 1$;
 since the sum is $2n - 2 > n$, some $d_j \ge 2$. Remove $d_i$ and decrease $d_j$ by one: the new sequence has
 $n - 1$ entries, all at least $1$, with sum $2n - 4 = 2(n-1) - 2$. By induction there is a tree on $n - 1$
-vertices with these degrees; attach a new leaf (of degree $1$) to the vertex with degree $d_j - 1$. By
-[[lem:leaf-removal]] the result is a tree, with the required degrees.
+vertices with these degrees; attach a new leaf (of degree $1$) to the vertex with degree $d_j - 1$. The result is a tree, with the required degrees.
 :::
 ::::
 
@@ -86,7 +83,7 @@ task: build
 prompt: Add edges to make this graph a tree. How many edges must you add?
 check: is-tree
 hint: A tree on $8$ vertices has exactly $7$ edges, and this graph has $4$ edges in $4$ components.
-solution: The graph is a forest with $4$ components, so it has $8 - 4 = 4$ edges ([[cor:forest-edges]]). Add $3$ edges, each joining two different components.
+solution: The graph is a forest with $4$ components, so it has $8 - 4 = 4$ edges. Add $3$ edges, each joining two different components.
 1 -- 2; 2 -- 3; 4 -- 5; 6 -- 7
 8
 ```
@@ -98,16 +95,6 @@ answer: 125
 
 ::: explanation
 By [[thm:cayley]], $5^{5-2} = 125$.
-:::
-::::
-
-:::: quiz {#q:t03-forest-edges}
-A forest has 20 vertices and 3 [[def:component|components]]. How many edges does it have?
-
-answer: 17
-
-::: explanation
-By [[cor:forest-edges]], $n - c = 20 - 3 = 17$.
 :::
 ::::
 

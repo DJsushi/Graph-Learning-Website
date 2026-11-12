@@ -47,7 +47,7 @@ may go $x, a, b$ and put $b$ at depth $2$, although $\mathrm{dist}(x, b) = 1$.
 BFS discovers the vertices in order of their distance from $x$. The **layer** $i$ is the set
 $L_i = \set{v : \mathrm{dist}(x, v) = i}$; the edges $\set{\mathrm{parent}(w), w}$ form the **BFS tree**,
 in which the path from any $w \in L_i$ up to $x$ has length exactly $i$ and visits one vertex of each
-layer $L_{i-1}, L_{i-2}, \dots, L_0$. By [[prop:distance-metric]], every edge of $G$ joins two vertices in the
+layer $L_{i-1}, L_{i-2}, \dots, L_0$. Since distance is a metric, every edge of $G$ joins two vertices in the
 same layer or in consecutive layers.
 
 ::: remark {title="Why BFS computes distances"}

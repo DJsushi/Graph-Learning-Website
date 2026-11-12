@@ -19,11 +19,11 @@ to them.
 
 ## Summary
 
-- A flow respects capacities and conservation; its value is the net flow out of $s$ ([[def:flow]]). For every cut, $\abs{f} \le \mathrm{cap}(S, T)$ ([[lem:flow-across-cut]]).
+- A flow respects capacities and conservation; its value is the net flow out of $s$ ([[def:flow]]).
 - Max-flow min-cut: maximum flow value $=$ minimum cut capacity ([[thm:maxflow-mincut]]); $f$ is maximum iff $G_f$ has no
   [[def:augmenting-path|augmenting path]], and then the vertices reachable from
   $s$ in $G_f$ form a minimum cut ([[thm:maxflow-characterisation]]).
-- Ford–Fulkerson: augment along any path, $\O(nmC)$ for integer [[def:flow-network|capacities]]; integral maximum flows exist ([[thm:ford-fulkerson-analysis]], [[cor:integrality]]).
+- Ford–Fulkerson: augment along any path, $\O(nmC)$ for integer [[def:flow-network|capacities]]; integral maximum flows exist ([[thm:ford-fulkerson-analysis]]).
 - Edmonds–Karp: shortest augmenting paths, $\O(m^2 n)$ ([[thm:edmonds-karp]]), via level graphs ([[def:level-graph]]).
 - Dinic: [[def:blocking-flow|blocking flows]] in level graphs, at most $n$ phases, $\O(mn^2)$ ([[thm:dinic]]); MPM: blocking flows in $\O(n^2)$, $\O(n^3)$ total ([[thm:mpm-time]]).
 - Unit capacities: Dinic in $\O(m^{3/2})$ ([[thm:unit-dinic]]); bipartite [[def:matching|matching]] reduces to flow ([[prop:matching-flow]]).

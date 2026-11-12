@@ -8,19 +8,6 @@ stage: split
 status: draft
 ---
 
-We use two facts about cuts many times:
-
-- every [[def:cycle-graph|cycle]] crosses every cut an **even** number of times (walking around the cycle, every crossing switches the side,
-  and we end on the side where we started);
-- for a [[def:spanning-tree|spanning tree]] $T$ and an edge $e \in E(T)$, the graph $T - e$ is disconnected, as trees are minimally
-  connected ([[thm:tree-characterisations]]), and it is a forest with $n - 2$ edges, so it has exactly two
-  [[def:component|components]] ([[cor:forest-edges]]). They form a cut, and $e$ is the only edge of $T$ across it.
-
-Also, for a spanning tree $T$ and an edge $e \notin E(T)$, $T + e$ contains exactly one cycle: the unique $T$-path between the ends
-of $e$ ([[cor:tree-unique-path]]), plus $e$. For every edge $f$ of this cycle, $T + e - f$ is again a spanning tree: it is connected,
-since $f$ lies on a cycle, and has $n - 1$ edges ([[thm:tree-characterisations]], 5). This **exchange** of $f$ for $e$
-([[fig:t03-tree-plus-edge]]) is the basic move of all proofs below.
-
 ::: theorem {#thm:cut-property title="Cut property" source="algorithms/01 p5"}
 If $e$ is the lightest edge across some cut of $G$, then $e \in M$ for every [[def:mst|minimum spanning tree]] $M$.
 :::
@@ -42,7 +29,7 @@ $ab$ ($4$) is lighter than $ac$ ($8$), so $ab \in M$. This is the idea of Borův
 A cycle offers two routes between the ends of each of its edges. If the MST used the heaviest edge $e$ of a cycle, the rest of the
 cycle would provide a lighter edge to reconnect the two halves of $M - e$. Example: in [[fig:a01-cycle-property]], $bc$ (weight $11$)
 is the heaviest edge of the cycle $b\,d\,e\,c$, so $bc \notin M$. Consequence: the strictly heaviest edge of the whole graph is in no MST,
-unless it lies on no cycle at all, i.e. it is a [[def:cut-vertex-bridge|bridge]] (then every spanning tree contains it).
+unless it lies on no cycle at all, i.e. it is a bridge (then every spanning tree contains it).
 :::
 
 ::: pitfall
@@ -51,17 +38,7 @@ one of the three edges. Also, the cut property is about **one** cut: an MST edge
 crosses. In the running example $ac \in M$, but across the cut $(\set{a}, V \setminus \set{a})$ the edge $ab$ is lighter.
 :::
 
-::: proof {title="Proof of the cut property" for=thm:cut-property}
-Let $e = uv$ be the strictly lightest edge across the cut $(S, V \setminus S)$ and suppose $e \notin M$. Then $M + e$ contains a cycle $C$
-through $e$ ([[thm:tree-characterisations]]: trees are maximally acyclic). Since $C$ crosses the cut at $e$, it crosses it at least once more, at an edge $f \ne e$, $f \in E(M)$. As $e$ is the lightest
-crossing edge, $w(f) > w(e)$. Then $M + e - f$ is a spanning tree of weight $w(M) + w(e) - w(f) < w(M)$, a contradiction.
-:::
-
-::: proof {title="Proof of the cycle property" for=thm:cycle-property}
-Let $e$ be the strictly heaviest edge on a cycle $C$ and suppose $e \in M$. The two components of $M - e$ (see the facts above) form a cut, and $e$ is the only edge
-of $M$ across it. The path $C - e$ joins the two ends of $e$, so it crosses this cut at some edge $f \ne e$; then $f \notin E(M)$. As $e$ is the
-heaviest edge of $C$, $w(f) < w(e)$, and $M - e + f$ is a spanning tree of smaller weight, a contradiction.
-:::
+The lecture states both without proof.
 
 ```graph id=a01-cut-property widget=figure
 caption: The cut property. The edge $cf$ (weight 1) is the lightest edge across the cut $(S, V \setminus S)$, so it belongs to the MST.

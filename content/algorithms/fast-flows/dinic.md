@@ -58,7 +58,7 @@ Edmonds–Karp augments along shortest paths one at a time and recomputes BFS af
 the lecture network ([[fig:a02-dinic-player]]), two phases suffice, giving values $14$ and $19$.
 :::
 
-::: lemma {#lem:dinic-phases title="Each phase increases the distance" extra=true}
+::: lemma {#lem:dinic-phases title="Each phase increases the distance"}
 After a phase of Dinic's algorithm, the length of the shortest [[def:augmenting-path|augmenting path]] strictly increases. Hence there are at most $n - 1$ (in particular at most $n$) phases.
 :::
 <!-- REVIEW: n − 1 added (distance takes values 1..n−1); lecture states n. -->
@@ -71,12 +71,7 @@ blocking flow of the first phase sends $3$ and $4$ units along them and saturate
 path $s\,p\,r\,q\,x\,t$ (length $5$, $1$ more unit), reaching the maximum $8$.
 :::
 
-::: proof
-Let $k$ be the distance from $s$ to $t$ at the start of the phase, $L$ the level graph, and $f'$ the blocking flow in $L$. Augmenting $f$ by $f'$ changes $G_f$ only by
-deleting saturated edges of $L$ and adding reverses of edges of $L$, which go one level down. As in [[lem:ek-phase]], every $s$–$t$ path of length at most $k$ in the new
-residual graph would use only edges going up one level, i.e. edges of $L$ that were not saturated by $f'$. Such a path would be an $s$–$t$ path in $L$ without a saturated
-edge, contradicting that $f'$ is blocking. So the new distance is larger than $k$. Distances lie between $1$ and $n - 1$, so there are at most $n - 1$ phases.
-:::
+The lecture states this without proof.
 
 ```graph id=a02-dinic-player widget=player
 caption: Dinic's algorithm on the lecture example: each phase computes the level graph of the residual network and a blocking flow in it. The flow values are 14 after phase 1 and 19 after phase 2.

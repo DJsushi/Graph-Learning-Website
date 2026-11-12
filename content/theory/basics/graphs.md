@@ -33,7 +33,7 @@ Throughout, graphs are **finite** ($V$ is a finite set), and we use the notation
 - $n = \abs{V(G)}$ is the number of vertices and $m = \abs{E(G)}$ the number of edges;
 - an edge $\set{u, v}$ is often written shortly as $uv$ (so $uv = vu$).
 
-::: definition {#def:adjacent title="Adjacency and incidence" defines="adjacent, incident, neighbour, neighbourhood, endpoint" basic=true extra=true}
+::: definition {#def:adjacent title="Adjacency and incidence" defines="adjacent, incident, neighbour, neighbourhood, endpoint" basic=true}
 Let $G$ be a graph and $e = uv \in E(G)$. The vertices $u$ and $v$ are the **endpoints** of $e$;
 we say that $u$ and $v$ are **adjacent** (or **neighbours**), and that $e$ is **incident** with
 $u$ and with $v$. The **neighbourhood** of a vertex $v$ is the set

@@ -13,10 +13,7 @@ For each $v \in V \setminus \set{r}$ choose the lightest edge $e_v$ with head $v
 then it is a min-cost arborescence.
 :::
 
-::: proof
-Every arborescence contains exactly one arc entering each $v \ne r$, and that arc costs at least $w(e_v)$. So every arborescence costs at least
-$\sum_{v \ne r} w(e_v) = w(T^*)$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Every vertex other than $r$ must pay for exactly one incoming arc, and it cannot pay less than its cheapest one. So the sum of the cheapest incoming
@@ -66,11 +63,7 @@ a -> e [w=1]; b -> e [w=2]; d -> c [w=0 class=highlight]; d -> e [w=0 class=high
    is a min-cost cycle.
 :::
 
-::: proof
-1. Every arborescence $T$ has exactly one arc entering each $v \ne r$, so $w(T) - w'(T) = \sum_{v \ne r} w(e_v)$, a constant independent of $T$. Minimizing $w$ and minimizing
-   $w'$ is therefore the same.
-2. $w'(e) \ge 0$ because $e_v$ is the lightest arc entering $v$, and $w'(e_v) = 0$ by definition.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Subtracting the same amount from all arcs entering $v$ changes the cost of every arborescence by that amount, since each arborescence uses exactly

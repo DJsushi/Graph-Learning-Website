@@ -28,7 +28,7 @@ foreach e = {u, v} in this order do                      // @loop
 ::: intuition
 Be greedy: take the cheapest edges first and skip every edge that would close a cycle with the edges already taken. The forest
 $F$ starts as $n$ single vertices and every accepted edge merges two of its components, so after $n - 1$ acceptances it is a
-spanning tree ([[cor:forest-edges]]). Example: a 4-cycle $a\,b\,c\,d$ with $w(ab) = 1$, $w(bc) = 2$, $w(cd) = 3$, $w(da) = 4$ and a
+spanning tree. Example: a 4-cycle $a\,b\,c\,d$ with $w(ab) = 1$, $w(bc) = 2$, $w(cd) = 3$, $w(da) = 4$ and a
 chord $ac$ of weight $5$. Kruskal accepts $ab$, $bc$, $cd$ and rejects $da$ and $ac$, as both ends of each already lie in one
 component.
 :::

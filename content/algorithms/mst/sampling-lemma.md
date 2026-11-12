@@ -22,7 +22,7 @@ The **minimum spanning forest** (**MSF**) of a possibly disconnected graph is th
 
 ::: intuition
 The MSF is what an MST algorithm produces when the graph is not connected: one MST per component. It is a [[def:forest-tree|forest]] with $n - c$
-edges, where $c$ is the number of components ([[cor:forest-edges]]). Kruskal's algorithm computes it without any change, since it never uses
+edges, where $c$ is the number of components. Kruskal's algorithm computes it without any change, since it never uses
 connectivity. Example: for two disjoint triangles with weights $1, 2, 3$ each, the MSF consists of the four edges of weights $1$ and $2$.
 :::
 

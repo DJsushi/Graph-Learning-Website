@@ -49,16 +49,7 @@ keeping the lightest of parallel edges). Then the MST $M'$ of $G'$, with $v_H$ r
 came from, plus the edges of $H$), is the MST of $G$.
 :::
 
-::: proof
-Edges of $G'$ correspond to edges of $G$ not inside $H$. As a connected subgraph of the tree $M$, $H$ is a tree, so $\abs{E(H)} = \abs{V(H)} - 1$.
-<!-- REVIEW: added that H is a tree; the edge count below needs |E(H)| = |V(H)| - 1. -->
-Spanning trees $T$ of $G$ containing $H$ correspond bijectively to spanning trees of the
-multigraph obtained by contracting $H$ (keep $E(T) \setminus E(H)$; a set of edges forms a spanning tree together with $H$ iff it forms a spanning tree
-after contracting $H$, since contraction preserves connectivity and the edge count works out: $(n - 1) - (\abs{V(H)} - 1) = \abs{V(G')} - 1$). Under
-this correspondence $w(T) = w(T') + w(H)$. So minimizing over spanning trees of $G$ containing $H$ is the same as minimizing over spanning trees of
-the contracted multigraph; removing loops and heavier parallel edges does not change the minimum (cycle property). The MST $M$ contains $H$, so it is
-the minimum among the trees containing $H$, and it corresponds to $M'$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Once we know that the edges of $H$ belong to $M$, the only remaining question is how to connect $H$ cheaply to the rest, and for that the

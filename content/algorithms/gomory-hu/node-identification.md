@@ -57,14 +57,7 @@ and $U' \mapsto U$ is a bijection onto the sets $U$ that contain both or none of
 that contain $X$ or are disjoint from it.
 :::
 
-::: proof
-The edges of $G_{vw}$ correspond one-to-one to the edges of $G$ that do not join $v$ and $w$, with the same capacities (before parallel edges are
-merged; merging does not change cut capacities, as noted above). An edge $ab$ with $a, b \notin \set{v, w}$ keeps its ends. An edge $vx$ or $wx$
-becomes $w_{vw}x$, and $w_{vw} \in U'$ iff $v, w \in U$; so in both cases the edge crosses $U'$ in $G_{vw}$ iff it crosses $U$ in $G$. The edges
-between $v$ and $w$ do not exist in $G_{vw}$ and do not cross $U$ in $G$, since $v$ and $w$ lie on the same side. So $\delta_G(U)$ consists of the
-edges of $\delta_{G_{vw}}(U')$, and the capacities agree. The map $U' \mapsto U$ is clearly a bijection onto the sets containing both or none of
-$v, w$, and $\emptyset \ne U' \ne V(G_{vw})$ iff $\emptyset \ne U \ne V(G)$. For a set $X$, apply this to the identifications one by one.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Identification removes exactly the cuts that separate $v$ from $w$, and every other cut survives unchanged, with the same capacity. Example: in

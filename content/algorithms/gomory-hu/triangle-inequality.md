@@ -19,11 +19,7 @@ For $u = v_0, v_1, \dots, v_k = w \in V$ with $u \ne w$ and $v_{i-1} \ne v_i$ fo
 $$f(u, w) \ge \min(f(v_0, v_1), f(v_1, v_2), \dots, f(v_{k-1}, v_k)).$$
 :::
 
-::: proof {title="Proof of both lemmas" for=lem:flow-triangle-path}
-Let $\delta(U)$ be a minimum $u$–$w$ cut with $u \in U$, $w \notin U$. The sequence $v_0, \dots, v_k$ starts in $U$ and ends outside $U$, so for some
-$i$, $v_{i-1} \in U$ and $v_i \notin U$. Then $\delta(U)$ separates $v_{i-1}$ and $v_i$, and
-$f(v_{i-1}, v_i) \le c(\delta(U)) = f(u, w)$. Lemma A is the case $k = 2$, $v_1 = v$.
-:::
+The lecture states both without proof.
 
 ::: intuition {for=lem:flow-triangle}
 Any cut separating $u$ from $w$ must also separate $v$ from one of them, so it is at least as expensive as one of the two cheaper separations.

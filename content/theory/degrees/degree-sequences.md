@@ -21,7 +21,7 @@ both have $(2, 2, 2, 2, 2, 2)$.
 :::
 
 The sequence depends on the order of the vertices; usually we list it **non-increasingly**. Then
-it is an [[def:isomorphism|isomorphism]] invariant ([[prop:iso-invariants]]).
+it is an [[def:isomorphism|isomorphism]] invariant.
 
 ```graph id=t01-degree-sequence-example widget=figure
 caption: A graph with degree sequence $(4, 4, 3, 3, 1, 1, 0)$. Vertex labels show the degrees.
@@ -36,7 +36,7 @@ l -- r [bend=0.5]; l -- mt; mt -- r; l -- mb; mt -- mb; r -- mb; l -- p; r -- q
 Now the reverse question: given a sequence of numbers, **is there a (simple) graph with this
 degree sequence?** This question is the subject of the rest of the lesson.
 
-::: definition {#def:graphic-sequence title="Graphic sequence" defines="graphic sequence, realisation" extra=true}
+::: definition {#def:graphic-sequence title="Graphic sequence" defines="graphic sequence, realisation"}
 A sequence $(d_1, \dots, d_n)$ of non-negative integers is **graphic** if there is a simple graph
 $G$ with $V(G) = \set{v_1, \dots, v_n}$ and $d_G(v_i) = d_i$ for all $i$. Such a $G$ is a
 **realisation** of the sequence.
@@ -45,7 +45,7 @@ $G$ with $V(G) = \set{v_1, \dots, v_n}$ and $d_G(v_i) = d_i$ for all $i$. Such a
 ::: intuition
 A graph gives a degree sequence; "graphic" asks the reverse question, whether some simple graph
 has exactly the prescribed degrees. Realisations are usually far from unique: $(2, 2, 2, 2, 2, 2)$
-is realised by $C_6$ and by two disjoint triangles ([[fig:t01-same-degrees-not-iso]]).
+is realised by $C_6$ and by two disjoint triangles.
 Non-examples: $(1, 1, 1)$ has an odd sum, and $(2, 0)$ asks for two neighbours with only one
 other vertex available.
 :::

@@ -22,7 +22,7 @@ Checking $k$-connectivity directly means trying every small set of deleted verti
 certificate one can show: $k$ independent routes between every two vertices, [[def:st-cut|internally disjoint]] for vertex
 failures and edge-disjoint for edge failures. Robustness against $k - 1$ failures is the same as having $k$ such
 [[def:path-graph|paths]]. Example: in $K_4$, any $s, t$ are joined by the edge $st$ and the two paths through the other two vertices,
-which matches $3$-connectivity ([[def:k-connected]]). Non-example: in the left graph of [[fig:t05-connectivity-examples]], every path
+which matches $3$-connectivity ([[def:k-connected]]). Non-example: in the bowtie graph (two triangles sharing one vertex), every path
 from the left triangle to the right one passes through the middle vertex, so there is only one internally disjoint path between
 such vertices, but there are two edge-disjoint ones: the graph is $2$-edge-connected but not $2$-connected.
 :::
@@ -57,7 +57,7 @@ B) $G$ contains $k$ edge-disjoint directed $s$–$t$ paths $\iff$ $G$ has no dir
 ::: intuition
 This is a min–max theorem: paths are certificates that $s$ and $t$ are well connected, cuts are certificates that they are not,
 and the obvious obstacle (a small cut) is the only one. B is the max-flow min-cut theorem ([[thm:maxflow-mincut]]) with
-capacity $1$ on every arc, as in [[def:unit-capacity|unit-capacity networks]]: by [[cor:integrality]] there is a maximum flow with
+capacity $1$ on every arc, as in [[def:unit-capacity|unit-capacity networks]]: by the integrality theorem there is a maximum flow with
 values $0$ and $1$, and its arcs of value $1$ form $k$ edge-disjoint paths ([[claim:d-flow-paths]]; worked out in [[exr:a02-menger-from-flow]]). A is the same after splitting
 every vertex $x \ne s, t$ into $x^- \to x^+$, i.e. giving it capacity $1$ ([[exr:a02-vertex-capacities]]). Example: direct all edges
 of [[fig:t05-edge-disjoint-paths]] from left to right. The $3$ parallel arcs from $s$ to $a$ form an edge cut of size $3$, and there

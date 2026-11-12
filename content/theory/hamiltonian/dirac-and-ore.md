@@ -33,6 +33,8 @@ b) **(Ore)** for all $u \ne v \in V(G)$: $uv \notin E(G) \implies d_G(u) + d_G(v
 Then $G$ is Hamiltonian.
 :::
 
+The lecture states this without proof.
+
 ::: intuition
 If every vertex has many neighbours, there is no bottleneck that a round trip could get stuck at. The proof keeps adding
 edges between non-adjacent pairs whose degrees sum to at least $n$; such an edge can always be "rerouted" around
@@ -48,8 +50,7 @@ Ore's condition is required only for **non-adjacent** pairs.
 :::
 
 The assumption $n \ge 3$ is needed: $K_2$ satisfies both conditions but has no cycle at all. Dirac's condition
-implies Ore's (if every [[def:degree|degree]] is at least $n/2$, every two degrees sum to at least $n$), so it suffices to prove
-b). The bound is **tight**:
+implies Ore's (if every [[def:degree|degree]] is at least $n/2$, every two degrees sum to at least $n$). The bound is **tight**:
 
 ::: example {#ex:dirac-tight title="The bound $n/2$ is tight" source="theory/2026-10-06 p5"}
 $K_{k, k+1}$ has $n = 2k + 1$ vertices and minimum degree $k = \frac{n-1}{2}$, just below $\frac{n}{2}$. It is not

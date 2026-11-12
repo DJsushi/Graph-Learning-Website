@@ -54,12 +54,7 @@ Let $\delta(X)$ be a minimum $p$–$q$ cut of $G$ for some vertices $p, q$, and 
 [[def:node-identification|identifying]] $X$ into a single vertex. Then $f_G(s, t) = f_{G_X}(s, t)$ for all $s, t \in V \setminus X$, $s \ne t$.
 :::
 
-::: proof
-By [[obs:identification-cuts]], the cuts of $G_X$ are exactly the cuts $\delta(U)$ of $G$ with $X \subseteq U$ or $X \cap U = \emptyset$, with the
-same capacities. So $f_{G_X}(s, t) \ge f_G(s, t)$. Conversely, $\delta(V \setminus X) = \delta(X)$ is a minimum $p$–$q$ cut and $s, t \in V \setminus X$;
-by [[lem:gomory-hu]] (with $S = V \setminus X$ and the one of $p, q$ in $S$ as $s$) there is a minimum $s$–$t$ cut $\delta(W)$ with
-$W \subseteq V \setminus X$. Then $W \cap X = \emptyset$, so $\delta(W)$ is also a cut of $G_X$, and $f_{G_X}(s, t) \le f_G(s, t)$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Everything beyond a minimum cut may be squashed into one point without changing any minimum cut on this side. This justifies the [[def:edge-contraction|contraction]] step

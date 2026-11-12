@@ -37,3 +37,5 @@ cleanly, and peeling it keeps the graph chordal, so the process can be repeated 
 Example: a tree on at least $2$ vertices is chordal, and its leaves are simplicial. Non-example: $C_5$ has no
 simplicial vertex, and indeed it is not chordal.
 :::
+
+The lecture states this without proof.

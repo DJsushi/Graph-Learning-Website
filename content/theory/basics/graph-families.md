@@ -79,27 +79,6 @@ panel: $K_{3,3}$
 use: K(3,3)
 ```
 
-::: observation {#obs:edge-counts-classes title="Edge counts" extra=true}
-$\abs{E(P_n)} = n$, $\abs{E(C_n)} = n$, $\abs{E(K_n)} = \binom{n}{2} = \frac{n(n-1)}{2}$ and
-$\abs{E(K_{m,n})} = m \cdot n$.
-:::
-
-::: proof
-The first two counts are read off the definitions: $P_n$ has one edge $\set{i-1,i}$ for each
-$i \in \set{1, \dots, n}$, and $C_n$ has the $n - 1$ edges $\set{i, i+1}$ plus the edge
-$\set{n, 1}$. For $K_n$, the edge set is the set of all 2-element subsets of an $n$-element set,
-of which there are $\binom{n}{2} = n(n-1)/2$. For $K_{m,n}$, an edge is determined by choosing its
-endpoint in $V_m$ ($m$ ways) and its endpoint in $V_n$ ($n$ ways), independently; different
-choices give different edges, so there are $mn$ edges.
-:::
-
-::: intuition
-Each count is a count of pairs: $K_n$ has an edge for every pair of vertices, and $K_{m,n}$ one
-for every choice of one vertex from each side. Examples: $K_4$ has $6$ edges, $K_{3,3}$ has $9$,
-$K_6$ has $15$. A quick sanity check: $K_{m,n}$ is $K_{m+n}$ minus the edges inside the two sides,
-and indeed $\binom{m+n}{2} - \binom{m}{2} - \binom{n}{2} = mn$.
-:::
-
 ::: pitfall
 $P_n$ has $n + 1$ vertices, but $C_n$ and $K_n$ have $n$ vertices. Some textbooks use $P_n$ for
 the path on $n$ vertices; in this course the index of $P_n$ is always the **length**.

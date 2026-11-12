@@ -44,21 +44,11 @@ cycle: $(a, b, a)$ goes along the edge $ab$ and back, and there is no cycle of l
 A shortest walk between vertices $v_0$ and $v_k$ in a graph is a path.
 :::
 
-::: proof
-Let $W = (v_0, e_0, v_1, \dots, e_{k-1}, v_k)$ be a walk from $v_0$ to $v_k$ of minimum length. If
-some vertex repeats, say $v_i = v_j$ with $i < j$, then
-$$W' = (v_0, e_0, \dots, v_i, e_j, v_{j+1}, \dots, v_k)$$
-(we skip the closed part between the two visits) is again a walk from $v_0$ to $v_k$, of length
-$k - (j - i) < k$. This contradicts minimality. So all vertices of $W$ are distinct, and its vertices
-and edges form a path from $v_0$ to $v_k$.
-:::
-
-The proof is a "shortcut" argument that is used all the time: whenever a walk visits a vertex
-twice, cut out the closed part between the two visits.
+The lecture states this without proof.
 
 ```graph id=t02-shortcut widget=stepper
 caption: Shortening a walk: when a walk revisits a vertex, the part between the two visits can be cut out.
-intent: Visualise the proof of the claim: walk a-b-c-d-b-e repeats b; cutting gives the path a-b-e.
+intent: Illustrates the claim: walk a-b-c-d-b-e repeats b; cutting gives the path a-b-e.
 layout: fixed
 a @(0, 0); b @(1, 0); c @(1.6, 0.9); d @(2.2, 0); e @(2, -0.9)
 a -- b; b -- c; c -- d; d -- b; b -- e

@@ -21,9 +21,8 @@ and ends with the much harder directed version.
 ## Summary
 
 - MST: spanning tree of minimum weight ([[def:mst]]). Cut property: the lightest edge across a cut ([[def:cut]]) is in $M$; cycle property: the heaviest edge on a cycle is not
-  ([[thm:cut-property]], [[thm:cycle-property]]); with distinct weights both become characterisations and $M$ is unique ([[thm:strong-cut-cycle]], [[cor:mst-unique]]).
-  All proofs exchange edges along the unique cycle of $T + e$ or the cut of $T - e$ ([[thm:tree-characterisations]]).
-- Generalized greedy: blue and red rules in any order ([[thm:generalized-greedy]]).
+  ([[thm:cut-property]], [[thm:cycle-property]]); with distinct weights both become characterisations ([[thm:strong-cut-cycle]]).
+- Generalized greedy: blue and red rules in any order.
 - Kruskal $\O(m \log n)$ with union-find ([[alg:kruskal]]); Jarník $\O(n^2)$, $\O(m \log n)$, or $\O(m + n \log n)$ with Fibonacci heaps ([[alg:jarnik]]); Borůvka $\O(m \log n)$
   ([[alg:boruvka]]), naturally expressed with [[def:edge-contraction|contractions]] ([[lem:contraction-mst]]).
 - Fredman–Tarjan $\O(m \beta(m, n))$ by limiting heap sizes; packets give $\O(m \log \beta(m, n))$.

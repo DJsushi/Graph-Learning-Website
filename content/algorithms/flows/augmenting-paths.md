@@ -38,17 +38,7 @@ Example: step 4 of [[ex:ford-fulkerson-demo]] goes $s \to b \to a \to c \to t$; 
 replaced by $2$ units from $s$, and at $a$ those $2$ units now go to $c$ instead of $b$.
 :::
 
-::: proof
-*Capacities:* if $e \in P$, then $\delta \le c_f(e) = c(e) - f(e)$, so $f'(e) \le c(e)$; if $e^R \in P$, then $\delta \le c_f(e^R) = f(e)$, so $f'(e) \ge 0$. (Since $P$ is a path, it
-visits every vertex at most once, so it cannot contain both $e = (u, v)$ and $e^R = (v, u)$; hence every $e \in E$ is changed at most once.)
-
-*Conservation:* consider an inner vertex $v$ of $P$, entered by a residual edge and left by a residual edge. A forward residual edge $(u, v) = e$ increases the
-inflow of $v$ by $\delta$; a backward residual edge $(u, v) = e^R$ with $e = (v, u)$ decreases the outflow of $v$ by $\delta$. Similarly, leaving $v$ forward increases
-the outflow, and leaving backward decreases the inflow. In all four combinations, inflow $-$ outflow of $v$ is unchanged.
-
-*Value:* the first edge of $P$ leaves $s$; since no edge of $G$ enters $s$, it is a forward edge $(s, v)$, so the outflow of $s$ grows by $\delta$, and $s$ is not visited
-again.
-:::
+The lecture states this without proof.
 
 ::: algorithm {#alg:augment title="AUGMENT" source="algorithms/02 p13"}
 ```pseudo

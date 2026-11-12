@@ -42,7 +42,7 @@ length $l$ have $\abs{E} = kl$, $\abs{f^*} = k$ and distance $l = \abs{E}/\abs{f
 ::: proof
 In the level graph of $G$, let $S_i = L_0 \cup \dots \cup L_i$ for $0 \le i < l$. Each $(S_i, V \setminus S_i)$ is an $s$–$t$ cut, and every edge leaving $S_i$ goes from $L_i$ to $L_{i+1}$
 (edges increase the level by at most one). So the set of edges between $L_i$ and $L_{i+1}$ forms a cut, whose capacity (number of edges) is at least $\abs{f^*}$ by
-[[lem:flow-across-cut]]. These $l$ edge sets are disjoint, hence
+weak duality. These $l$ edge sets are disjoint, hence
 $$l \cdot \abs{f^*} \le \abs{E}.$$
 :::
 

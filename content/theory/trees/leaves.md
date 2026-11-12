@@ -176,42 +176,8 @@ Every tree on at least $2$ vertices has a vertex of degree $1$. (In fact it has 
 ::: intuition
 The two vertices of degree at most $1$ from [[thm:two-leaves]] cannot have degree $0$, because a
 connected graph with an edge has no isolated vertex. So a tree on $n \ge 2$ vertices always has a
-[[def:leaf|leaf]] to remove, which is what makes induction on trees work ([[lem:leaf-removal]]). Example: $K_2$ is a
+[[def:leaf|leaf]] to remove, which is what makes induction on trees work. Example: $K_2$ is a
 tree whose two vertices are both leaves.
 :::
 
-The proof applies [[thm:two-leaves]] and then excludes degree $0$ with connectivity.
-
-:::: walkthrough {for=cor:tree-leaf}
-```graph id=t03-tree-leaf-proof widget=stepper
-caption: A tree $T$: the two vertices of degree at most 1 that the theorem gives are leaves.
-intent: New; the lecture states the corollary without an example (theory/2026-09-29 p3). Same tree as t03-leaf-example.
-layout: fixed
-a @(0, 0); b @(1, 0); c @(2, 0); d @(3, 0); g @(4, 0.6); e @(1, -1); f @(2, -1)
-a -- b -- c -- d -- g; b -- e; c -- f
-step: A tree on at least $2$ vertices.
-class tree: a--b b--c c--d d--g b--e c--f
-step: The theorem gives two vertices of degree at most $1$.
-class highlight: a g
-mark two: a g
-step: Neither has degree $0$, so both are leaves.
-class highlight: a--b d--g
-```
-
-::: step
-Let $T$ be a tree on at least $2$ vertices. By [[def:forest-tree|definition]], a tree is acyclic and connected. So $T$ meets both hypotheses of [[thm:two-leaves|the theorem]]: it is acyclic, and it has at least $2$ vertices. Here $T$ has $7$ vertices.
-:::
-
-::: step
-The theorem gives two vertices of degree at most $1$. Here they are [[fig:t03-tree-leaf-proof#two|$a$ and $g$]], the ends of a longest path $a, b, c, d, g$ of length $4$, as in the theorem's proof.
-:::
-
-::: step
-Now we use that $T$ is connected. A vertex of degree $0$ has no edge, so no path leads from it to another vertex. Since $T$ has a second vertex, $T$ would be disconnected. So both vertices have degree exactly $1$: they are [[def:leaf|leaves]]. Here $a$ hangs on its edge to $b$, and $g$ on its edge to $d$.
-:::
-::::
-
-::: proof
-By [[thm:two-leaves]] there are two vertices of degree at most $1$. A connected graph on at least two
-vertices has no vertex of degree $0$, so both have degree exactly $1$.
-:::
+The lecture states this without proof.

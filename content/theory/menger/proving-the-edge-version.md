@@ -42,56 +42,13 @@ e -> t [class=path]; c -> t [class=path]; a -> b [class=muted]; e -> c [class=mu
 If $F$ is an $s$–$t$ d-flow of size $k$, then $F$ contains $k$ edge-disjoint directed $s$–$t$ paths.
 :::
 
-::: proof
-By induction on $k$; for $k = 0$ there is nothing to show. Let $k \ge 1$. Follow a [[def:walk|walk]] from $s$ along arcs of $F$, never using an arc twice, as long
-as possible. Whenever the walk is at a vertex $v \ne s, t$, it has entered $v$ one more time than it has left it, so it has used one more
-$F$-arc into $v$ than out of $v$; as in- and out-degree of $v$ in $F$ are equal, an unused out-arc of $v$ remains and the walk can continue.
-The walk never returns to $s$ (no $F$-arc enters $s$). Since $F$ is finite, the walk stops, and it can only stop at $t$. Shortcutting all
-closed parts (as in [[claim:shortest-walk-path]]) gives a directed $s$–$t$ path $P$ with $E(P) \subseteq F$.
+The lecture states this without proof.
 
-Now $F - E(P)$ is an $s$–$t$ d-flow of size $k - 1$: $s$ loses one out-arc, $t$ loses one in-arc, and every inner vertex of $P$ loses one
-in-arc and one out-arc. By induction it contains $k - 1$ edge-disjoint $s$–$t$ paths, which are also edge-disjoint from $P$.
-:::
-
-So it suffices to prove: **if $G$ has no directed $s$–$t$ edge cut of size $\le k - 1$, then $G$ has an $s$–$t$ d-flow of size $k$.** The lecture
-stops here; we complete the argument with the **augmenting path** method (which is exactly [[alg:ford-fulkerson]] with unit
-capacities, see [[algorithms/02-maximum-flow]]; the augmenting paths below are the [[def:augmenting-path|augmenting paths]] of the
-residual network of $F$).
-
-:::: proof {title="Proof of B (completed beyond the lecture)" for=thm:menger-directed}
-Let $F$ be an $s$–$t$ d-flow of maximum size $\ell$ (the empty set is a d-flow, so one exists). We show that there is an $s$–$t$ edge cut of size
-$\ell$; by assumption then $\ell \ge k$, and $F$ contains $k$ edge-disjoint paths by [[claim:d-flow-paths]].
-
-Call a sequence $s = x_0, x_1, \dots, x_r$ of distinct vertices an **augmenting path** if every step $x_{i-1} \to x_i$ is
-- **forward**: along an arc $(x_{i-1}, x_i) \notin F$, or
-- **backward**: against an arc $(x_i, x_{i-1}) \in F$.
-
-Let $R$ be the set of vertices reachable from $s$ by augmenting paths.
-
-*Case $t \in R$.* Take an augmenting path from $s$ to $t$ and let $F'$ be $F$ with all forward arcs of the path added and all backward arcs
-removed. Check the balance at each vertex of the path:
-
-- at an inner vertex $x_i$, the step into $x_i$ adds an in-arc (forward) or removes an out-arc (backward), and the step out of $x_i$ adds an
-  out-arc (forward) or removes an in-arc (backward); in all four combinations, in-degree minus out-degree is unchanged;
-- the first step leaves $s$ forward (a backward step would need an $F$-arc into $s$), so the out-degree of $s$ grows by one; the last step enters
-  $t$ forward (a backward step would need an $F$-arc out of $t$); $s$ and $t$ are not visited otherwise.
-
-So $F'$ is an $s$–$t$ d-flow of size $\ell + 1$, contradicting maximality. Hence this case does not occur.
-
-*Case $t \notin R$.* Let $D$ be the set of arcs from $R$ to $V(G) \setminus R$. Every $s$–$t$ path starts in $R$ and ends outside, so it uses an arc
-of $D$: $D$ is an $s$–$t$ edge cut. Moreover:
-
-- every arc $(u, v) \in D$ lies in $F$ (otherwise $v$ would be reachable by a forward step), and
-- no arc from $V(G) \setminus R$ into $R$ lies in $F$ (otherwise its tail would be reachable by a backward step).
-
-Sum (out-degree $-$ in-degree in $F$) over $u \in R$. Each vertex of $R$ other than $s$ contributes $0$ ($t \notin R$), and $s$ contributes $\ell$.
-Arcs of $F$ with both ends in $R$ contribute $+1 - 1 = 0$, so the sum also equals (number of $F$-arcs leaving $R$) $-$ (number of $F$-arcs entering
-$R$) $= \abs{D} - 0$. Hence $\abs{D} = \ell$, and $D$ is an $s$–$t$ edge cut of size $\ell$.
-::::
+The lecture states [[thm:menger-directed|the edge version (B)]] without proof either.
 
 ```graph id=t05-augmenting-player widget=player
-caption: The augmenting-path proof as an algorithm: Ford–Fulkerson with all capacities 1 finds a maximum d-flow and, at the end, the cut $D$ leaving the reachable set $R$.
-intent: Connect the proof of Menger B with the flow algorithm of the algorithms course. Unit capacities.
+caption: Ford–Fulkerson with all capacities 1 finds a maximum d-flow and, at the end, the cut $D$ leaving the set $R$ of reachable vertices.
+intent: Connect Menger B with the flow algorithm of the algorithms course. Unit capacities.
 type: directed
 layout: layered
 algo: ford-fulkerson

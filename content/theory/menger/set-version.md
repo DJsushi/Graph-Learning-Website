@@ -18,7 +18,7 @@ paths, each with one end in $S$ and the other end in $T$.
 Instead of two vertices we connect two whole sets of $k$ terminals: in a $k$-connected graph any $k$ sources can be routed to any
 $k$ targets along disjoint [[def:path-graph|paths]]. The proof glues a new vertex to all of $S$ and another to all of $T$
 ([[fig:t05-total-menger]]), the same trick as a super-source and super-sink in flow problems. Example: in $C_4 = (1, 2, 3, 4)$ with
-$S = \set{1, 2}$, $T = \set{3, 4}$, take the paths $1\,4$ and $2\,3$. Non-example: in the left graph of [[fig:t05-connectivity-examples]],
+$S = \set{1, 2}$, $T = \set{3, 4}$, take the paths $1\,4$ and $2\,3$. Non-example: in the bowtie graph (two triangles sharing one vertex),
 which is not $2$-connected, let $S$ be the two outer vertices of the left triangle and $T$ those of the right one: every $S$–$T$ path
 passes through the middle vertex, so no two of them are disjoint.
 :::

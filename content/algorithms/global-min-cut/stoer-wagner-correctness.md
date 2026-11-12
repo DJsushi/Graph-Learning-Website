@@ -55,12 +55,7 @@ $a, b, f, c, e, d$, so $\delta(d)$ of capacity $14$ is a minimum $e$–$d$ cut; 
 $\textsf{MINIMUMCUT}(G, c)$ returns a minimum cut of $G$.
 :::
 
-::: proof
-By induction on $n$; for $n = 1$ there is no cut and nothing to show (the loop does not run). For $n \ge 2$, the first phase returns $s, t$ with
-$c(\delta(t)) = \lambda(G; s, t)$ by [[thm:mincut-phase]], and the algorithm continues on $G_{st}$, finding $\lambda(G_{st})$ by induction (each cut of
-$G_{st}$ being a cut of $G$ with the same capacity, [[obs:identification-cuts]]). The result is $\min(\lambda(G; s, t), \lambda(G_{st})) = \lambda(G)$ by
-[[cor:identification-mincut]].
-:::
+The lecture states this without proof.
 
 ::: intuition
 Each phase settles one pair $s, t$ for free and then glues it; [[cor:identification-mincut]] guarantees that the minimum over the $n - 1$ cuts of the

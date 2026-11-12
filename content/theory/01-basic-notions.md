@@ -26,9 +26,8 @@ degrees of its vertices.
   ([[def:path-graph]], [[def:cycle-graph]], [[def:complete-graph]], [[def:complete-bipartite]]).
 - Isomorphism is a bijection preserving adjacency *and* non-adjacency ([[def:isomorphism]]); a
   "graph" usually means an isomorphism class. Equal vertex counts, edge counts and degree
-  sequences are necessary for isomorphism, but not sufficient ([[prop:iso-invariants]]).
-- The [[def:degree|degree]] sum is $\sum_v d(v) = 2\abs{E}$ ([[lem:handshake]]), so the number of odd-degree vertices is even
-  ([[cor:odd-degree-count]]).
+  sequences are necessary for isomorphism, but not sufficient.
+- The [[def:degree|degree]] sum is $\sum_v d(v) = 2\abs{E}$ ([[lem:handshake]]).
 - Havel–Hakimi: $(d_1, \dots, d_n)$ is graphic iff the sequence obtained by deleting $d_1$ and
   decreasing the next $d_1$ entries is graphic ([[thm:havel-hakimi]]). The proof uses 2-switches.
 - Erdős–Gallai: graphic iff the sum is even and
@@ -51,7 +50,7 @@ use: E(5)
 task: select-vertices
 prompt: Select all vertices of odd degree.
 check: odd-degree-vertices
-solution: The odd-degree vertices are $a$, $c$, $d$ and $f$ (degrees $3, 1, 3, 1$). There are four of them, an even number, as [[cor:odd-degree-count]] predicts.
+solution: The odd-degree vertices are $a$, $c$, $d$ and $f$ (degrees $3, 1, 3, 1$). There are four of them, an even number.
 a -- b; a -- d; a -- e; b -- d; c -- d; e -- f
 ```
 
@@ -163,7 +162,7 @@ answer: 12
 
 ::: explanation
 Each of the 3 vertices on one side is adjacent to each of the 4 vertices on the other side:
-$3 \cdot 4 = 12$ ([[obs:edge-counts-classes]]).
+$3 \cdot 4 = 12$.
 :::
 ::::
 
@@ -176,16 +175,5 @@ isomorphic?
 
 ::: explanation
 $C_6$ and two disjoint triangles both have degree sequence $(2,2,2,2,2,2)$ but are not isomorphic.
-:::
-::::
-
-:::: quiz {#q:t01-odd-count}
-Is there a graph with exactly three vertices of odd degree?
-
-- [ ] Yes
-- [x] No
-
-::: explanation
-By [[cor:odd-degree-count]] the number of odd-degree vertices is always even.
 :::
 ::::

@@ -35,11 +35,7 @@ Let $T$ be a [[def:gomory-hu-tree|Gomory–Hu tree]] for $G$ and $e = st$ an edg
 $T - e$, then $\delta_G(U)$ is a minimum $s$–$t$ cut of $G$, of capacity $w(e) = f_G(s, t)$.
 :::
 
-::: proof
-The only $s$–$t$ path in the tree $T$ is the edge $e$ itself, and $s$, $t$ lie in different components of $T - e$. So every $s$–$t$ cut of $T$
-contains $e$, while $\delta_T(U) = \set{e}$. Hence $\delta_T(U)$ is a minimum $s$–$t$ cut of $T$ and $f_T(s, t) = w(e)$. By the cut property,
-$\delta_G(U)$ is a minimum $s$–$t$ cut of $G$, and its capacity is $f_G(s, t) = f_T(s, t) = w(e)$ by flow equivalence.
-:::
+The lecture states this without proof.
 
 ::: intuition
 Cutting one tree edge splits the vertices into two groups, and that split is a cheapest way to separate the two ends of the edge in $G$. Example: in
@@ -53,12 +49,7 @@ Let $T$ be a [[def:gomory-hu-tree|Gomory–Hu tree]] for $G$. Then for all $s \n
 $e$ of the unique $s$–$t$ path in $T$.
 :::
 
-::: proof
-By flow equivalence it suffices to show this for $f_T(s, t)$. Let $P$ be the $s$–$t$ path in $T$. Every $s$–$t$ cut $\delta_T(U)$ contains an edge
-of $P$, because $P$ starts on one side of $U$ and ends on the other; so $c(\delta_T(U)) \ge \min_{e \in P} w(e)$. Conversely, let $e \in P$ have
-minimum capacity $w(e)$. $T - e$ has two components, and $s$, $t$ lie in different ones ($P$ is their only connecting path in $T$, and it uses $e$). For the
-component $U$ of $s$, $\delta_T(U) = \set{e}$ is an $s$–$t$ cut of capacity $\min_{e \in P} w(e)$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 The minimum cut between two vertices is the **bottleneck** of their tree path: a chain is as strong as its weakest link. Example: in

@@ -44,7 +44,7 @@ use: C(4)
 Every [[def:complete-graph|complete graph]] and every [[def:forest-tree|forest]] is chordal (forests have no cycles at all). Removing vertices keeps a
 graph chordal:
 
-::: observation {#obs:chordal-induced title="Induced subgraphs of chordal graphs" extra=true}
+::: observation {#obs:chordal-induced title="Induced subgraphs of chordal graphs"}
 Every [[def:subgraph|induced subgraph]] of a chordal graph is chordal.
 :::
 
@@ -55,7 +55,4 @@ work: delete a vertex, and the rest is still chordal. Non-example: for **non-ind
 deleting the diagonal of $K_4 - e$ (a $4$-cycle plus one chord) leaves $C_4$.
 :::
 
-::: proof
-Let $G$ be chordal, $X \subseteq V(G)$, and $C$ a cycle of length at least $4$ in $G[X]$. Then $C$ is a cycle in $G$, so it
-has a chord $xy \in E(G)$. Both $x, y$ lie on $C$, hence in $X$, so $xy$ is an edge of the induced subgraph $G[X]$.
-:::
+The lecture states this without proof.

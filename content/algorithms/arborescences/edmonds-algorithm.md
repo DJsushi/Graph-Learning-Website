@@ -55,41 +55,6 @@ r -> a [w=2]; a -> b [w=6]; r -> c [w=5]; c -> a [w=1]; a -> d [w=3]
 a -> e [w=8]; b -> e [w=9]; d -> c [w=4]; d -> e [w=7]
 ```
 
-**Correctness** follows by induction on the number of vertices of $D$; the key part is that $T'$ can be expanded to a min-cost arborescence of $D$:
-
-::: lemma {#lem:edmonds-one-entry title="One arc entering the cycle" extra=true}
-Let $C$ be a directed cycle consisting of arcs $e_v$ (so of reduced weight $0$). Then there is an arborescence, optimal with respect to $w'$, that has exactly one arc entering $C$ (from a
-vertex outside $C$) and contains all arcs of $C$ except the one entering the head of that arc.
-:::
-<!-- REVIEW: statement now also says which arcs inside C are used (the proof constructs exactly this); needed for the correspondence with D' below. -->
-
-::: proof
-Let $T$ be optimal for $w'$. Note $r \notin C$ (no arc enters $r$). Since $r$ reaches $C$ in $T$, choose a directed path in $T$ from $r$ to a vertex of $C$ that meets $C$ only in its last vertex $b$;
-let $(a, b)$ be its last arc. Let $T'$ arise from $T$ by deleting every arc that enters a vertex of $C$, and adding $(a, b)$ back together with all arcs of $C$ except the one entering $b$.
-
-*Cost:* we removed arcs of non-negative reduced weight and added arcs of $C$, of reduced weight $0$; so $w'(T') \le w'(T)$.
-
-*$T'$ is an arborescence:* every vertex $v \ne r$ still has exactly one entering arc (vertices outside $C$ are unchanged; $b$ gets $(a, b)$; the other vertices of $C$ get their $C$-arc). And every
-vertex is reachable from $r$: the path from $r$ to $a$ avoids $C$ and all its arcs are kept, so $r$ reaches $a$, $b$, and along $C$ all of $C$. For any other vertex $v$, follow its path from $r$ in
-$T$ backwards from $v$ until the first time it hits a vertex of $C$ or $r$; this part has no arc entering $C$, so it is kept in $T'$, and its start is reachable from $r$ in $T'$. A digraph in which
-every vertex except $r$ has in-degree exactly $1$ and every vertex is reachable from $r$ is an arborescence (it has $n - 1$ arcs and is connected).
-
-So $T'$ is optimal, has exactly one arc entering $C$, and contains all arcs of $C$ except the one entering $b$.
-:::
-
-::: intuition {for=lem:edmonds-one-entry}
-The arcs of $C$ cost nothing in reduced weights. Once an optimal arborescence enters $C$ somewhere, say at $b$, it can reach the rest of $C$ for free
-along the cycle, so any further arcs entering $C$ can be dropped without loss. Example: in [[fig:a01-reduced-weights]], an arborescence entering
-$C = a \to d \to c \to a$ at $a$ by $(r, a)$ keeps $a \to d$ and $d \to c$ and drops $c \to a$.
-:::
-
-The cycles of $F$ are vertex-disjoint (each vertex has only one arc $e_v$), and the construction of the lemma for one cycle changes only arcs entering that cycle. So we can apply it to
-the cycles one after another and get an optimal arborescence of $D$ (for $w'$) that, for every contracted cycle $C$, enters $C$ by exactly one arc and contains all arcs of $C$ except one.
-Such arborescences correspond bijectively to arborescences of $D'$ (contract each $C$; expand by adding $C$ minus the arc entering the head of the entering arc), and since the arcs of $C$
-have reduced weight $0$, the correspondence preserves $w'$. Every arborescence of $D'$ expands, so the optimum over $D$ equals the optimum over $D'$; by induction, the recursive call finds
-the latter, and expanding it gives an optimal arborescence of $D$ (for $w'$, hence for $w$ by [[obs:reduced-weights]]).
-<!-- REVIEW: was "arborescences with exactly one arc entering C correspond to arborescences of D'", which fails when chords inside C are used; now uses the strengthened lemma and treats all contracted cycles at once. -->
-
 **Complexity.** There are at most $n$ [[def:edge-contraction|contractions]] in total (each reduces the number of vertices); finding and contracting cycles takes time $\O(m)$, and expanding $T'$ to $T$ takes $\O(m)$.
 **Total time: $\O(m \cdot n)$.**
 

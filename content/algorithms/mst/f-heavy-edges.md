@@ -41,10 +41,7 @@ edge is heavy. Example: if $F$ is the path $a\,b\,c$ with weights $1$ and $3$, a
 $a\,b\,c$ and cannot be in the MST.
 :::
 
-::: proof
-If $e$ is $F$-heavy, its ends are joined by a path in $F$ all of whose edges are lighter than $e$. Together with $e$ this path is a cycle on which $e$ is the
-heaviest edge, so $e \notin M$ by the cycle property ([[thm:cycle-property]]).
-:::
+The lecture states this without proof.
 
 ```graph id=a01-f-heavy widget=exercise
 task: select-edges

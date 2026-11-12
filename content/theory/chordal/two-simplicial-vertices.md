@@ -41,8 +41,3 @@ $y$ is simplicial in $G$.
 
 Finally $xy \notin E(G)$, since $x \in A$ and $y \notin A \cup X$. This proves the claim.
 ::::
-
-::: proof {title="Proof of the theorem" for=thm:chordal-simplicial}
-By [[lem:two-simplicial]], a chordal graph is complete (and then every vertex is simplicial) or it has two
-simplicial vertices.
-:::

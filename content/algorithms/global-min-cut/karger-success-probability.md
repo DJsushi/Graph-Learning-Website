@@ -38,10 +38,7 @@ bound $1/28$, since the minimum cut has only $2$ of the $14$ edges.
 A graph with $n$ vertices has at most $\binom{n}{2}$ minimum cuts.
 :::
 
-::: proof
-The events "$\textsf{CONTRACT}(G)$ returns $C$" for different minimum cuts $C$ are disjoint, and each has probability at least $1/\binom{n}{2}$ by
-[[lem:karger-success]]. The probabilities sum to at most $1$.
-:::
+The lecture states this without proof.
 
 ::: intuition
 A probabilistic algorithm proves a purely combinatorial fact: since each minimum cut has a fair chance of being the single output, there cannot be

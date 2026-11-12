@@ -133,81 +133,6 @@ number of hands shaken is twice the number of handshakes. Example: $K_4$ has deg
 $4 \cdot 3 = 12 = 2 \cdot 6$, and a single loop has degree sum $2 = 2 \cdot 1$.
 :::
 
-::: corollary {#cor:odd-degree-count title="Odd-degree vertices" extra=true}
-Every (multi)graph has an even number of vertices of odd degree.
-:::
-
-This is a **parity argument**: the handshake lemma makes the degree sum even, and we read off how many odd terms it can have.
-
-:::: walkthrough {for=cor:odd-degree-count}
-```graph id=t01-odd-count widget=stepper
-caption: Even-degree and odd-degree vertices of the lecture graph; both degree sums are even.
-intent: Walkthrough of the odd-degree corollary on the lecture graph (theory/2026-09-15 p5, degree sequence (4,4,3,3,1,1,0)); the colouring is new.
-layout: fixed
-vertex-label: "{id}: {d}"
-x [d=0] @(1, 1.6)
-l [d=4] @(0, 1); r [d=4] @(2, 1); mt [d=3] @(1, 1); mb [d=3] @(1, 0); p [d=1] @(0, 0); q [d=1] @(2, 0)
-l -- r [bend=0.5]; l -- mt; mt -- r; l -- mb; mt -- mb; r -- mb; l -- p; r -- q
-mark even: x l r
-mark odd: mt mb p q
-step: Split the vertices by the parity of the degree.
-class color1: x l r
-class color2: mt mb p q
-step: The left side is 2 times the number of edges.
-class bold: l--r l--mt mt--r l--mb mt--mb r--mb l--p r--q
-step: The sum over the even vertices is even.
-class muted: mt mb p q
-step: So the sum over the odd vertices is even.
-unclass muted: mt mb p q
-class muted: x l r
-step: An even sum of odd numbers has an even number of terms.
-unclass muted: x l r
-class highlight: mt mb p q
-```
-
-::: step
-We split the vertices into [[fig:t01-odd-count#even|those of even degree]] and
-[[fig:t01-odd-count#odd|those of odd degree]]. Every vertex is in exactly one group. So the degree sum
-is the sum over the first group plus the sum over the second. Here: the graph has 8 edges, and
-the two sums are 8 and 8.
-:::
-
-::: step
-The left side is $2\abs{E(G)}$. It is even, because it is 2 times a whole number. By
-[[lem:handshake|the handshake lemma]] it equals the degree sum. Here: 16.
-:::
-
-::: step
-The first sum has only even terms. A sum of even numbers is even. So the first sum is even.
-Here: 0 + 4 + 4, which is 8.
-:::
-
-::: step
-The second sum is the even left side minus the even first sum, and an even number minus an
-even number is even. So the sum of the odd degrees is even. Here: $16 - 8 = 8$.
-:::
-
-::: step
-Every odd number is an even number plus 1. So a sum of $k$ odd numbers is an even number plus
-$k$. It is even exactly when $k$ is even. The sum of the odd degrees is even, so the number of
-odd-degree vertices is even. Here: $k = 4$, and $3 + 3 + 1 + 1 = 8$.
-:::
-::::
-
-::: proof
-Split the degree sum into the vertices of even degree and those of odd degree:
-$$2\abs{E(G)} = \sum_{d(v) \text{ even}} d(v) + \sum_{d(v) \text{ odd}} d(v).$$
-The left-hand side and the first sum on the right are even, hence the second sum is even. A sum
-of odd numbers is even exactly when the number of summands is even.
-:::
-
-::: intuition
-The degree sum is even, and a sum of integers is even exactly when it has an even number of odd
-terms. This gives a quick impossibility test: there is no graph with degrees $3, 2, 2$, and no
-graph on $5$ vertices in which every vertex has degree $3$. Example: the star $K_{1,3}$ has four
-odd-degree vertices, an even number.
-:::
-
 ::: remark
 For a digraph $D$ one distinguishes the **out-degree** $d^+(v)$ (number of arcs leaving $v$)
 and the **in-degree** $d^-(v)$ (number of arcs entering $v$). Every arc has exactly one tail and
@@ -216,7 +141,7 @@ one head, so $\sum_v d^+(v) = \sum_v d^-(v) = \abs{E(D)}$.
 
 ```graph id=t01-handshake-sandbox widget=editable
 caption: Try it: add, remove and move vertices and edges (including loops and parallel edges). The degree sum is always twice the number of edges.
-intent: Let students convince themselves of the handshake lemma and of the corollary by experiment.
+intent: Let students convince themselves of the handshake lemma by experiment.
 live: degree-sequence, degree-sum, edge-count
 1 -- 2 -- 3 -- 1; 3 -- 4
 ```
