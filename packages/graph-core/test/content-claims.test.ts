@@ -1318,3 +1318,33 @@ describe('Ear decomposition walkthroughs (t05)', () => {
     expect(vcls(v[4], 'color1')).toEqual(['2', '5'])
   })
 })
+
+describe('graph families example figures', () => {
+  const deg = (g: GraphData) => ids(g).map(v => g.edges.filter(e => e.tail[0] === v || e.head[0] === v).length).sort()
+  const ids = (g: GraphData) => g.vertices.map(v => v.id)
+  it('P_3 has 4 vertices and 3 edges; the star has 4 and 3 with a vertex of degree 3', () => {
+    const p = fig('t01-path-examples', 0), s = fig('t01-path-examples', 1)
+    expect([ids(p).length, p.edges.length, deg(p)]).toEqual([4, 3, [1, 1, 2, 2]])
+    expect([ids(s).length, s.edges.length, deg(s)]).toEqual([4, 3, [1, 1, 1, 3]])
+  })
+  it('C_5 is 2-regular on 5 vertices; two triangles have 6 vertices, 6 edges and are 2-regular but disconnected', () => {
+    const c = fig('t01-cycle-examples', 0), t = fig('t01-cycle-examples', 1)
+    expect([ids(c).length, c.edges.length, deg(c)]).toEqual([5, 5, [2, 2, 2, 2, 2]])
+    expect([ids(t).length, t.edges.length, deg(t)]).toEqual([6, 6, [2, 2, 2, 2, 2, 2]])
+    expect(A.components(new GraphIndex(t)).length).toBe(2); expect(A.components(new GraphIndex(c)).length).toBe(1)
+  })
+  it('K_5 has 10 edges, all degrees 4; without edge 24: 9 edges and 2, 4 not adjacent', () => {
+    const k = fig('t01-complete-examples', 0), n = fig('t01-complete-examples', 1)
+    expect([ids(k).length, k.edges.length, deg(k)]).toEqual([5, 10, [4, 4, 4, 4, 4]])
+    expect(n.edges.length).toBe(9)
+    expect(n.edges.some(e => [e.tail[0], e.head[0]].sort().join('') === '24')).toBe(false)
+    expect(k.edges.some(e => [e.tail[0], e.head[0]].sort().join('') === '24')).toBe(true)
+  })
+  it('K_{2,3} has 6 edges between sides; the second panel has 5, missing 2 3\'', () => {
+    const k = fig('t01-bipartite-examples', 0), n = fig('t01-bipartite-examples', 1)
+    expect([ids(k).length, k.edges.length]).toEqual([5, 6])
+    expect(k.edges.every(e => (e.tail[0].endsWith("'")) !== (e.head[0].endsWith("'")))).toBe(true)
+    expect(n.edges.length).toBe(5)
+    expect(n.edges.some(e => [e.tail[0], e.head[0]].includes("3'") && [e.tail[0], e.head[0]].includes('2'))).toBe(false)
+  })
+})
