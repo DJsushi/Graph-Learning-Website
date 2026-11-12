@@ -430,3 +430,54 @@ describe('Erdős–Gallai example', () => {
     expect([1, 2, 3, 4, 5].map(k => eg([3, 3, 3, 2, 1], k))).toEqual([[3, 4], [6, 7], [9, 9], [11, 13], [12, 20]])
   })
 })
+
+describe('odd-cycles walkthroughs', () => {
+  const eids = (g: GraphData, pairs: string) => new Set(pairs.split(' ').map(p => {
+    const [u, v] = p.split('-')
+    return g.edges.find(e => (e.tail[0] === u && e.head[0] === v) || (e.tail[0] === v && e.head[0] === u))!.id
+  }))
+  it('certificates: C6 coloured as a bipartition, C5 not bipartite, vertex 5 has neighbours of both colours', () => {
+    const c6 = fig('t02-odd-cycle-certificates', 0), c5 = fig('t02-odd-cycle-certificates', 1)
+    const col = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => c.startsWith('color'))
+    expect(A.bipartition(new GraphIndex(c6))).toBeDefined()
+    expect(c6.edges.every(e => col(c6, e.tail[0]) !== col(c6, e.head[0]))).toBe(true)
+    expect(A.bipartition(new GraphIndex(c5))).toBeUndefined()
+    expect(A.girth(new GraphIndex(c5))).toBe(5)
+    expect([col(c5, '1'), col(c5, '4')].sort()).toEqual(['color1', 'color2'])
+  })
+  it('alternate: groups A, B form a bipartition and c1..c6 is a 6-cycle', () => {
+    const g = fig('t02-odd-cycle-alternate')
+    const A_ = new Set(['c1', 'c3', 'c5', 'u'])
+    expect(g.edges.every(e => A_.has(e.tail[0]) !== A_.has(e.head[0]))).toBe(true)
+    expect(A.isCycleEdgeSet(g, eids(g, 'c1-c2 c2-c3 c3-c4 c4-c5 c5-c6 c6-c1'))).toBe(true)
+  })
+  it('components: two components, K1 bipartite with s,u | t,w, G not bipartite', () => {
+    const g = fig('t02-odd-cycle-components'), ix = new GraphIndex(g)
+    expect(A.components(ix).length).toBe(2)
+    expect(A.bipartition(ix)).toBeUndefined()
+    const k1 = new Set(['s', 'u'])
+    expect(g.edges.filter(e => ['s', 't', 'u', 'w'].includes(e.tail[0])).every(e => k1.has(e.tail[0]) !== k1.has(e.head[0]))).toBe(true)
+  })
+  for (const id of ['t02-odd-cycle-layers', 't02-odd-cycle-lca']) it(`${id}: layers, edges inside layers, LCA b, 5-cycle`, () => {
+    const g = fig(id), ix = new GraphIndex(g), d = A.bfsDistances(ix, 'x')
+    expect(d.size).toBe(9)
+    expect(Object.fromEntries(d)).toEqual({ x: 0, b: 1, p: 1, c1: 2, c2: 2, q: 2, a1: 3, a2: 3, r: 3 })
+    expect(A.bipartition(ix)).toBeUndefined()
+    const inside = g.edges.filter(e => d.get(e.tail[0]) === d.get(e.head[0])).map(e => [e.tail[0], e.head[0]].sort().join('-'))
+    expect(inside.sort()).toEqual(['a1-a2', 'a2-r', 'c2-q'])
+    // tree edges: parent one layer up; the paths a1-c1-b and a2-c2-b meet first at b (layer 1)
+    expect(g.edges.filter(e => e.classes.includes('tree')).every(e => Math.abs(d.get(e.tail[0])! - d.get(e.head[0])!) === 1)).toBe(true)
+    expect(A.isCycleEdgeSet(g, eids(g, 'a1-a2 a1-c1 c1-b a2-c2 c2-b'))).toBe(true)
+    const parent = new Map<string, string>()
+    for (const e of g.edges.filter(e => e.classes.includes('tree'))) {
+      const [u, v] = [e.tail[0], e.head[0]]
+      if (d.get(u)! > d.get(v)!) parent.set(u, v); else parent.set(v, u)
+    }
+    const up = (v: string) => { const p = [v]; while (parent.has(p[p.length - 1])) p.push(parent.get(p[p.length - 1])!); return p }
+    const p1 = up('a1'), p2 = up('a2'), lca = p1.find(v => p2.includes(v))!
+    expect(lca).toBe('b')
+    expect(d.get(lca)).toBe(1)
+    expect([p1.indexOf(lca), p2.indexOf(lca)]).toEqual([2, 2])
+    expect(p1.indexOf(lca) + p2.indexOf(lca) + 1).toBe(5)
+  })
+})
