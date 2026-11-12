@@ -193,7 +193,7 @@ the rows at any time.
 | T4.6 | `theory/bipartite/odd-cycles.md` | 27 | c61b389 |
 | T4.7 | `theory/trees/small-degree-test.md` | 6 | f2cf457 |
 | T4.8 | `theory/trees/unique-paths.md` | 8 | f9ee9a0 |
-| T4.9 | `theory/trees/cayley-formula.md` | 37 | |
+| T4.9 | `theory/trees/cayley-formula.md` | 37 | 5aa25ae |
 | T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
 | T4.11 | `theory/chordal/minimal-cuts.md` | 22 | |
 | T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | |
