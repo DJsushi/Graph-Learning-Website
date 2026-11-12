@@ -22,8 +22,8 @@ tour costs at least a [[def:mst|minimum spanning tree]].
 :::
 
 ```graph id=t04-hamiltonian-example widget=figure
-caption: Left, a hexagon $1, \dots, 6$ with the chords $14$ and $25$; the green edges form a Hamiltonian cycle, so the graph is Hamiltonian. Right, two triangles sharing the vertex $c$ have a Hamiltonian path (blue) but no Hamiltonian cycle: a cycle through $c$ cannot enter and leave both triangles.
-intent: New figure. Example and non-example for the definition on theory/2026-10-06 p5; the lecture draws no example. Cycle edges are green, path edges blue.
+caption: Left, a hexagon $1, \dots, 6$ with the chords $14$ and $25$; the thick solid edges form a Hamiltonian cycle, so the graph is Hamiltonian. Right, two triangles sharing the vertex $c$ have a Hamiltonian path (thick dashed edges) but no Hamiltonian cycle: a cycle through $c$ cannot enter and leave both triangles.
+intent: New figure. Example and non-example for the definition on theory/2026-10-06 p5; the lecture draws no example. Cycle edges are thick and solid, path edges thick and dashed.
 layout: fixed
 panel: Hamiltonian cycle
 1 @(0, 0.5); 2 @(0.7, 1); 3 @(1.5, 1); 4 @(2.2, 0.5); 5 @(1.5, 0); 6 @(0.7, 0)

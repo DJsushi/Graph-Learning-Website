@@ -1483,7 +1483,7 @@ describe('dirac-and-ore example figures (t04)', () => {
 })
 
 describe('hamiltonian-graphs example figures (t04)', () => {
-  it('hexagon plus two chords has a Hamiltonian cycle (the green edges); the bowtie has a Hamiltonian path (blue) but no Hamiltonian cycle', () => {
+  it('hexagon plus two chords has a Hamiltonian cycle (the thick solid edges); the bowtie has a Hamiltonian path (thick dashed) but no Hamiltonian cycle', () => {
     const hamCycle = (g: GraphData) => {
       const ids = g.vertices.map(v => v.id), adj = (u: string, v: string) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [u, v].sort().join())
       const go = (path: string[]): boolean => path.length === ids.length ? adj(path[path.length - 1], path[0]) : ids.some(v => !path.includes(v) && adj(path[path.length - 1], v) && go([...path, v]))
