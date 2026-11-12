@@ -5,7 +5,7 @@ chapter: degrees
 order: 2
 lectures: [t01]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:degree-sequence title="Degree sequence" defines="degree sequence" source="theory/2026-09-15 p5"}
@@ -49,6 +49,19 @@ is realised by $C_6$ and by two disjoint triangles.
 Non-examples: $(1, 1, 1)$ has an odd sum, and $(2, 0)$ asks for two neighbours with only one
 other vertex available.
 :::
+
+```graph id=t01-graphic-sequence-example widget=figure
+caption: Left, a realisation of $(3, 2, 2, 1)$, so this sequence is graphic. Right, the only attempt for $(3, 3, 1, 1)$. Vertices $a$ and $b$ need degree 3, so each is adjacent to all others; then $c$ and $d$ get degree 2, not 1.
+intent: New figure. Example and non-example for graphic sequences; labels show the degrees, the red vertices of the right panel break the prescribed sequence.
+layout: fixed
+vertex-label: "{id}: {d}"
+panel: realisation of $(3, 2, 2, 1)$
+a [d=3] @(1, 0.5); b [d=2] @(2, 1); c [d=2] @(2, 0); d [d=1] @(0, 0.5)
+a -- b; a -- c; b -- c; a -- d
+panel: attempt for $(3, 3, 1, 1)$
+a [d=3] @(0, 0.5); b [d=3] @(2, 0.5); c [d=2 class=rejected] @(1, 1); d [d=2 class=rejected] @(1, 0)
+a -- b; a -- c; a -- d; b -- c; b -- d
+```
 
 Two necessary conditions are immediate: the sum $d_1 + \dots + d_n$ must be even
 ([[lem:handshake]]), and every $d_i \le n - 1$ (a vertex of a simple graph has at most $n-1$

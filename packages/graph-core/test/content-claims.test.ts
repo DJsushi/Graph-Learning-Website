@@ -1443,3 +1443,13 @@ describe('simplicial-vertices example figures (t04)', () => {
     expect(simplicial(c)).toEqual([])
   })
 })
+
+describe('degree-sequences example figures (t01)', () => {
+  it('left panel realises (3,2,2,1); right panel forced edges give (3,3,2,2), not (3,3,1,1)', () => {
+    const l = new GraphIndex(fig('t01-graphic-sequence-example', 0)), r = new GraphIndex(fig('t01-graphic-sequence-example', 1))
+    expect(['a', 'b', 'c', 'd'].map(v => l.degree(v))).toEqual([3, 2, 2, 1])
+    expect(['a', 'b', 'c', 'd'].map(v => r.degree(v))).toEqual([3, 3, 2, 2])
+    expect(vclsOf(fig('t01-graphic-sequence-example', 1), 'rejected')).toEqual(['c', 'd'])
+    for (const k of [0, 1]) { const g = fig('t01-graphic-sequence-example', k), ix = new GraphIndex(g); for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id)) }
+  })
+})
