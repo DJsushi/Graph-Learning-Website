@@ -529,3 +529,109 @@ describe('unique-paths walkthroughs', () => {
     expect(A.bfsDistances(ix, 'u').get('v')).toBe(3)
   })
 })
+
+describe('Cayley formula walkthroughs', () => {
+  const steps = (id: string) => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const arcs = (g: GraphData) => g.edges.filter(e => e.directed && !e.classes.includes('dashed'))
+  const indeg = (g: GraphData, v: string) => arcs(g).filter(e => e.head[0] === v).length
+  const comps = (g: GraphData) => A.components(new GraphIndex({ ...g, edges: arcs(g) }))
+  const roots = (g: GraphData) => g.vertices.map(v => v.id).filter(v => indeg(g, v) === 0).sort()
+  // weak components of the digraph, the roots (in-degree 0) and the allowed y for a given x
+  const allowedY = (g: GraphData, x: string) => { const c = comps(g).find(c => c.includes(x))!; return roots(g).filter(r => !c.includes(r)) }
+  const forestInvariant = (g: GraphData) => {
+    const cs = comps(g)
+    expect(cs.length).toBe(g.vertices.length - arcs(g).length)
+    expect(A.isAcyclic(new GraphIndex({ ...g, edges: arcs(g) }))).toBe(true)
+    for (const v of g.vertices) expect(indeg(g, v.id)).toBeLessThanOrEqual(1)
+    for (const c of cs) expect(c.filter(v => indeg(g, v) === 0).length).toBe(1)
+  }
+
+  it('invariant: 5 then 3 then 2 components; roots 1,3,4 after step 2; 1 reaches 2,4,5 at the end', () => {
+    const s = steps('t03-cayley-invariant')
+    s.forEach(forestInvariant)
+    expect(comps(s[0]).length).toBe(5)
+    expect(roots(s[2])).toEqual(['1', '3', '4'])
+    expect(comps(s[2]).length).toBe(3)
+    expect(allowedY(s[2], '2')).toContain('4')          // step 3: x3 = 2 (= y1), y3 = 4 (= x2) is allowed
+    expect(comps(s[3]).length).toBe(2)
+    expect(indeg(s[3], '4')).toBe(1)
+    const ix = new GraphIndex({ ...s[5], edges: arcs(s[5]) })
+    const reach = new Set(['1']); const st = ['1']
+    while (st.length) for (const w of ix.outNeighbors(st.pop()!)) if (!reach.has(w)) { reach.add(w); st.push(w) }
+    expect([...reach].sort()).toEqual(['1', '2', '4', '5'])
+  })
+
+  it('first count: y3 in {3,4} for x3 = 2 and {1,3} for x3 = 5; 5^4 * 4! = 15000 = brute-force count', () => {
+    const s = steps('t03-cayley-first-count')
+    expect(roots(s[0])).toEqual(['1', '3', '4'])
+    expect(allowedY(s[0], '2')).toEqual(['3', '4'])
+    expect(allowedY(s[0], '5')).toEqual(['1', '3'])
+    for (const x of ['1', '2', '3', '4', '5']) expect(allowedY(s[0], x).length).toBe(5 - 3)
+    let prod = 1
+    for (let k = 1; k <= 4; k++) prod *= 5 * (5 - k)
+    expect(prod).toBe(15000)
+    expect(5 ** 4 * 24).toBe(15000)
+    expect(625 * 24).toBe(15000)
+    // brute force: run the construction on 5 vertices with every allowed choice
+    const n = 5
+    const count = (par: number[], head: Set<number>, k: number): number => {
+      if (k === n) return 1
+      const find = (v: number): number => (par[v] === v ? v : find(par[v]))
+      let total = 0
+      for (let x = 0; x < n; x++) for (let y = 0; y < n; y++) {
+        if (head.has(y) || find(x) === find(y)) continue
+        const p2 = [...par]; p2[find(y)] = find(x)
+        total += count(p2, new Set([...head, y]), k + 1)
+      }
+      return total
+    }
+    expect(count([0, 1, 2, 3, 4], new Set(), 1)).toBe(15000)
+  })
+
+  it('result: a spanning tree of K5 with root 1, arcs 1->2, 4->5, 2->4, 2->3 in this order', () => {
+    const s = steps('t03-cayley-result')
+    s.forEach(forestInvariant)
+    const g = s[0]
+    expect(A.isTree(new GraphIndex(g))).toBe(true)
+    expect(roots(g)).toEqual(['1'])
+    const last = s[s.length - 1]
+    expect(last.edges.map(e => `${e.tail[0]}->${e.head[0]}:${e.label}`)).toEqual(['1->2:1st', '4->5:2nd', '2->4:3rd', '2->3:4th'])
+  })
+
+  it('second count: root 4 orients T away; replay 2->3, 4->5, 2->1, 4->2 is allowed; 120 per tree, C(5) = 125', () => {
+    const s = steps('t03-cayley-second-count')
+    const T = s[0]
+    expect(A.isTree(new GraphIndex(T))).toBe(true)
+    const und = (g: GraphData) => g.edges.map(e => [e.tail[0], e.head[0]].sort().join('')).sort()
+    expect(und(T)).toEqual(und(steps('t03-cayley-result')[0]))
+    const o = s[1]
+    const d = A.bfsDistances(new GraphIndex(o), '4')
+    for (const e of arcs(o)) expect(d.get(e.head[0])).toBe(d.get(e.tail[0])! + 1)
+    const order = s[2].edges.slice().sort((a, b) => String(a.label).localeCompare(String(b.label)))
+    expect(order.map(e => e.tail[0] + e.head[0])).toEqual(['23', '45', '21', '42'])
+    let g: GraphData = { ...o, edges: [] }
+    for (const e of order) {
+      expect(indeg(g, e.head[0])).toBe(0)
+      expect(allowedY(g, e.tail[0])).toContain(e.head[0])
+      if (e.head[0] === '1') expect(comps(g).map(c => c.sort().join('')).sort()).toEqual(['1', '23', '45'])
+      g = { ...g, edges: [...g.edges, e] }
+    }
+    expect(5 * 24).toBe(120)
+    expect(15000 / 120).toBe(125)
+    expect(5 ** 3).toBe(125)
+    // brute force: the spanning trees of K5
+    const k5 = complete(5)
+    const ids = k5.edges.map(e => e.id)
+    let trees = 0
+    for (let m = 0; m < 1 << ids.length; m++) {
+      const pick = new Set(ids.filter((_, i) => m >> i & 1))
+      if (pick.size === 4 && A.isTree(new GraphIndex(A.spanningSubgraph(k5, pick)))) trees++
+    }
+    expect(trees).toBe(125)
+  })
+})
