@@ -635,3 +635,105 @@ describe('Cayley formula walkthroughs', () => {
     expect(trees).toBe(125)
   })
 })
+
+describe('regular graphs of large girth walkthroughs', () => {
+  const steps = (id: string) => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  // what the reader sees: no hidden elements, no dashed (impossible) edges
+  const vis = (g: GraphData): GraphIndex => {
+    const vs = g.vertices.filter(v => !v.classes.includes('hidden'))
+    const ids = new Set(vs.map(v => v.id))
+    const es = g.edges.filter(e => !e.classes.includes('hidden') && !e.classes.includes('dashed') && e.tail.concat(e.head).every(x => ids.has(x)))
+    return new GraphIndex({ ...g, vertices: vs, edges: es })
+  }
+  const degs = (ix: GraphIndex) => new Set(ix.vertexIds.map(v => ix.degree(v)))
+  const regular = (ix: GraphIndex, d: number) => expect([...degs(ix)]).toEqual([d])
+
+  it('Petersen local tree: 3-regular, girth 5; 3 vertices at distance 1, 6 at distance 2; the 6 other edges join distance-2 vertices; 0,1,2,3,4 is a 5-cycle', () => {
+    const s = steps('t03-petersen-local-tree')
+    const ix = vis(s[0])
+    regular(ix, 3)
+    expect(A.girth(ix)).toBe(5)
+    const d = A.bfsDistances(ix, '0')
+    expect(ix.vertexIds.filter(v => d.get(v) === 1).sort()).toEqual(['1', '4', '5'])
+    expect(ix.vertexIds.filter(v => d.get(v) === 2).length).toBe(6)
+    const tree = s[2].edges.filter(e => e.classes.includes('tree'))
+    expect(tree.length).toBe(9)
+    expect(A.isTree(new GraphIndex({ ...s[2], edges: tree }))).toBe(true)
+    const other = s[3].edges.filter(e => e.classes.includes('highlight'))
+    expect(other.length).toBe(6)
+    expect(tree.length + other.length).toBe(15)
+    // each other edge joins two distance-2 vertices whose parents differ, so it closes a 2 + 2 + 1 = 5 cycle
+    const parent = (v: string) => tree.map(e => [e.tail[0], e.head[0]]).find(p => p.includes(v) && p.some(x => d.get(x) === 1))!.find(x => x !== v)!
+    for (const e of other) {
+      expect(d.get(e.tail[0])).toBe(2); expect(d.get(e.head[0])).toBe(2)
+      expect(parent(e.tail[0])).not.toBe(parent(e.head[0]))
+    }
+    expect(A.isCycleEdgeSet(s[4], new Set(s[4].edges.filter(e => e.classes.includes('cycle')).map(e => e.id)))).toBe(true)
+    expect(s[4].edges.filter(e => e.classes.includes('cycle')).length).toBe(5)
+  })
+
+  it('base cases d = 0, 1, 2 (k = 5): K_1 0-regular, K_2 1-regular, both acyclic; C_5 2-regular with girth 5', () => {
+    const s = steps('t03-girth-base-d').map(vis)
+    regular(s[1], 0); expect(A.girth(s[1])).toBe(Infinity)
+    regular(s[2], 1); expect(A.girth(s[2])).toBe(Infinity)
+    regular(s[3], 2); expect(A.girth(s[3])).toBe(5)
+    expect(Math.max(5, 3)).toBe(5)
+  })
+
+  it('base cases k <= 3, k = 4 (d = 3): K_4 3-regular girth 3; K_{3,3} 3-regular, bipartite, girth 4', () => {
+    const s = steps('t03-girth-base-k')
+    const k4 = vis(s[0]), k33 = vis(s[2])
+    regular(k4, 3); expect(k4.vertexIds.length).toBe(4); expect(A.girth(k4)).toBe(3)
+    regular(k33, 3); expect(k33.vertexIds.length).toBe(6); expect(A.girth(k33)).toBe(4)
+    expect(A.bipartition(k33)).toBeDefined()
+    expect(A.isCycleEdgeSet(s[2], new Set(s[2].edges.filter(e => e.classes.includes('cycle')).map(e => e.id)))).toBe(true)
+  })
+
+  it('construction: G = K_2 (N = 2), H = C_3 good for (3, 2), ceil(5/2) = 3; F = C_6 is simple, 2-regular, girth 6', () => {
+    const s = steps('t03-girth-step-build')
+    const G = vis(s[0]), H = vis(s[1]), F = vis(s[4])
+    regular(G, 1); expect(G.vertexIds.length).toBe(2)
+    regular(H, 2); expect(A.girth(H)).toBe(3); expect(Math.ceil(5 / 2)).toBe(3)
+    expect(H.vertexIds.length).toBe(3)
+    expect(vis(s[2]).vertexIds.length).toBe(3 * 2)
+    regular(F, 2); expect(A.isSimple(s[4])).toBe(true); expect(A.girth(F)).toBe(6)
+    // the H-edges: one per edge of H, each joining two different copies
+    const copy = (v: string) => v[0]
+    const hEdges = s[4].edges.filter(e => copy(e.tail[0]) !== copy(e.head[0]))
+    expect(hEdges.map(e => e.tail[0] + e.head[0]).sort()).toEqual(['a2b1', 'b2c2', 'c1a1'].sort())
+  })
+
+  it('regularity: degree 1 inside a copy, plus one H-edge each; the dashed parallel edge is excluded', () => {
+    const s = steps('t03-girth-step-regular')
+    regular(vis(s[0]), 1)
+    regular(vis(s[1]), 2)
+    expect(A.isSimple({ ...s[3], edges: s[3].edges.filter(e => !e.classes.includes('dashed')) })).toBe(true)
+    expect(A.isSimple(s[3])).toBe(false)
+  })
+
+  it('closed walk: F has one cycle, t = 3 H-edges; contracting the copies gives H = C_3 with 3 edges', () => {
+    const s = steps('t03-girth-step-walk')
+    const F = vis(s[1])
+    expect(A.girth(F)).toBe(6); expect(F.edges().length).toBe(6)
+    expect(s[1].edges.filter(e => e.classes.includes('cycle')).length).toBe(6)
+    expect(s[1].edges.filter(e => /^f\d$/.test(e.id)).length).toBe(3)
+    const H = vis(s[2])
+    expect(H.vertexIds.sort()).toEqual(['h1', 'h2', 'h3'])
+    regular(H, 2); expect(A.girth(H)).toBe(3)
+    expect(A.girth(H)).toBeGreaterThanOrEqual(Math.ceil(5 / 2))
+  })
+
+  it('count: C has t = 3 H-edges and 3 copy edges, 6 = 2t >= 2 ceil(5/2) = 6 >= 5', () => {
+    const s = steps('t03-girth-step-count')
+    const C = vis(s[3])
+    expect(A.isCycleEdgeSet(s[3], new Set(s[3].edges.filter(e => e.classes.includes('cycle')).map(e => e.id)))).toBe(true)
+    expect(C.edges().length).toBe(6)
+    expect(s[2].edges.filter(e => e.classes.includes('path')).length).toBe(3)
+    expect(2 * 3).toBeGreaterThanOrEqual(2 * Math.ceil(5 / 2)); expect(2 * Math.ceil(5 / 2)).toBeGreaterThanOrEqual(5)
+  })
+})
