@@ -481,3 +481,30 @@ describe('odd-cycles walkthroughs', () => {
     expect(p1.indexOf(lca) + p2.indexOf(lca) + 1).toBe(5)
   })
 })
+
+describe('small-degree test walkthroughs', () => {
+  const eids = (g: GraphData, pairs: string) => new Set(pairs.split(' ').map(p => {
+    const [u, v] = p.split('-')
+    return g.edges.find(e => (e.tail[0] === u && e.head[0] === v) || (e.tail[0] === v && e.head[0] === u))!.id
+  }))
+  const deg = (g: GraphData, v: string) => g.edges.reduce((z, e) => z + e.tail.filter(x => x === v).length + e.head.filter(x => x === v).length, 0)
+  it('forward: G is a tree on 6 vertices, 5 edges; H has 5 vertices, 4 edges, degrees c=1 f=1, e is alone with degree 0', () => {
+    const g = fig('t03-small-degree-forward')
+    expect([g.vertices.length, g.edges.length]).toEqual([6, 5])
+    expect(A.isAcyclic(new GraphIndex(g))).toBe(true)
+    const H = A.subgraphOfEdges(g, eids(g, 'b-c b-d d-e e-f'))
+    expect([H.vertices.length, H.edges.length]).toEqual([5, 4])
+    expect(A.isAcyclic(new GraphIndex(H))).toBe(true)
+    expect(H.vertices.filter(v => deg(H, v.id) <= 1).map(v => v.id).sort()).toEqual(['c', 'f'])
+    expect([deg(H, 'c'), deg(H, 'f')]).toEqual([1, 1])
+  })
+  it('backward: abcd is a 4-cycle, degrees 2 inside C, a has degree 3 in G', () => {
+    const g = fig('t03-small-degree-backward')
+    expect(A.isAcyclic(new GraphIndex(g))).toBe(false)
+    const C = A.subgraphOfEdges(g, eids(g, 'a-b b-c c-d d-a'))
+    expect(A.isCycleEdgeSet(g, eids(g, 'a-b b-c c-d d-a'))).toBe(true)
+    expect(C.edges.length).toBe(4)
+    expect(['a', 'b', 'c', 'd'].map(v => deg(C, v))).toEqual([2, 2, 2, 2])
+    expect(deg(g, 'a')).toBe(3)
+  })
+})
