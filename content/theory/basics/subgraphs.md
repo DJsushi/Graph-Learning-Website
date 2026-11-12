@@ -5,7 +5,7 @@ chapter: basics
 order: 6
 lectures: [t02]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:subgraph title="Subgraph, induced subgraph" defines="subgraph, induced subgraph" source="theory/2026-09-22 p3"}
@@ -71,3 +71,18 @@ edges between $u$ and $v$, keeping $e$ and keeping $f$ give two different submul
 allowed is to move an edge: $\varepsilon_1(e) = \varepsilon(e)$ fixes its endpoints and its kind (loop,
 arc or edge).
 :::
+
+```graph id=t02-submultigraph widget=figure
+caption: Left, a multigraph $G$ with the parallel edges $e, f$ between $u$ and $v$, the edge $g$ and a loop $h$ at $w$. Middle, a submultigraph that keeps $f$ and $g$ and drops $e$ and $h$; each kept edge has the same ends as in $G$. Right, not a submultigraph, because $e$ now joins $u$ and $w$ instead of $u$ and $v$.
+intent: New figure (the lecture shows no drawing for the submultigraph on p3). Example and non-example for the definition; the right panel moves the edge $e$, which $\varepsilon_1(e) = \varepsilon(e)$ forbids.
+layout: fixed
+panel: $G$
+u @(0, 0.5); v @(1.2, 0.5); w @(2.4, 0.5)
+u -- v [label="$e$" bend=0.5]; u -- v [label="$f$" bend=-0.5]; v -- w [label="$g$"]; w -- w [label="$h$" side=top]
+panel: submultigraph
+u @(0, 0.5); v @(1.2, 0.5); w @(2.4, 0.5)
+u -- v [label="$f$"]; v -- w [label="$g$"]
+panel: not a submultigraph
+u @(0, 0.5); v @(1.2, 0.5); w @(2.4, 0.5)
+u -- w [label="$e$" bend=0.6 class=rejected]; v -- w [label="$g$"]
+```

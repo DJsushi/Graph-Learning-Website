@@ -1370,3 +1370,16 @@ describe('graphs example figures (t01)', () => {
   })
 })
 function vclsOf(g: GraphData, c: string) { return g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort() }
+
+describe('subgraphs example figures (t02)', () => {
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  it('submultigraph figure: G has parallel e, f on uv, g on vw, loop h at w; submultigraph keeps f, g with the same ends; non-example moves e to uw', () => {
+    const g = fig('t02-submultigraph', 0), s = fig('t02-submultigraph', 1), n = fig('t02-submultigraph', 2)
+    const lab = (h: GraphData) => h.edges.map(e => `${String(e.label)}:${key(e)}`).sort()
+    expect(lab(g)).toEqual(['$e$:uv', '$f$:uv', '$g$:vw', '$h$:ww'])
+    expect(lab(s)).toEqual(['$f$:uv', '$g$:vw'])
+    expect(s.edges.every(e => g.edges.some(f => f.label === e.label && key(f) === key(e)))).toBe(true)
+    expect(lab(n)).toEqual(['$e$:uw', '$g$:vw'])
+    expect(n.edges.filter(e => e.classes.includes('rejected')).map(e => e.label)).toEqual(['$e$'])
+  })
+})
