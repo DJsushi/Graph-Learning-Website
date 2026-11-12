@@ -1348,3 +1348,25 @@ describe('graph families example figures', () => {
     expect(n.edges.some(e => [e.tail[0], e.head[0]].includes("3'") && [e.tail[0], e.head[0]].includes('2'))).toBe(false)
   })
 })
+
+describe('graphs example figures (t01)', () => {
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  it('graph example: 5 vertices, 5 edges of 10 pairs, no loops or parallel edges; non-example has a loop at 3 and 2 edges 12', () => {
+    const g = fig('t01-graph-examples', 0), b = fig('t01-graph-examples', 1)
+    expect([g.vertices.length, g.edges.length, g.vertices.length * (g.vertices.length - 1) / 2]).toEqual([5, 5, 10])
+    expect(g.edges.map(key).sort()).toEqual(['12', '23', '24', '34', '45'])
+    expect(b.edges.filter(e => key(e) === '12').length).toBe(2)
+    expect(b.edges.filter(e => e.tail[0] === e.head[0]).map(key)).toEqual(['33'])
+    expect(g.edges.some(e => key(e) === '15')).toBe(false)
+  })
+  it('N(2) = {1,3,4}; 1 and 3 not adjacent; edge 34 has endpoints 3 and 4', () => {
+    const l = fig('t01-adjacency-examples', 0), r = fig('t01-adjacency-examples', 1)
+    const nb = new Set(l.edges.filter(e => key(e).includes('2')).map(e => (e.tail[0] === '2' ? e.head[0] : e.tail[0])))
+    expect([...nb].sort()).toEqual(['1', '3', '4'])
+    expect(vclsOf(l, 'color2')).toEqual(['1', '3', '4'])
+    expect(l.edges.some(e => key(e) === '13')).toBe(false)
+    expect(vclsOf(r, 'color1')).toEqual(['3', '4'])
+    expect(r.edges.filter(e => e.classes.includes('highlight')).map(key)).toEqual(['34'])
+  })
+})
+function vclsOf(g: GraphData, c: string) { return g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort() }

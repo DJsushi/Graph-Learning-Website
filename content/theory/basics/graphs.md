@@ -28,6 +28,18 @@ the vertices $1$ and $3$ are not related. Weighted graphs and flow networks
 ([[def:flow-network]]) in the algorithms course are graphs with extra numbers on the edges.
 :::
 
+```graph id=t01-graph-examples widget=figure
+caption: Left, a graph with $V = \set{1, 2, 3, 4, 5}$ and the 5 edges $12, 23, 24, 34, 45$; this is only 5 of the $\binom{5}{2} = 10$ possible pairs, and the pairs not in $E$, such as $15$, are not related. Right, not a graph in this sense, because there is a loop at $3$ and two edges between $1$ and $2$.
+intent: New figure (the lecture shows no drawing on p1). Example and non-example for the definition of a graph; the right panel breaks both conditions, a loop is not a 2-element subset and $E$ is a set, so it cannot hold the pair $12$ twice.
+layout: fixed
+panel: a graph
+1 @(0, 0.5); 2 @(1, 1); 3 @(2, 1); 4 @(1.5, 0); 5 @(2.7, 0)
+1 -- 2; 2 -- 3; 2 -- 4; 3 -- 4; 4 -- 5
+panel: not a graph
+1 @(0, 0); 2 @(1.2, 0); 3 @(2.4, 0)
+1 -- 2 [class=rejected]; 1 -- 2 [class=rejected]; 3 -- 3 [class=rejected]; 2 -- 3
+```
+
 Throughout, graphs are **finite** ($V$ is a finite set), and we use the notation of the lectures:
 
 - $n = \abs{V(G)}$ is the number of vertices and $m = \abs{E(G)}$ the number of edges;
@@ -45,3 +57,15 @@ Adjacency relates two vertices; incidence relates a vertex and an edge. In the g
 $12$ and $23$, the vertex $2$ has neighbourhood $N(2) = \set{1, 3}$, while $N(1) = \set{2}$. The
 edge $12$ is incident with $1$ and $2$ but not with $3$, and $1$ and $3$ are not adjacent.
 :::
+
+```graph id=t01-adjacency-examples widget=figure
+caption: Left, the neighbourhood of the vertex $2$ in the graph of the previous figure: $N(2) = \set{1, 3, 4}$ (blue, the vertex $2$ in orange). The vertices $1$ and $3$ are both neighbours of $2$ but not adjacent to each other. Right, the edge $34$: its endpoints $3$ and $4$ are adjacent, and the edge is incident with these two vertices and with no other.
+intent: New figure (the lecture shows no drawing on p1). Same graph as the previous figure. Shows adjacency (vertex with vertex) against incidence (vertex with edge).
+layout: fixed
+panel: $N(2)$
+1 @(0, 0.5) [class=color2]; 2 @(1, 1) [class=color1]; 3 @(2, 1) [class=color2]; 4 @(1.5, 0) [class=color2]; 5 @(2.7, 0)
+1 -- 2 [class=highlight]; 2 -- 3 [class=highlight]; 2 -- 4 [class=highlight]; 3 -- 4; 4 -- 5
+panel: edge $34$
+1 @(0, 0.5); 2 @(1, 1); 3 @(2, 1) [class=color1]; 4 @(1.5, 0) [class=color1]; 5 @(2.7, 0)
+1 -- 2; 2 -- 3; 2 -- 4; 3 -- 4 [class=highlight]; 4 -- 5
+```
