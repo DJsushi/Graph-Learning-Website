@@ -204,7 +204,7 @@ the rows at any time.
 | T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | 0a5749a |
 | T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28, not in the notes (2026-10-13 p6 states the claim and stops at "?") | skip |
 | T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16, not in the notes; page removed in T4.0 | skip |
-| T4.18 | `theory/menger/set-version.md` | 12 | |
+| T4.18 | `theory/menger/set-version.md` | 12 | 6677cae |
 | T4.19 | `theory/menger/two-connected-graphs.md` | 12 | |
 | T4.20 | `theory/menger/ear-decompositions.md` | 14 | |
 | T4.21 | `theory/basics/graph-families.md` | 6, not in the notes; entry removed in T4.0 | skip |
