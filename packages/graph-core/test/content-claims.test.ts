@@ -508,3 +508,24 @@ describe('small-degree test walkthroughs', () => {
     expect(deg(g, 'a')).toBe(3)
   })
 })
+
+describe('unique-paths walkthroughs', () => {
+  it('existence: T is a tree on 6 vertices; shortest u-v walk has length 3 and the shown walk has length 5', () => {
+    const g = fig('t03-unique-path-existence')
+    const ix = new GraphIndex(g)
+    expect([g.vertices.length, g.edges.length]).toEqual([6, 5])
+    expect(A.isTree(ix)).toBe(true)
+    expect(A.bfsDistances(ix, 'u').get('v')).toBe(3)
+    const walk = ['u', 'a', 'c', 'a', 'b', 'v']
+    expect(walk.length - 1).toBe(5)
+    expect(walk.slice(1).every((x, i) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [walk[i], x].sort().join()))).toBe(true)
+  })
+  it('uniqueness: the picture is a 6-cycle, W has length 6, every edge once, P1 and P2 share no edge', () => {
+    const g = fig('t03-unique-path-uniqueness')
+    const ix = new GraphIndex(g)
+    expect([g.vertices.length, g.edges.length]).toEqual([6, 6])
+    expect(A.isAcyclic(ix)).toBe(false)
+    expect(A.girth(ix)).toBe(6)
+    expect(A.bfsDistances(ix, 'u').get('v')).toBe(3)
+  })
+})
