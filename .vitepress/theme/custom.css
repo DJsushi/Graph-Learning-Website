@@ -589,6 +589,9 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-lesson-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0; }
 .ga-lesson-tag { padding: 0.1rem 0.6rem; border: 1px solid var(--vp-c-divider); border-radius: 999px; font-size: 0.82rem; color: var(--vp-c-text-2); text-decoration: none; }
 .ga-lesson-tag:hover { border-color: var(--vp-c-brand-1); color: var(--vp-c-brand-1); }
+.ga-proof-state { padding: 0.1rem 0.6rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.82rem; color: var(--vp-c-text-2); }
+.ga-proof-state.done { color: var(--ga-ok); }
+.ga-proof-state.part { color: var(--ga-warn); }
 .ga-lesson-pages { margin-top: 1rem; }
 .ga-lesson-pages a { color: var(--vp-c-brand-1); text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
 .ga-lesson-pages ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

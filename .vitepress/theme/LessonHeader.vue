@@ -4,7 +4,7 @@ import { useData, useRouter, withBase } from 'vitepress'
 import LessonDone from './LessonDone.vue'
 import { data } from '../data/site.data'
 
-const { frontmatter } = useData()
+const { frontmatter, page } = useData()
 const router = useRouter()
 const course = computed(() => frontmatter.value.course as string | undefined)
 const label = computed(() => (course.value === 'theory' ? 'Graph Theory' : course.value === 'algorithms' ? 'Graph Algorithms' : ''))
@@ -20,6 +20,12 @@ const conceptPages = computed(() => {
   const chapterRank = (c: string) => data.topics.findIndex(t => t.slug === c)
   return data.pages.filter(p => p.lectures.includes(frontmatter.value.slug))
     .sort((a, b) => chapterRank(a.chapter) - chapterRank(b.chapter) || a.order - b.order)
+})
+const proofTag = computed(() => {
+  const p = isConcept.value ? data.pages.find(x => x.path === page.value.relativePath.replace(/\.md$/, ''))?.proofs : undefined
+  if (!p) return undefined
+  if (!p.total) return { text: 'No proofs', cls: 'none' }
+  return p.explained === p.total ? { text: 'Proofs explained', cls: 'done' } : { text: `Proofs explained: ${p.explained} of ${p.total}`, cls: 'part' }
 })
 const sources = computed(() => (isLecture.value && Array.isArray(frontmatter.value.sources) ? frontmatter.value.sources : []).map((s: string) => s.split('/').pop()))
 
@@ -38,6 +44,7 @@ onMounted(async () => {
       <LessonDone record />
     </div>
     <h1 class="ga-lesson-title">{{ frontmatter.title }}</h1>
+    <p v-if="proofTag" class="ga-lesson-tags"><span :class="['ga-proof-state', proofTag.cls]">{{ proofTag.text }}</span></p>
     <p v-if="isConcept && lectureTags.length" class="ga-lesson-tags">
       <a v-for="t in lectureTags" :key="t.href" class="ga-lesson-tag" :href="t.href" :title="t.title">{{ t.text }}</a>
     </p>
