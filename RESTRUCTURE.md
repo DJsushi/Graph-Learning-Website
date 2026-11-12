@@ -217,7 +217,7 @@ the rows at any time.
 | T4.28 | `theory/chordal/interval-graphs.md` | 6, not in the notes | skip |
 | T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. | | |
 | T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | 548b857 |
-| T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. | | |
+| T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches (§6, Audit). | | |
 | T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
 
 **Gate C.** See §6.
@@ -575,3 +575,16 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Status tag (2026-11-12, owner request, d342ec5): every page header shows "Checked" (`status: reviewed`, set by the main agent after the math-checker passes, §1.4) or "Not checked yet" (`draft`). The `skip` pages never get a math check, so they stay "Not checked yet" unless T4.29 covers them. Add a check-only pass for them?
 - Visual-qa on T4.11–T4.15 and the status tag (2026-11-13): passed. 1366 measured in an iframe; tags at least 5:1 contrast in light and dark, at 1366 and 390. Not repeated at 390: the sticky-figure check on all five pages (done on hamiltonian-completion only).
+
+### Audit mismatches (T4.31), for the owner
+
+Each line: site text against the notes. The owner decides each one (T4.32): fix to the notes,
+or keep and say so on the page. None changes a result.
+
+- t01 (scans 2026-09-15 p1–7, 2026-09-22 p1–2; 9 pages):
+  1. `basics/multigraphs-and-digraphs.md:18`: site "$V$ and $E$ are disjoint sets"; the notes give $G=(V,E,\varepsilon)$ with $\varepsilon: E\to V\cup(V\times V)\cup\binom V2$ and no disjointness.
+  2. `basics/multigraphs-and-digraphs.md:44`: the special-cases remark has a third case (non-injective into $\binom V2\cup V$: undirected multigraph); the notes list only a) graph and b) digraph.
+  3. `basics/graph-families.md:27`: site defines $C_n$ "for $n\ge3$"; the notes give no bound (the bound is needed for simple graphs).
+  4. `degrees/havel-hakimi.md:16`: site adds the hypothesis $d_1\le n-1$, not in the notes (09-15 p7, 09-22 p1); the page's remark at line 36 already says so.
+  - No mismatch: `basics/graphs.md`, `basics/isomorphism.md`, `degrees/degrees-and-handshake.md`, `degrees/degree-sequences.md`, `degrees/erdos-gallai.md`; the Havel–Hakimi proof matches.
+  - Not comparable (no `source`, nothing on the scans): `def:adjacent`, `def:graphic-sequence`, `alg:havel-hakimi` (notes have worked examples only, p6), the in/out-degree remark (`degrees-and-handshake.md:136`), the equivalence-relation remark (`isomorphism.md:46`).
