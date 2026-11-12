@@ -37,6 +37,12 @@ describe('structureChecks', () => {
     ])
   })
 
+  it('accepts audited as a date and rejects anything else', () => {
+    const withAudit = (v: string) => concept(['Text.']).map(l => (l === 'status: draft' ? `status: draft\naudited: ${v}` : l))
+    expect(run({ 'content/theory/trees/a.md': withAudit('2026-11-13') }).errors).toEqual([])
+    expect(run({ 'content/theory/trees/a.md': withAudit('yes') }).errors).toEqual(['content/theory/trees/a.md audited: yes is not a date like 2026-11-13'])
+  })
+
   it('reports duplicate slug and lecture number', () => {
     const { errors } = run({ 'content/theory/04-x.md': lecture })
     expect(errors).toEqual(['content/theory/04-x.md slug t03 is also used by content/theory/03-trees.md', 'content/theory/04-x.md lecture 3 is also used by content/theory/03-trees.md'])

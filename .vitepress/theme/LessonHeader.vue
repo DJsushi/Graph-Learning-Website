@@ -3,7 +3,7 @@ import { computed, nextTick, onMounted } from 'vue'
 import { useData, useRouter, withBase } from 'vitepress'
 import LessonDone from './LessonDone.vue'
 import { data } from '../data/site.data'
-import { statusTag } from '../../packages/content/status'
+import { auditTag, statusTag } from '../../packages/content/status'
 
 const { frontmatter } = useData()
 const router = useRouter()
@@ -23,6 +23,7 @@ const conceptPages = computed(() => {
     .sort((a, b) => chapterRank(a.chapter) - chapterRank(b.chapter) || a.order - b.order)
 })
 const status = computed(() => statusTag(frontmatter.value.status))
+const audit = computed(() => auditTag(frontmatter.value.audited))
 const sources = computed(() => (isLecture.value && Array.isArray(frontmatter.value.sources) ? frontmatter.value.sources : []).map((s: string) => s.split('/').pop()))
 
 // An entry that moved to a concept page: a lecture-page link with its #hash goes to the new page.
@@ -40,7 +41,7 @@ onMounted(async () => {
       <LessonDone record />
     </div>
     <h1 class="ga-lesson-title">{{ frontmatter.title }}</h1>
-    <p v-if="status" :class="['ga-status', status.status]"><span class="ga-status-tag">{{ status.text }}</span>{{ status.note }}</p>
+    <p v-if="status" :class="['ga-status', status.status]"><span class="ga-status-tag">{{ status.text }}</span><span v-if="audit" class="ga-status-tag audited" :title="audit.title">{{ audit.text }}</span>{{ status.note }}</p>
     <p v-if="isConcept && lectureTags.length" class="ga-lesson-tags">
       <a v-for="t in lectureTags" :key="t.href" class="ga-lesson-tag" :href="t.href" :title="t.title">{{ t.text }}</a>
     </p>

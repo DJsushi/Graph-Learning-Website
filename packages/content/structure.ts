@@ -3,6 +3,7 @@
 import path from 'node:path'
 import { anchorId, STATEMENT_TYPES, type ContentIndex, type Topic } from './index'
 import { REFERENCE_KINDS } from './pages'
+import { auditedDate } from './status'
 
 export const ID_PREFIX: Record<string, string> = {
   definition: 'def', theorem: 'thm', lemma: 'lem', proposition: 'prop', corollary: 'cor', observation: 'obs',
@@ -31,6 +32,7 @@ export function structureChecks(root: string, ix: ContentIndex, topics: Topic[])
         else seen.set(key, at(l.file))
       }
     } else {
+      if (fm.audited !== undefined && !auditedDate(fm.audited)) errors.push(`${at(l.file)} audited: ${fm.audited} is not a date like 2026-11-13`)
       if (fm.stage !== undefined && !['split', 'taught'].includes(fm.stage)) errors.push(`${at(l.file)} stage: ${fm.stage} is neither split nor taught`)
       const chapter = topics.find(t => t.slug === l.chapter && t.course === l.course)
       if (!chapter) errors.push(`${at(l.file)} unknown chapter ${l.chapter} (not a ${l.course} topic of content/topics.yaml)`)

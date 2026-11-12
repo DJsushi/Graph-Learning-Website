@@ -593,6 +593,7 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .ga-status-tag { padding: 0.1rem 0.6rem; border: 1px solid currentColor; border-radius: 999px; font-size: 0.82rem; font-weight: 600; white-space: nowrap; }
 .ga-status.reviewed .ga-status-tag { color: var(--ga-ok); }
 .ga-status.draft .ga-status-tag { color: var(--ga-warn); }
+.ga-status .ga-status-tag.audited { color: var(--ga-ok); }
 .ga-lesson-pages { margin-top: 1rem; }
 .ga-lesson-pages a { color: var(--vp-c-brand-1); text-decoration: underline; text-underline-offset: 2px; font-weight: 500; }
 .ga-lesson-pages ul { margin: 0.3rem 0 0; padding-left: 1.1rem; }

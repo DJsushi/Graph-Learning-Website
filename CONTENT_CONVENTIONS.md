@@ -62,11 +62,13 @@ symbols: [weight, cut-partition]   # ids from content/notation.yaml
 stage: split                  # split = text as cut from the lecture | taught = rebuilt to §8
 long: false                   # true raises the word cap; needs a comment saying why
 status: draft
+audited: 2026-11-13       # optional: date the text was compared with the lecture notes
 ---
 ```
 
 A split page has `title`, `course`, `chapter`, `order`, `lectures`, `stage` and `status`. `goal`
-and `long` belong to taught pages. `needs` and `symbols` are deferred (`BACKLOG.md` §14).
+and `long` belong to taught pages. `needs` and `symbols` are deferred (`BACKLOG.md` §14). `audited` is optional, a date `YYYY-MM-DD`;
+the header then shows "Matches the lecture notes" next to the status tag.
 
 Lecture files keep their frontmatter. A page is a concept page when it has `chapter`.
 New figures keep the lecture prefix in their id (`a01-...`, `t03-...`).
