@@ -551,6 +551,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T4.18–T4.20, graph-families, graphs (2026-11-13): passed except two minor points. (1) `ear-decompositions` `fig-t05-ear-max-edge` step 5: muted vertices are translucent, so edge 1–8 shows through labels 1 and 8. A renderer issue for every muted vertex: fix in the framework (opaque backing under muted vertices). (2) `set-version` at 390: `fig-t05-total-menger` labels scale to 8.7px (the size rule is for 1366 only). Header unchanged by T4.30. Chrome cannot go below ~495px; 390 measured in an iframe.
 
+- T4.29 `degrees/degree-sequences` (2026-11-13): the checker failed it twice (labels template without a `d` attribute, then `[d=2, class=rejected]` with a comma). The second failure was a one-character syntax slip, so the main agent allowed a third round instead of stopping the task; it passed. Lesson for writers: DSL attribute lists are space-separated; a comma becomes part of the value. Muted-vertex fix: 1ce4c80 (CSS only, not yet seen in a browser).
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
