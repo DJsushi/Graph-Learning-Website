@@ -549,6 +549,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T4.6–T4.10 (2026-11-12): passed after fixes 7b71be6 (odd-cycles) and the T4.10 layout fix. Lesson for writers: a walkthrough figure gets a box of about 314×195 px at 1366; near-square layouts and group hulls (their label padding) shrink it below 26px vertices / 14px labels. Use wide, flat layouts and colour classes instead of hulls. Minor, not fixed: consecutive walkthrough steps with identical figures (unique-paths, girth).
 
+- Visual-qa on T4.18–T4.20, graph-families, graphs (2026-11-13): passed except two minor points. (1) `ear-decompositions` `fig-t05-ear-max-edge` step 5: muted vertices are translucent, so edge 1–8 shows through labels 1 and 8. A renderer issue for every muted vertex: fix in the framework (opaque backing under muted vertices). (2) `set-version` at 390: `fig-t05-total-menger` labels scale to 8.7px (the size rule is for 1366 only). Header unchanged by T4.30. Chrome cannot go below ~495px; 390 measured in an iframe.
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
