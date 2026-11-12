@@ -24,10 +24,10 @@ isolated vertex has $\delta = 0$, however many edges the rest has.
 :::
 
 ```graph id=t04-minimum-degree-example widget=figure
-caption: Left, $K_4$ minus the edge $cd$ has $\delta = 2$, reached by $c$ and $d$. Right, $K_4$ plus an isolated vertex $e$ has $\delta = 0$ although six of its edges form a complete graph.
+caption: Each label is the degree. Left, $K_4$ minus an edge has $\delta = 2$, reached by the two yellow vertices. Right, $K_4$ plus an isolated vertex has $\delta = 0$ (the yellow vertex), although the other four vertices form a complete graph.
 intent: New figure. Example and non-example for the minimum degree; labels show the degrees, the yellow vertices reach the minimum.
 layout: fixed
-vertex-label: "{id}: {d}"
+vertex-label: "{d}"
 panel: $\delta = 2$
 a [d=3] @(1, 1); b [d=3] @(1, 0); c [d=2 class=current] @(0, 0.5); d [d=2 class=current] @(2, 0.5)
 a -- b; a -- c; b -- c; a -- d; b -- d
@@ -57,10 +57,10 @@ Dirac fails, but each non-adjacent pair is $w$ and a vertex of degree $3$, with 
 :::
 
 ```graph id=t04-ore-example widget=figure
-caption: $K_4$ on $a, b, c, d$ plus a vertex $w$ adjacent to $a$ and $b$. Here $n = 5$ and $d(w) = 2 < \frac{5}{2}$, so Dirac fails. The non-adjacent pairs $wc$ and $wd$ have degree sum $5 \ge n$, so Ore applies; the green edges are a Hamiltonian cycle.
+caption: Each label is the degree. $K_4$ plus a yellow vertex of degree $2$ adjacent to two of its vertices. Here $n = 5$ and $2 < \frac{5}{2}$, so Dirac fails. The two non-adjacent pairs, the yellow vertex with a degree-3 vertex, have degree sum $5 \ge n$, so Ore applies; the green edges are a Hamiltonian cycle.
 intent: New figure. The Ore example of the intuition block: Dirac fails at the yellow vertex, Ore holds, and a Hamiltonian cycle exists.
 layout: fixed
-vertex-label: "{id}: {d}"
+vertex-label: "{d}"
 w [d=2 class=current] @(0, 0.5); a [d=4] @(1, 1); b [d=4] @(1, 0); c [d=3] @(2, 1); d [d=3] @(2, 0)
 w -- a [class=cycle]; w -- b [class=cycle]; a -- b; a -- c [class=cycle]; a -- d; b -- c; b -- d [class=cycle]; c -- d [class=cycle]
 ```
