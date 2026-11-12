@@ -5,7 +5,7 @@ chapter: bipartite
 order: 1
 lectures: [t02]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:bipartite title="Bipartite graph" defines="bipartite, bipartition" source="theory/2026-09-22 p4"}
@@ -47,5 +47,17 @@ $K_{m,n}$ with some edges deleted. Example: the path $P_3$ with vertices $0, 1, 
 $(\set{0, 2}, \set{1, 3})$ and is a subgraph of $K_{2,2} \cong C_4$. Non-example: the triangle is not a
 subgraph of any $K_{m,n}$.
 :::
+
+```graph id=t02-bipartite-subgraph-kmn widget=figure
+caption: The path $P_3$ with bipartition $(\set{0, 2}, \set{1, 3})$ (left) is the subgraph of $K_{2,2}$ (right) that keeps its 3 bold edges and drops the dashed edge $03$, one of the 4 edges of $K_{2,2}$.
+intent: New figure (the lecture shows no drawing on p4; the example is the one in the intuition). A bipartite graph is $K_{m,n}$ with edges deleted.
+layout: fixed
+panel: $P_3$
+0 @(0, 1) [class=color1]; 2 @(1, 1) [class=color1]; 1 @(0, 0) [class=color2]; 3 @(1, 0) [class=color2]
+0 -- 1 -- 2 -- 3
+panel: $K_{2,2}$
+0 @(0, 1) [class=color1]; 2 @(1, 1) [class=color1]; 1 @(0, 0) [class=color2]; 3 @(1, 0) [class=color2]
+0 -- 1 [class=bold]; 1 -- 2 [class=bold]; 2 -- 3 [class=bold]; 0 -- 3 [class=dashed]
+```
 
 The lecture states this without proof.

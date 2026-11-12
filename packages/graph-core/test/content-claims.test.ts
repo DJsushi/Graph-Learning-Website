@@ -1383,3 +1383,17 @@ describe('subgraphs example figures (t02)', () => {
     expect(n.edges.filter(e => e.classes.includes('rejected')).map(e => e.label)).toEqual(['$e$'])
   })
 })
+
+describe('bipartite example figures (t02)', () => {
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  it('P3 is 0-1-2-3 with parts {0,2},{1,3}; K22 has 4 edges, P3 keeps 3 (bold), 03 is dropped (dashed)', () => {
+    const p = fig('t02-bipartite-subgraph-kmn', 0), k = fig('t02-bipartite-subgraph-kmn', 1)
+    expect(p.edges.map(key).sort()).toEqual(['01', '12', '23'])
+    expect(vclsOf(p, 'color1')).toEqual(['0', '2'])
+    expect(vclsOf(p, 'color2')).toEqual(['1', '3'])
+    expect(p.edges.every(e => (vclsOf(p, 'color1').includes(e.tail[0])) !== (vclsOf(p, 'color1').includes(e.head[0])))).toBe(true)
+    expect(k.edges.map(key).sort()).toEqual(['01', '03', '12', '23'])
+    expect(k.edges.filter(e => e.classes.includes('bold')).map(key).sort()).toEqual(['01', '12', '23'])
+    expect(k.edges.filter(e => e.classes.includes('dashed')).map(key)).toEqual(['03'])
+  })
+})
