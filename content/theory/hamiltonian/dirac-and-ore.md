@@ -24,8 +24,8 @@ isolated vertex has $\delta = 0$, however many edges the rest has.
 :::
 
 ```graph id=t04-minimum-degree-example widget=figure
-caption: Each label is the degree. Left, $K_4$ minus an edge has $\delta = 2$, reached by the two yellow vertices. Right, $K_4$ plus an isolated vertex has $\delta = 0$ (the yellow vertex), although the other four vertices form a complete graph.
-intent: New figure. Example and non-example for the minimum degree; labels show the degrees, the yellow vertices reach the minimum.
+caption: Each label is the degree. Left, $K_4$ minus an edge has $\delta = 2$, reached by the two highlighted vertices. Right, $K_4$ plus an isolated vertex has $\delta = 0$ (the highlighted vertex), although the other four vertices form a complete graph.
+intent: New figure. Example and non-example for the minimum degree; labels show the degrees, the highlighted vertices reach the minimum.
 layout: fixed
 vertex-label: "{d}"
 panel: $\delta = 2$
@@ -57,8 +57,8 @@ Dirac fails, but each non-adjacent pair is $w$ and a vertex of degree $3$, with 
 :::
 
 ```graph id=t04-ore-example widget=figure
-caption: Each label is the degree. $K_4$ plus a yellow vertex of degree $2$ adjacent to two of its vertices. Here $n = 5$ and $2 < \frac{5}{2}$, so Dirac fails. The two non-adjacent pairs, the yellow vertex with a degree-3 vertex, have degree sum $5 \ge n$, so Ore applies; the green edges are a Hamiltonian cycle.
-intent: New figure. The Ore example of the intuition block: Dirac fails at the yellow vertex, Ore holds, and a Hamiltonian cycle exists.
+caption: Each label is the degree. $K_4$ plus a highlighted vertex of degree $2$ adjacent to two of its vertices. Here $n = 5$ and $2 < \frac{5}{2}$, so Dirac fails. The two non-adjacent pairs, the highlighted vertex with a degree-3 vertex, have degree sum $5 \ge n$, so Ore applies; the thick edges form a Hamiltonian cycle.
+intent: New figure. The Ore example of the intuition block: Dirac fails at the highlighted vertex, Ore holds, and a Hamiltonian cycle exists.
 layout: fixed
 vertex-label: "{d}"
 w [d=2 class=current] @(0, 0.5); a [d=4] @(1, 1); b [d=4] @(1, 0); c [d=3] @(2, 1); d [d=3] @(2, 0)
