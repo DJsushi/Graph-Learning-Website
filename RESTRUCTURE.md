@@ -555,6 +555,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T4.29 `menger/mengers-theorem` (2026-11-13), for the owner: the REVIEW comment at line 14 inside the locked `thm:menger` entry points to "the remark after the proof" for multigraphs, but the page has no such remark and no proof of a). Editorial only. Fixing it needs `scripts/lock-entries.ts --accept thm:menger`; left as is.
 
+- Visual-qa on the T4.29 pages (2026-11-13): fixed after review: dots instead of circles from long `{id}: {d}` labels (degree-sequences, dirac-and-ore), a vertex on an edge (degree-sequences, mengers-theorem), a caption naming Left/Middle/Right on a wrapping figure (paths-and-cuts), and captions naming colours that render differently (hamiltonian-graphs, dirac-and-ore, distance, graphs, vertex-version-from-edge-version, hamiltonian-completion). Proposed writer rule for the owner: captions describe a marking (thick, dashed, filled, ringed), never a colour name, and vertex labels stay short. Not added to `.claude/agents/writer.md` (Gate B says rule changes are the owner's).
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
