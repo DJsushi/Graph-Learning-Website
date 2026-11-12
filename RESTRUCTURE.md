@@ -540,6 +540,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   - Passed: no console errors, no horizontal scroll, at most 74 characters per line, figures follow steps, mark hover/focus, arrow keys / Next / Previous / First / Last after scrolling, Enlarge closes with Escape, sticky offset 64px (1366) and 48px (390).
 
 - **Gate B decided (2026-11-11, owner).** Pages look good. Writer model: Opus for pages with a proof over 20 lines, Sonnet for shorter ones. `math-checker` is always Opus. If a Sonnet writer fails the checker twice, rerun with Opus (as on T3.2). No change to `.claude/agents/writer.md`. The multigraph cycle convention (see open questions): the owner left it open; no definition box is added, the page states the rule itself.
+- **Scope decided (2026-11-12, owner).** Only what the notes contain (§2, Scope). One-step consequences the notes state without writing the step (Dirac–Ore from the completion lemma, a simplicial vertex from LEM2, shortest walks are paths) count as not proved: they stay `skip`.
 
 ### Needs reported by writers
 
