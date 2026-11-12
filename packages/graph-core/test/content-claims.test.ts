@@ -1585,3 +1585,14 @@ describe('components example figure (t02)', () => {
     expect(A.components(new GraphIndex(h)).some(c => c.includes('a') && c.length === 3)).toBe(true)
   })
 })
+
+describe('distance example figure (t02)', () => {
+  it('left: dist(u,v) = 2 via u c v, the other walk u a b v has length 3; right: u and x in different components', () => {
+    const g = fig('t02-distance-example', 0), h = fig('t02-distance-example', 1)
+    expect(A.bfsDistances(new GraphIndex(g), 'u').get('v')).toBe(2)
+    expect(g.edges.filter(e => e.classes.includes('path')).map(e => e.tail[0] + e.head[0]).sort()).toEqual(['cv', 'uc'])
+    expect(g.edges.filter(e => e.classes.includes('muted')).length).toBe(3)
+    expect(A.bfsDistances(new GraphIndex(h), 'u').has('x')).toBe(false)
+    expect(A.components(new GraphIndex(h)).some(c => c.includes('u') && c.includes('x'))).toBe(false)
+  })
+})
