@@ -553,6 +553,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T4.29 `degrees/degree-sequences` (2026-11-13): the checker failed it twice (labels template without a `d` attribute, then `[d=2, class=rejected]` with a comma). The second failure was a one-character syntax slip, so the main agent allowed a third round instead of stopping the task; it passed. Lesson for writers: DSL attribute lists are space-separated; a comma becomes part of the value. Muted-vertex fix: 1ce4c80 (CSS only, not yet seen in a browser).
 
+- T4.29 `menger/mengers-theorem` (2026-11-13), for the owner: the REVIEW comment at line 14 inside the locked `thm:menger` entry points to "the remark after the proof" for multigraphs, but the page has no such remark and no proof of a). Editorial only. Fixing it needs `scripts/lock-entries.ts --accept thm:menger`; left as is.
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
