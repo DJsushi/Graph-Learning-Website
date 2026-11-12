@@ -191,7 +191,7 @@ the rows at any time.
 | T4.4 | `theory/walks-connectivity/walks-and-paths.md` | 6, not in the notes (2026-09-22 p4: claim with an empty □) | skip |
 | T4.5 | `theory/bipartite/bipartite-graphs.md` | 7, not in the notes (2026-09-22 p4: claim only) | skip |
 | T4.6 | `theory/bipartite/odd-cycles.md` | 27 | c61b389 |
-| T4.7 | `theory/trees/small-degree-test.md` | 6 | |
+| T4.7 | `theory/trees/small-degree-test.md` | 6 | f2cf457 |
 | T4.8 | `theory/trees/unique-paths.md` | 8 | |
 | T4.9 | `theory/trees/cayley-formula.md` | 37 | |
 | T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
