@@ -71,7 +71,7 @@ intent: Lecture drawings (theory/2026-10-13 p5): the cut crossing the paths in A
 type: directed
 layout: fixed
 panel: A) internally disjoint paths, cut $\{a, b\}$
-s [class=source] @(0, 0.5); c @(0.6, 0.5); a [class=cut] @(1.4, 1); b [class=cut] @(1.4, 0); t [class=sink] @(2, 0.5)
+s [class=source] @(0, 0.5); c @(0.7, 1.3); a [class=cut] @(1.4, 1); b [class=cut] @(1.4, 0); t [class=sink] @(2, 0.5)
 s -> a [class=color1]; a -> t [class=color1]; s -> b [class=color2]; b -> t [class=color2]; s -> c; c -> a
 panel: B) edge-disjoint paths, cut of $3$ arcs
 s [class=source] @(0, 0.5); a @(1, 1); b @(1, 0); t [class=sink] @(2, 0.5)
