@@ -206,7 +206,7 @@ the rows at any time.
 | T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16, not in the notes; page removed in T4.0 | skip |
 | T4.18 | `theory/menger/set-version.md` | 12 | 6677cae |
 | T4.19 | `theory/menger/two-connected-graphs.md` | 12 | 98812d0 |
-| T4.20 | `theory/menger/ear-decompositions.md` | 14 | |
+| T4.20 | `theory/menger/ear-decompositions.md` | 14 | 661b3c0 |
 | T4.21 | `theory/basics/graph-families.md` | 6, not in the notes; entry removed in T4.0 | skip |
 | T4.22 | `theory/basics/isomorphism-invariants.md` | 8, not in the notes; page removed in T4.0 | skip |
 | T4.23 | `theory/walks-connectivity/distance.md` | 5, not in the notes; entry removed in T4.0 | skip |
