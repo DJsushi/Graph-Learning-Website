@@ -89,8 +89,8 @@ Part 2 ($\Leftarrow$), the reduction: if $G$ is not bipartite, one of its compon
 caption: A graph with two components: $H_1$ is bipartite, the triangle $H_2$ is not. Bipartitions of all components would combine into one of $G$.
 intent: New. The lecture (theory/2026-09-22 p5) has no picture for the step to one component; this figure shows why bipartitions of the components combine.
 layout: fixed
-s @(0, 1); t @(1, 1); u @(1, 0); w @(0, 0)
-y @(2.4, 1); z @(3.4, 1); v @(2.9, 0)
+s @(0, 0.9); t @(0.9, 0.9); u @(0.9, 0); w @(0, 0)
+y @(2, 0.9); z @(2.9, 0.9); v @(2.45, 0)
 s -- t -- u -- w -- s; y -- z -- v -- y
 group K1: s t u w [label="$H_1$"]
 group K2: y z v [label="$H_2$"]
@@ -128,17 +128,17 @@ Part 3 ($\Leftarrow$), the layers: BFS splits $K$ by parity, and some edge lies 
 
 :::: walkthrough {for=thm:bipartite-odd-cycle}
 ```graph id=t02-odd-cycle-layers widget=stepper
-caption: BFS layers from $x$ split $K$ into even layers ($A$) and odd layers ($B$); three edges lie inside a layer.
-intent: The graph of the page figure t02-odd-cycle-bfs (a transcription of the lecture sketch, theory/2026-09-22 p5), same names and positions. Like the lecture sketch, its edge $a_1a_2$ lies in the odd layer $L_3$, so it shows the case $B$ of the "without loss of generality".
+caption: BFS layers from $x$, drawn as columns $L_0$ to $L_3$ from left to right, split $K$ into even layers ($A$) and odd layers ($B$); three edges lie inside a layer.
+intent: The graph of the page figure t02-odd-cycle-bfs (a transcription of the lecture sketch, theory/2026-09-22 p5), same names; the layers are drawn as columns so the figure stays readable in the walkthrough column. Like the lecture sketch, its edge $a_1a_2$ lies in the odd layer $L_3$, so it shows the case $B$ of the "without loss of generality".
 layout: fixed
-x @(0, 3); b @(-1, 2); p @(1, 2); c1 @(-1.6, 1) [label="$c_1$"]; c2 @(-0.4, 1) [label="$c_2$"]; q @(1, 1); a1 @(-1.6, 0) [label="$a_1$"]; a2 @(-0.4, 0) [label="$a_2$"]; r @(1, 0)
+x @(0, 0); b @(1.2, 0.35); p @(1.2, -0.7); c1 @(2.4, 0.7) [label="$c_1$"]; c2 @(2.4, 0) [label="$c_2$"]; q @(2.4, -0.7); a1 @(3.6, 0.7) [label="$a_1$"]; a2 @(3.6, 0) [label="$a_2$"]; r @(3.6, -0.7)
 x -- b [class=tree]; x -- p [class=tree]; b -- c1 [class=tree]; b -- c2 [class=tree]; p -- q [class=tree]
 c1 -- a1 [class=tree]; c2 -- a2 [class=tree]; q -- r [class=tree]; c2 -- q; a2 -- r
 a1 -- a2
-group L0: x [label="$L_0$"]
-group L1: b p [label="$L_1$"]
-group L2: c1 c2 q [label="$L_2$"]
-group L3: a1 a2 r [label="$L_3$"]
+mark L0: x
+mark L1: b p
+mark L2: c1 c2 q
+mark L3: a1 a2 r
 mark A: x c1 c2 q
 mark B: b p a1 a2 r
 mark inside: c2--q a1--a2 a2--r
@@ -160,7 +160,7 @@ class highlight: x
 ```
 
 ::: step
-We work in the component $K$ that is not bipartite. Run [[alg:bfs|BFS]] from any vertex $x$ of $K$. BFS reaches exactly the component of $x$, so every vertex of $K$ lands in a layer: $L_i$ holds the vertices at distance $i$ from $x$. Here $K$ has the layers $L_0$ to $L_3$.
+We work in the component $K$ that is not bipartite. Run [[alg:bfs|BFS]] from any vertex $x$ of $K$. BFS reaches exactly the component of $x$, so every vertex of $K$ lands in a layer: $L_i$ holds the vertices at distance $i$ from $x$. Here $K$ has the layers [[fig:t02-odd-cycle-layers#L0|$L_0$]] to [[fig:t02-odd-cycle-layers#L3|$L_3$]], drawn as columns.
 :::
 
 ::: step
@@ -168,7 +168,7 @@ We split $K$ by the parity of the layer: [[fig:t02-odd-cycle-layers#A|$A$]] is t
 :::
 
 ::: step
-If $A$ and $B$ were both independent, $(A, B)$ would be a bipartition of $K$. But $K$ is not bipartite: here the hypothesis is used. So $A$ or $B$ contains an edge with both ends inside it. Here three [[fig:t02-odd-cycle-layers#inside|edges]] do: one in $L_2$, part of $A$, and two in $L_3$, part of $B$.
+If $A$ and $B$ were both independent, $(A, B)$ would be a bipartition of $K$. But $K$ is not bipartite: here the hypothesis is used. So $A$ or $B$ contains an edge with both ends inside it. Here three [[fig:t02-odd-cycle-layers#inside|edges]] do: one in [[fig:t02-odd-cycle-layers#L2|$L_2$]], part of $A$, and two in $L_3$, part of $B$.
 :::
 
 ::: step
@@ -188,17 +188,17 @@ Part 4 ($\Leftarrow$), the cycle: the two tree paths up to the least common ance
 
 :::: walkthrough {for=thm:bipartite-odd-cycle}
 ```graph id=t02-odd-cycle-lca widget=stepper
-caption: The tree paths from $a_1$ and $a_2$ meet at their least common ancestor $b$; with the edge $a_1a_2$ they close a cycle of length $2 + 2 + 1 = 5$.
-intent: The graph of the page figure t02-odd-cycle-bfs (a transcription of the lecture sketch, theory/2026-09-22 p5), same names and positions; this walkthrough fills in the reasons for each step of that figure.
+caption: Layers $L_0$ to $L_3$ run from left to right. The tree paths from $a_1$ and $a_2$ meet at their least common ancestor $b$; with the edge $a_1a_2$ they close a cycle of length $2 + 2 + 1 = 5$.
+intent: The graph of the page figure t02-odd-cycle-bfs (a transcription of the lecture sketch, theory/2026-09-22 p5), same names, layers drawn as columns to fit the walkthrough column; this walkthrough fills in the reasons for each step of that figure.
 layout: fixed
-x @(0, 3); b @(-1, 2); p @(1, 2); c1 @(-1.6, 1) [label="$c_1$"]; c2 @(-0.4, 1) [label="$c_2$"]; q @(1, 1); a1 @(-1.6, 0) [label="$a_1$"]; a2 @(-0.4, 0) [label="$a_2$"]; r @(1, 0)
+x @(0, 0); b @(1.2, 0.35); p @(1.2, -0.7); c1 @(2.4, 0.7) [label="$c_1$"]; c2 @(2.4, 0) [label="$c_2$"]; q @(2.4, -0.7); a1 @(3.6, 0.7) [label="$a_1$"]; a2 @(3.6, 0) [label="$a_2$"]; r @(3.6, -0.7)
 x -- b [class=tree]; x -- p [class=tree]; b -- c1 [class=tree]; b -- c2 [class=tree]; p -- q [class=tree]
 c1 -- a1 [class=tree]; c2 -- a2 [class=tree]; q -- r [class=tree]; c2 -- q; a2 -- r
 a1 -- a2 [class=highlight]
-group L0: x [label="$L_0$"]
-group L1: b p [label="$L_1$"]
-group L2: c1 c2 q [label="$L_2$"]
-group L3: a1 a2 r [label="$L_3$"]
+mark L0: x
+mark L1: b p
+mark L2: c1 c2 q
+mark L3: a1 a2 r
 mark P1: a1 c1 b a1--c1 c1--b
 mark P2: a2 c2 b a2--c2 c2--b
 mark shared: b x b--x
