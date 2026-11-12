@@ -5,7 +5,7 @@ chapter: menger
 order: 4
 lectures: [t05]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: theorem {#thm:menger title="Menger's theorem (undirected, vertex and edge versions)" source="theory/2026-10-13 p2"}
@@ -56,13 +56,28 @@ B) $G$ contains $k$ edge-disjoint directed $s$–$t$ paths $\iff$ $G$ has no dir
 
 ::: intuition
 This is a min–max theorem: paths are certificates that $s$ and $t$ are well connected, cuts are certificates that they are not,
-and the obvious obstacle (a small cut) is the only one. B is the max-flow min-cut theorem ([[thm:maxflow-mincut]]) with
-capacity $1$ on every arc, as in [[def:unit-capacity|unit-capacity networks]]: by the integrality theorem there is a maximum flow with
-values $0$ and $1$, and its arcs of value $1$ form $k$ edge-disjoint paths ([[claim:d-flow-paths]]; worked out in [[exr:a02-menger-from-flow]]). A is the same after splitting
+and the obvious obstacle (a small cut) is the only one. B is the max-flow min-cut theorem ([[thm:maxflow-mincut]]) after a reduction: delete the arcs into $s$ and out of $t$, and
+merge parallel arcs into one arc whose capacity is their number ([[exr:a02-menger-from-flow]]). By the integrality theorem there is an
+integral maximum flow of some value $k$; sharing the flow on a merged arc among its copies (at most $1$ each) gives a d-flow, which contains $k$ edge-disjoint $s$–$t$ paths ([[claim:d-flow-paths]]). <!-- REVIEW: the old text said capacity 1 on every arc as in unit-capacity networks and that the arcs of value 1 form the paths; neither fits directed multigraphs (parallel arcs, possible directed cycles in the flow), so the reduction is named and "contain" is used. -->
+A is the same after splitting
 every vertex $x \ne s, t$ into $x^- \to x^+$, i.e. giving it capacity $1$ ([[exr:a02-vertex-capacities]]). Example: direct all edges
 of [[fig:t05-edge-disjoint-paths]] from left to right. The $3$ parallel arcs from $s$ to $a$ form an edge cut of size $3$, and there
 are $3$ edge-disjoint paths; but $\set{a}$ is an $s$–$t$ cut of size $1$, so no two paths are internally disjoint.
 :::
+
+```graph id=t05-menger-directed-example widget=figure
+caption: Left (A), no arc $s \to t$: the vertices $a, b$ form an $s$–$t$ cut of size $2$, and there are $2$ internally disjoint paths $s a t$ and $s b t$; no single vertex is a cut. Right (B), the three arcs leaving $s$ form an edge cut of size $3$, and there are $3$ edge-disjoint paths (they share the vertices $a$ and $b$).
+intent: Lecture drawings (theory/2026-10-13 p5): the cut crossing the paths in A and in B. The concrete graphs are new; the lecture draws no vertex names.
+type: directed
+layout: fixed
+panel: A) internally disjoint paths, cut $\{a, b\}$
+s [class=source] @(0, 0.5); c @(0.6, 0.5); a [class=cut] @(1.4, 1); b [class=cut] @(1.4, 0); t [class=sink] @(2, 0.5)
+s -> a [class=color1]; a -> t [class=color1]; s -> b [class=color2]; b -> t [class=color2]; s -> c; c -> a
+panel: B) edge-disjoint paths, cut of $3$ arcs
+s [class=source] @(0, 0.5); a @(1, 1); b @(1, 0); t [class=sink] @(2, 0.5)
+s -> a [class=color1 bend=0.3]; s -> a [class=color2 bend=-0.3]; s -> b [class=color3]
+a -> t [class=color1]; a -> b [class=color2]; b -> t [class=color2 bend=0.3]; b -> t [class=color3 bend=-0.3]
+```
 
 <!-- REVIEW: hypothesis "no arc from s to t" in A) added; not on the board (p5). -->
 The assumption "no arc from $s$ to $t$" in A) is necessary (and missing on the board): with a single arc $(s, t)$ there is no cut of any

@@ -1520,3 +1520,32 @@ describe('k-connectivity example figure (t05)', () => {
     expect(lv(r).every(vs => conn(r, vs, new Set()))).toBe(true)
   })
 })
+
+describe('Menger directed example figure (t05)', () => {
+  const reachable = (g: GraphData, s: string, t: string, delV: string[], delE: Set<string>) => {
+    const seen = new Set([s]); const q = [s]
+    while (q.length) { const x = q.pop()!; for (const e of g.edges) if (!delE.has(e.id) && e.tail[0] === x && !delV.includes(e.head[0]) && !seen.has(e.head[0])) { seen.add(e.head[0]); q.push(e.head[0]) } }
+    return seen.has(t)
+  }
+  const subsets = <T,>(xs: T[], k: number): T[][] => k === 0 ? [[]] : xs.flatMap((x, i) => subsets(xs.slice(i + 1), k - 1).map(r => [x, ...r]))
+  const unit = (g: GraphData) => ({ ...g, edges: g.edges.map(e => ({ ...e, data: { ...e.data, c: 1 } })) })
+  it('A: no arc st, min vertex cut {a,b} of size 2, no single-vertex cut, 2 internally disjoint paths', () => {
+    const g = fig('t05-menger-directed-example', 0)
+    expect(g.edges.some(e => e.tail[0] === 's' && e.head[0] === 't')).toBe(false)
+    const inner = ['a', 'b', 'c']
+    expect(subsets(inner, 1).some(X => !reachable(g, 's', 't', X, new Set()))).toBe(false)
+    expect(subsets(inner, 2).filter(X => !reachable(g, 's', 't', X, new Set())).map(X => X.join())).toEqual(['a,b'])
+    const p = (c: string) => g.edges.filter(e => e.classes.includes(c)).map(e => e.tail[0] + e.head[0]).sort()
+    expect(p('color1')).toEqual(['at', 'sa']); expect(p('color2')).toEqual(['bt', 'sb'])
+    expect(g.vertices.filter(v => v.classes.includes('cut')).map(v => v.id).sort()).toEqual(['a', 'b'])
+  })
+  it('B: min edge cut 3 (max flow 3, no 2 arcs cut), 3 edge-disjoint paths colour 1-3', () => {
+    const g = fig('t05-menger-directed-example', 1)
+    expect(g.edges.length).toBe(7)
+    expect(maxFlowValue(unit(g), 's', 't').value).toBe(3)
+    expect(subsets(g.edges.map(e => e.id), 2).some(F => !reachable(g, 's', 't', [], new Set(F)))).toBe(false)
+    expect(g.edges.filter(e => e.tail[0] === 's').length).toBe(3)
+    const cols = ['color1', 'color2', 'color3'].map(c => g.edges.filter(e => e.classes.includes(c)).map(e => e.tail[0] + e.head[0]).sort())
+    expect(cols).toEqual([['at', 'sa'], ['ab', 'bt', 'sa'], ['bt', 'sb']])
+  })
+})
