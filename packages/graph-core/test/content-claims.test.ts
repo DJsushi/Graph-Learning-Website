@@ -1233,3 +1233,88 @@ describe('2-connected graphs and cycles walkthroughs (t05)', () => {
     expect(g.vertices.every(v => !(g.edges.every(e => !ends(e).includes(v.id))))).toBe(true)
   })
 })
+
+describe('Ear decomposition walkthroughs (t05)', () => {
+  const steps = (id: string): GraphData[] => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const pair = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const key = (u: string, v: string) => [u, v].sort().join('')
+  const cls = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(pair).sort()
+  const vcls = (g: GraphData, c: string) => g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort()
+  const ids = (g: GraphData) => g.vertices.map(v => v.id).sort()
+  const adj = (es: string[][], skip: string[]) => {
+    const m = new Map<string, string[]>()
+    for (const [a, b] of es) if (!skip.includes(a) && !skip.includes(b)) { m.set(a, [...(m.get(a) ?? []), b]); m.set(b, [...(m.get(b) ?? []), a]) }
+    return m
+  }
+  const connectedOn = (vs: string[], es: string[][]) => {
+    const m = adj(es, []), seen = new Set([vs[0]]), q = [vs[0]]
+    while (q.length) { const u = q.pop()!; for (const w of m.get(u) ?? []) if (vs.includes(w) && !seen.has(w)) { seen.add(w); q.push(w) } }
+    return seen.size === vs.length
+  }
+  const E = (g: GraphData) => g.edges.map(e => ends(e))
+  const twoConn = (g: GraphData) => ids(g).length >= 3 && connectedOn(ids(g), E(g)) &&
+    ids(g).every(z => connectedOn(ids(g).filter(v => v !== z), E(g).filter(e => !e.includes(z))))
+  const isCycle = (es: string[]) => {
+    const deg = new Map<string, number>()
+    for (const p of es) for (const v of p.split('')) deg.set(v, (deg.get(v) ?? 0) + 1)
+    return es.length >= 3 && [...deg.values()].every(d => d === 2) && connectedOn([...deg.keys()], es.map(p => p.split('')))
+  }
+
+  it('back: G is a 4-cycle on x s y t; P = x p q r y has 3 inner vertices; H is 2-connected; every deletion of z leaves H connected; G - x is connected', () => {
+    const st = steps('t05-ear-back'), g = st[1]
+    expect(cls(st[0], 'cycle')).toEqual([key('x', 's'), key('s', 'y'), key('y', 't'), key('t', 'x')].sort())
+    expect(isCycle(cls(st[0], 'cycle'))).toBe(true)
+    expect(ids(g)).toEqual(['p', 'q', 'r', 's', 't', 'x', 'y']); expect(g.edges.length).toBe(8)
+    expect(cls(g, 'highlight')).toEqual([key('x', 'p'), key('p', 'q'), key('q', 'r'), key('r', 'y')].sort())
+    expect(twoConn(g)).toBe(true)
+    const gOnly = ['x', 's', 'y', 't'], gEdges = E(g).filter(e => e.every(v => gOnly.includes(v)))
+    expect(connectedOn(['s', 'y', 't'], gEdges.filter(e => !e.includes('x')))).toBe(true) // G - x
+    expect(connectedOn(gOnly, gEdges)).toBe(true) // G intact (case 2)
+    // case 1 z = x: p, q, r reach y along P; case 2 z = q: p hangs on x, r on y
+    expect(connectedOn(ids(g).filter(v => v !== 'x'), E(g).filter(e => !e.includes('x')))).toBe(true)
+    expect(connectedOn(ids(g).filter(v => v !== 'q'), E(g).filter(e => !e.includes('q')))).toBe(true)
+    expect(vcls(st[2], 'muted')).toEqual(['x']); expect(vcls(st[5], 'muted')).toEqual(['q'])
+    expect(vcls(st[3], 'visited')).toEqual(['s', 't', 'y']); expect(vcls(st[4], 'visited')).toEqual(['p', 'q', 'r', 's', 't', 'y'])
+    expect(vcls(st[6], 'visited')).toEqual(['p', 'r', 's', 't', 'x', 'y'])
+  })
+
+  // the figure of the two other walkthroughs: page figure without vertex 9
+  const base = () => steps('t05-ear-max-edge')
+  const cyc = ['12', '23', '34', '45', '56', '16']
+  const ear = ['27', '78', '58']
+
+  it('max-edge: G has 8 vertices and 10 edges, is 2-connected; cycle 1..6; H = cycle + ear 2,7,8,5 has all 8 vertices and 9 edges; only 18 is missing', () => {
+    const st = base(), g = st[0]
+    expect(ids(g).length).toBe(8); expect(g.edges.length).toBe(10); expect(twoConn(g)).toBe(true)
+    expect(cls(st[0], 'cycle').sort()).toEqual(cyc.slice().sort()); expect(isCycle(cls(st[0], 'cycle'))).toBe(true)
+    const H = cls(st[1], 'tree'); expect(H).toEqual([...cyc, ...ear].sort()); expect(H.length).toBe(9)
+    expect(vcls(st[1], 'tree')).toEqual(['1', '2', '3', '4', '5', '6', '7', '8'])
+    const rest = g.edges.map(pair).filter(p => !H.includes(p)); expect(rest).toEqual(['18'])
+    // the ear 2,7,8,5: inner vertices 7, 8 are new after the cycle; ends 2, 5 distinct and on the cycle
+    expect(['2', '5'].every(v => cyc.join('').includes(v))).toBe(true); expect(cyc.join('')).not.toMatch(/[78]/)
+    expect(cls(st[3], 'tree').length).toBe(10)
+  })
+
+  it('max-vertex: H = 6-cycle, x = 7 outside; e = 34, f = 78; C = 7,8,5,4,3,2 is a cycle of G through e and f; from 7 the first H-vertices are 2 and 5; Q = 2,7,8,5; ends differ', () => {
+    const st = base(), g = st[0] // same graph as max-edge
+    const v = steps('t05-ear-max-vertex')
+    expect(E(v[0]).map(e => key(e[0], e[1])).sort()).toEqual(E(g).map(e => key(e[0], e[1])).sort())
+    expect(cls(v[0], 'tree')).toEqual(cyc.slice().sort()); expect(vcls(v[0], 'tree')).toEqual(['1', '2', '3', '4', '5', '6'])
+    expect(vcls(v[0], 'source')).toEqual(['7'])
+    const gEdges = new Set(g.edges.map(pair))
+    const C = ['7', '8', '5', '4', '3', '2'], cEdges = C.map((c, i) => key(c, C[(i + 1) % C.length]))
+    expect(cEdges.every(p => gEdges.has(p))).toBe(true); expect(isCycle(cEdges)).toBe(true)
+    expect(cEdges).toContain('34'); expect(cEdges).toContain('78'); expect(cls(v[2], 'cycle').sort()).toEqual(cEdges.slice().sort())
+    const Hv = new Set(['1', '2', '3', '4', '5', '6'])
+    const walk = (dir: 1 | -1) => { let i = C.indexOf('7'); const p = ['7']; do { i = (i + dir + C.length) % C.length; p.push(C[i]) } while (!Hv.has(C[i])); return p }
+    expect(walk(1)).toEqual(['7', '8', '5']); expect(walk(-1)).toEqual(['7', '2'])
+    expect(cls(v[3], 'path')).toEqual([key('2', '7'), key('7', '8'), key('8', '5')].sort())
+    expect(C.filter(c => Hv.has(c)).length).toBe(4) // at least two vertices of H on C: 5, 4, 3, 2
+    expect(vcls(v[4], 'color1')).toEqual(['2', '5'])
+  })
+})
