@@ -23,7 +23,7 @@ $1$; every vertex has distance $0$ to itself.
 :::
 
 ```graph id=t02-distance-example widget=figure
-caption: Left, $\mathrm{dist}(u, v) = 2$ in a 5-cycle. The walk $u, c, v$ is shortest (blue), the walk $u, a, b, v$ of length $3$ is longer. Right, $u$ and $x$ lie in different components, so $\mathrm{dist}(u, x) = \infty$.
+caption: Left, $\mathrm{dist}(u, v) = 2$ in a 5-cycle. The walk $u, c, v$ is shortest (thick dashed edges), the walk $u, a, b, v$ of length $3$ is longer. Right, $u$ and $x$ lie in different components, so $\mathrm{dist}(u, x) = \infty$.
 intent: New example, the lecture (theory/2026-09-22 p4) gives the definition without a drawing. A shortest walk against a longer one, and distance infinity between components.
 layout: fixed
 panel: Finite distance

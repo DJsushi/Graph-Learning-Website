@@ -61,7 +61,7 @@ edge $12$ is incident with $1$ and $2$ but not with $3$, and $1$ and $3$ are not
 :::
 
 ```graph id=t01-adjacency-examples widget=figure
-caption: Left, the neighbourhood of the vertex $2$ in the graph of the previous figure: $N(2) = \set{1, 3, 4}$ (blue, the vertex $2$ in orange). The vertices $1$ and $3$ are both neighbours of $2$ but not adjacent to each other. Right, the edge $34$: its endpoints $3$ and $4$ are adjacent, and the edge is incident with these two vertices and with no other.
+caption: Left, the neighbourhood of the vertex $2$ in the graph of the previous figure: $N(2) = \set{1, 3, 4}$ (the neighbours are filled, the vertex $2$ itself has a different fill, and its three edges are thick). The vertices $1$ and $3$ are both neighbours of $2$ but not adjacent to each other. Right, the edge $34$: its endpoints $3$ and $4$ are adjacent, and the edge is incident with these two vertices and with no other.
 intent: New figure (the lecture shows no drawing on p1). Same graph as the previous figure. Shows adjacency (vertex with vertex) against incidence (vertex with edge).
 layout: fixed
 panel: $N(2)$
