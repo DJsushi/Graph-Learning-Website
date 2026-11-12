@@ -200,7 +200,7 @@ the rows at any time.
 | T4.11 | `theory/chordal/minimal-cuts.md` | 22 | 3e05d7d |
 | T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | 2836003 |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | f74097a |
-| T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | |
+| T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | 25cbe6d |
 | T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
 | T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28, not in the notes (2026-10-13 p6 states the claim and stops at "?") | skip |
 | T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16, not in the notes; page removed in T4.0 | skip |
