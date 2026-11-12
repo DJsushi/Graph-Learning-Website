@@ -5,7 +5,7 @@ chapter: trees
 order: 8
 lectures: [t03]
 stage: split
-status: draft
+status: reviewed
 ---
 
 How many spanning trees does $K_n$ have? Equivalently: how many trees are there on the vertex set

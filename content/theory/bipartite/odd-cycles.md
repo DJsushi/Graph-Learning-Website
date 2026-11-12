@@ -5,7 +5,7 @@ chapter: bipartite
 order: 2
 lectures: [t02]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: theorem {#thm:bipartite-odd-cycle title="König's characterisation of bipartite graphs" aka="bipartite iff no odd cycle" source="theory/2026-09-22 p5"}

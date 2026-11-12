@@ -5,7 +5,7 @@ chapter: chordal
 order: 5
 lectures: [t04]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: lemma {#lem:two-simplicial title="Two non-adjacent simplicial vertices" source="theory/2026-10-06 p3"}

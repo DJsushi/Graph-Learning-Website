@@ -5,7 +5,7 @@ chapter: trees
 order: 2
 lectures: [t03]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: theorem {#thm:two-leaves title="Acyclic graphs have two vertices of small degree" source="theory/2026-09-29 p1–2"}

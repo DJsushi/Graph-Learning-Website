@@ -88,14 +88,6 @@ export function lectureLessons(ix: ContentIndex, course?: Course): Lesson[] {
     .sort((a, b) => (a.course === b.course ? a.lecture - b.lecture : a.course === 'theory' ? -1 : 1))
 }
 
-/** Proofs on one page and how many have a walkthrough with the same `for=` (the page's own containers only). */
-export function proofStats(ix: ContentIndex, lesson: Lesson): { total: number; explained: number } {
-  const cs = ix.containers.filter(c => c.lesson === lesson)
-  const walked = new Set(cs.filter(c => c.type === 'walkthrough' && c.attrs.for).map(c => c.attrs.for))
-  const proofs = cs.filter(c => c.type === 'proof')
-  return { total: proofs.length, explained: proofs.filter(c => c.forId && walked.has(c.forId)).length }
-}
-
 /** The chapters of a course, in `topics.yaml` order, each with its concept pages by `order`. Chapters without a page are left out. */
 export function courseChapters(ix: ContentIndex, topics: Topic[], course: Course): { topic: Topic; pages: Lesson[] }[] {
   return topics.filter(t => t.course === course)

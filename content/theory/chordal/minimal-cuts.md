@@ -5,7 +5,7 @@ chapter: chordal
 order: 4
 lectures: [t04]
 stage: split
-status: draft
+status: reviewed
 ---
 
 The proof needs two lemmas. The first one is about how chordal graphs can be cut apart.

@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { courseChapters, lectureLessons, loadContent, proofStats, resolveTarget, sourceTag, type Topic } from '../index'
+import { courseChapters, lectureLessons, loadContent, resolveTarget, sourceTag, type Topic } from '../index'
 
 function site(files: Record<string, string[]>): string {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'content-'))
@@ -128,19 +128,5 @@ describe('labels and source tag', () => {
     expect(sourceTag('theory/2026-09-15 p7; theory/2026-09-22 p1–2')).toBe('Lecture 2026-09-15, p. 7; Lecture 2026-09-22, pp. 1–2')
     for (const bad of ['', 'theory/2026-09-29', 'theory 2026-09-29 p1', 'lecture/01 p1', 'algorithms/01 p'])
       expect(sourceTag(bad)).toBeUndefined()
-  })
-})
-
-describe('proofStats', () => {
-  const stmt = (n: string) => [`::: lemma {#lem:${n}}`, 'X.', ':::', '', `::: proof {for=lem:${n}}`, 'Y.', ':::', '']
-  const walk = (n: string) => [`::: walkthrough {for=lem:${n}}`, 'Z.', ':::', '']
-  const stats = (...body: string[][]) => {
-    const ix = loadContent(site({ 'content/theory/trees/p.md': [...concept, ...body.flat()] }))
-    return proofStats(ix, ix.lessons[0])
-  }
-  it('counts proofs and the ones with a walkthrough on the page itself', () => {
-    expect(stats(['Text.'])).toEqual({ total: 0, explained: 0 })
-    expect(stats(stmt('a'), stmt('b'), walk('a'))).toEqual({ total: 2, explained: 1 })
-    expect(stats(stmt('a'), walk('a'))).toEqual({ total: 1, explained: 1 })
   })
 })

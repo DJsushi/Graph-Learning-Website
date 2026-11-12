@@ -5,7 +5,7 @@ chapter: degrees
 order: 1
 lectures: [t01]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: definition {#def:degree title="Degree" defines="degree, d_G(v), isolated vertex" source="theory/2026-09-15 p5"}

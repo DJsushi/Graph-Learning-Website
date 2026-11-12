@@ -5,7 +5,7 @@ chapter: trees
 order: 4
 lectures: [t03]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: corollary {#cor:tree-unique-path title="Unique paths in trees" source="theory/2026-09-29 p5"}

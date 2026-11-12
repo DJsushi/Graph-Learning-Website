@@ -78,8 +78,10 @@ Do not read diffs or source files to verify. If you doubt a change, ask `coder` 
 1. `writer`.
 2. `math-checker`. Findings go back to the same writer once (SendMessage), then the checker
    runs again. A second failure stops the task: tell the owner.
-3. `npm run check`.
-4. Commit.
+3. Set `status: reviewed` in the page's frontmatter (you do this, not the writer). The page
+   header shows it as "Checked"; `draft` shows "Not checked yet" (owner, 2026-11-12).
+4. `npm run check`.
+5. Commit.
 
 Run `visual-qa` after every fifth page, on those five pages, not once per page. One writer at
 a time.

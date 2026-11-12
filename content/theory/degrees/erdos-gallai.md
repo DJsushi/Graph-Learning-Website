@@ -5,7 +5,7 @@ chapter: degrees
 order: 5
 lectures: [t01]
 stage: split
-status: draft
+status: reviewed
 ---
 
 The lecture closes with a second characterisation of degree sequences. It does not need to be

@@ -5,7 +5,7 @@ chapter: walks-connectivity
 order: 5
 lectures: [t03]
 stage: split
-status: draft
+status: reviewed
 ---
 
 Recall that a walk may repeat vertices and edges, and a closed walk returns to its start
