@@ -860,3 +860,55 @@ describe('two simplicial vertices page (t04)', () => {
     }
   })
 })
+
+describe('simplicial decompositions page (t04)', () => {
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const isDecomp = (g: GraphData, order: string[]) => {
+    const ix = new GraphIndex(g)
+    return order.every((v, i) => {
+      const earlier = order.slice(0, i).filter(w => ix.adjacent(v, w))
+      return earlier.every((p, k) => earlier.slice(k + 1).every(q => ix.adjacent(p, q)))
+    })
+  }
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const base = fig('t04-simplicial-decomposition')
+
+  it('forward: G chordal, 6 simplicial with neighbours 4, 5 adjacent; G - 6 chordal with 5 vertices and decomposition (2,3,4,1,5); appending 6 gives (2,3,4,1,5,6)', () => {
+    const ix = new GraphIndex(base)
+    expect(chordal(base)).toBe(true)
+    expect(A.isSimplicial(ix, '6')).toBe(true)
+    expect(ix.vertexIds.filter(w => ix.adjacent('6', w)).sort()).toEqual(['4', '5'])
+    expect(ix.adjacent('4', '5')).toBe(true)
+    const h = del(base, ['6'])
+    expect(h.vertices.length).toBe(5); expect(chordal(h)).toBe(true)
+    expect(isDecomp(h, ['2', '3', '4', '1', '5'])).toBe(true)
+    expect(isDecomp(base, ['2', '3', '4', '1', '5', '6'])).toBe(true)
+    const hx = new GraphIndex(h)
+    expect(hx.vertexIds.filter(w => hx.adjacent('5', w)).sort()).toEqual(['2', '4'])
+  })
+
+  it('cycle: 1,3,4,5,2 is a 5-cycle of G, last in (2,3,4,1,5,6) is 5 at position 5, neighbours 4 and 2 (positions 3, 1) adjacent, only earlier neighbours of 5, edge 2-4 not on the cycle', () => {
+    const ix = new GraphIndex(base)
+    const C = ['1', '3', '4', '5', '2'], order = ['2', '3', '4', '1', '5', '6']
+    C.forEach((v, i) => expect(ix.adjacent(v, C[(i + 1) % 5])).toBe(true))
+    expect(C.map(v => order.indexOf(v) + 1)).toEqual([4, 2, 3, 5, 1])
+    expect(C.reduce((a, v) => order.indexOf(v) > order.indexOf(a) ? v : a)).toBe('5')
+    expect([order.indexOf('4') + 1, order.indexOf('2') + 1]).toEqual([3, 1])
+    expect(order.slice(0, 4).filter(w => ix.adjacent('5', w)).sort()).toEqual(['2', '4'])
+    expect(ix.adjacent('2', '4')).toBe(true)
+    expect(C.some((v, i) => [v, C[(i + 1) % 5]].sort().join() === '2,4')).toBe(false)
+  })
+
+  it('new figures use the same graph as the stepper figure', () => {
+    for (const id of ['t04-decomposition-forward', 't04-decomposition-cycle']) {
+      const h = fig(id)
+      expect(h.vertices.map(v => v.id).sort()).toEqual(base.vertices.map(v => v.id).sort())
+      expect(h.edges.length).toBe(base.edges.length)
+    }
+  })
+})
