@@ -613,8 +613,10 @@ Moved text was checked against the lectures. New text was not. Rules for everyth
 ## 14. Faithfulness to the source material
 
 - Everything stated in the lectures must appear, with the lecture's names and notation.
-- Additions beyond the lectures are welcome (intuition, extra examples, filled-in proof steps)
-  but whole extra **statements or sections** get `extra=true`.
+- Add nothing the lectures do not contain (owner, 2026-11-12). Allowed: intuition, examples
+  and figures for what the lectures state, and filled-in steps of a proof the lectures give.
+  Not allowed: new statements, new sections, or proofs of results the lectures only state.
+  `extra=true` remains only on material that was here before this rule.
 - If the source is illegible or ambiguous, do not invent content. Write
 
   ```markdown

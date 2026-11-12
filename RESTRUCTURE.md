@@ -25,8 +25,8 @@ board (§2) is the only state: a new session resumes from it.
 1. Work on branch `restructure`. Never push. Never touch `main`: it is the live site.
 2. Read §1 and §2 of this file. Open §3 to §6, `BACKLOG.md`, the convention files and source
    files only when a step tells you to.
-3. Take the first row of §2 that has no commit hash. Do the rows in order; later rows depend
-   on earlier ones.
+3. Take the first row of §2 that has no commit hash and is not marked `skip`. Do the rows in
+   order; later rows depend on earlier ones. A `skip` row is never done (§2, Scope).
 4. Spawn the agent named in the row (§1.1, §1.2). When it returns, verify (§1.3), commit
    (Conventional Commits, task id in the subject: `feat(T1.3): entry lock`), and write the
    short hash in the row's Done cell.
@@ -105,6 +105,35 @@ a time.
 "Read" names the spec the agent reads: CC = `CONTENT_CONVENTIONS.md`, DSL = `GRAPH_DSL.md`,
 R = this file. "Backlog" lists the `BACKLOG.md` ids the task must close.
 
+### Scope: only what the lecture notes contain
+
+Decided by the owner on 2026-11-12, after a read of all the notes the content comes from
+(theory scans 2026-09-15 to 2026-10-13, algorithms slides 01 to 03). Nothing that is not in
+the notes is added to the site or explained.
+
+- A proof gets a walkthrough only if the notes give that proof: in full, as a sketch, a
+  picture or a one-line argument. A result the notes only state gets no walkthrough. Its
+  written proof stays on the page, closed, until the owner decides (§6). The rows below say
+  which proofs to skip; a row with nothing left is marked `skip`.
+- Example figures (T4.29, T5.34) only for entries that are in the notes.
+- T4.0 removes from the site what the notes never state:
+  - Pages: `theory/basics/isomorphism-invariants.md`, `theory/trees/removing-a-leaf.md`,
+    `theory/trees/tree-characterisations.md`, `theory/menger/cut-vertices-and-bridges.md`,
+    `theory/menger/back-to-undirected-graphs.md` (a proof of undirected Menger; the notes
+    give none).
+  - Entries on pages that stay: `obs:edge-counts-classes`, `cor:odd-degree-count`,
+    `prop:distance-metric`, `prop:spanning-tree-exists`, `thm:generalized-greedy` (slides 01
+    p7 ask "Correctness?" and do not answer), `cor:mst-unique`, `lem:edmonds-one-entry`,
+    `lem:flow-across-cut`, `cor:integrality`.
+- Kept although marked `extra=true`, because the notes state them (without proof):
+  `def:adjacent` and `def:graphic-sequence` (terms the notes use), `obs:chordal-induced`
+  (used in the proof on theory/2026-10-06 p3), `prop:interval-chordal` (2026-10-06 p1 gives
+  interval graphs as an example of chordal graphs), `thm:maxflow-characterisation` (items 1
+  and 2 are the observation on algorithms/02 p14), `lem:dinic-phases` (02 p37),
+  `prop:matching-flow` (02 p57).
+- Not in the notes either, but kept: `alg:bfs`. The notes use BFS layers and the BFS tree in
+  the proof of König's theorem without teaching BFS.
+
 ### Phase 1: split the lectures into concept pages
 
 | ID | Task | Agent | Read | Backlog | Done |
@@ -144,42 +173,43 @@ Each task explains every proof on its page.
 
 ### Phase 4: graph theory, every proof
 
-One row per page, in lecture order; pages whose proofs are all beyond the lectures come last.
-The last row covers the pages without proofs.
+One row per page, in lecture order. Rows marked `skip` have no proof in the notes (Scope
+above). The last row covers the pages without proofs.
 Pipeline §1.4. The writer's model is the one the owner chose at Gate B. The owner may reorder
 the rows at any time.
 
 | ID | Page (under `content/`) | Proof lines | Done |
 |----|-------------------------|-------------|------|
-| T4.1 | `theory/degrees/degrees-and-handshake.md` | 8, 4 | 3364005 |
+| T4.0 | Remove what Scope (above) lists: delete the five pages; delete the nine entries with their proofs, intuitions, figures and walkthroughs (including the T4.1 walkthrough of `cor:odd-degree-count`); remove exactly those ids from `content/topics.yaml` and `content/entries.lock.json`; delete exercises and summary lines that are only about removed material; turn every other link to a removed id into plain text. Remove `extra=true` from the seven kept entries. Agent: `coder`. | | |
+| T4.1 | `theory/degrees/degrees-and-handshake.md` | 8; the 4 of `cor:odd-degree-count` go in T4.0 | 3364005 |
 | T4.2 | `theory/degrees/havel-hakimi.md` | 54 | 528662b |
-| T4.3 | `theory/degrees/erdos-gallai.md` | 95 | 7a65cd5 |
-| T4.4 | `theory/walks-connectivity/walks-and-paths.md` | 6 | |
-| T4.5 | `theory/bipartite/bipartite-graphs.md` | 7 | |
+| T4.3 | `theory/degrees/erdos-gallai.md` | 95, not in the notes (2026-09-15 p7 states the theorem only); see §6 | 7a65cd5 |
+| T4.4 | `theory/walks-connectivity/walks-and-paths.md` | 6, not in the notes (2026-09-22 p4: claim with an empty □) | skip |
+| T4.5 | `theory/bipartite/bipartite-graphs.md` | 7, not in the notes (2026-09-22 p4: claim only) | skip |
 | T4.6 | `theory/bipartite/odd-cycles.md` | 27 | |
 | T4.7 | `theory/trees/small-degree-test.md` | 6 | |
 | T4.8 | `theory/trees/unique-paths.md` | 8 | |
 | T4.9 | `theory/trees/cayley-formula.md` | 37 | |
 | T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | |
 | T4.11 | `theory/chordal/minimal-cuts.md` | 22 | |
-| T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19, 2 | |
+| T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | |
-| T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23, 5 | |
+| T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | |
 | T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
-| T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28 | |
-| T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16 | |
+| T4.16 | `theory/menger/proving-the-edge-version.md` | 8, 28, not in the notes (2026-10-13 p6 states the claim and stops at "?") | skip |
+| T4.17 | `theory/menger/back-to-undirected-graphs.md` | 16, not in the notes; page removed in T4.0 | skip |
 | T4.18 | `theory/menger/set-version.md` | 12 | |
 | T4.19 | `theory/menger/two-connected-graphs.md` | 12 | |
 | T4.20 | `theory/menger/ear-decompositions.md` | 14 | |
-| T4.21 | `theory/basics/graph-families.md` | 6 (beyond the lectures) | |
-| T4.22 | `theory/basics/isomorphism-invariants.md` | 8 (beyond the lectures) | |
-| T4.23 | `theory/walks-connectivity/distance.md` | 5 (beyond the lectures) | |
-| T4.24 | `theory/trees/removing-a-leaf.md` | 6 (beyond the lectures) | |
-| T4.25 | `theory/trees/tree-characterisations.md` | 21, 1 (beyond the lectures) | |
-| T4.26 | `theory/trees/spanning-trees.md` | 4 (beyond the lectures) | |
-| T4.27 | `theory/chordal/chordal-graphs.md` | 2 (beyond the lectures) | |
-| T4.28 | `theory/chordal/interval-graphs.md` | 6 (beyond the lectures) | |
-| T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Write each page and its commit here. | | |
+| T4.21 | `theory/basics/graph-families.md` | 6, not in the notes; entry removed in T4.0 | skip |
+| T4.22 | `theory/basics/isomorphism-invariants.md` | 8, not in the notes; page removed in T4.0 | skip |
+| T4.23 | `theory/walks-connectivity/distance.md` | 5, not in the notes; entry removed in T4.0 | skip |
+| T4.24 | `theory/trees/removing-a-leaf.md` | 6, not in the notes; page removed in T4.0 | skip |
+| T4.25 | `theory/trees/tree-characterisations.md` | 21, 1, not in the notes; page removed in T4.0 | skip |
+| T4.26 | `theory/trees/spanning-trees.md` | 4, not in the notes; entry removed in T4.0 | skip |
+| T4.27 | `theory/chordal/chordal-graphs.md` | 2, not in the notes | skip |
+| T4.28 | `theory/chordal/interval-graphs.md` | 6, not in the notes | skip |
+| T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. | | |
 
 **Gate C.** See §6.
 
@@ -189,40 +219,40 @@ After Gate C. Same pipeline.
 
 | ID | Page (under `content/`) | Proof lines | Done |
 |----|-------------------------|-------------|------|
-| T5.1 | `algorithms/mst/cut-and-cycle-properties.md` | 3, 3 | |
-| T5.2 | `algorithms/mst/distinct-weights.md` | 7, 3 | |
-| T5.3 | `algorithms/mst/generalized-greedy.md` | 15 (beyond the lectures) | |
+| T5.1 | `algorithms/mst/cut-and-cycle-properties.md` | 3, 3, not in the notes (01 p5 states both properties only) | skip |
+| T5.2 | `algorithms/mst/distinct-weights.md` | 7, 3, not in the notes (01 p5 states only); `cor:mst-unique` removed in T4.0 | skip |
+| T5.3 | `algorithms/mst/generalized-greedy.md` | 15, not in the notes; entry removed in T4.0 | skip |
 | T5.4 | `algorithms/mst/union-find.md` | 3 | |
 | T5.5 | `algorithms/mst/boruvka.md` | 4 | |
-| T5.6 | `algorithms/mst/contractions.md` | 8 | |
-| T5.7 | `algorithms/mst/f-heavy-edges.md` | 2 | |
+| T5.6 | `algorithms/mst/contractions.md` | 8, not in the notes (01 p20 states the lemma only) | skip |
+| T5.7 | `algorithms/mst/f-heavy-edges.md` | 2, not in the notes (01 p37 states the lemma only) | skip |
 | T5.8 | `algorithms/mst/verification.md` | 3 | |
 | T5.9 | `algorithms/mst/sampling-lemma.md` | 21 | |
 | T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | |
-| T5.11 | `algorithms/arborescences/reduced-weights.md` | 2, 3 | |
-| T5.12 | `algorithms/arborescences/edmonds-algorithm.md` | 11 (beyond the lectures) | |
-| T5.13 | `algorithms/flows/cuts-in-networks.md` | 4 (beyond the lectures) | |
-| T5.14 | `algorithms/flows/augmenting-paths.md` | 9 | |
-| T5.15 | `algorithms/flows/characterising-maximum-flows.md` | 7, 3 | |
+| T5.11 | `algorithms/arborescences/reduced-weights.md` | 2, 3, not in the notes (01 p51–52 state only) | skip |
+| T5.12 | `algorithms/arborescences/edmonds-algorithm.md` | 11, not in the notes; entry removed in T4.0 | skip |
+| T5.13 | `algorithms/flows/cuts-in-networks.md` | 4, not in the notes; entry removed in T4.0 | skip |
+| T5.14 | `algorithms/flows/augmenting-paths.md` | 9, not in the notes (02 p12 states the lemma only) | skip |
+| T5.15 | `algorithms/flows/characterising-maximum-flows.md` | 7, 3, not in the notes (02 p6 and p14 state only) | skip |
 | T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | |
 | T5.17 | `algorithms/fast-flows/edmonds-karp-analysis.md` | 9, 8, 2 | |
-| T5.18 | `algorithms/fast-flows/dinic.md` | 4 (beyond the lectures) | |
+| T5.18 | `algorithms/fast-flows/dinic.md` | 4, not in the notes (02 p37 states only) | skip |
 | T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | |
 | T5.20 | `algorithms/fast-flows/mpm.md` | 4, 1 | |
-| T5.21 | `algorithms/flows/matchings-as-flows.md` | 4 (beyond the lectures) | |
+| T5.21 | `algorithms/flows/matchings-as-flows.md` | 4, not in the notes (02 p57 is a picture of the network only) | skip |
 | T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | |
-| T5.23 | `algorithms/gomory-hu/node-identification.md` | 6 | |
-| T5.24 | `algorithms/gomory-hu/gomory-hu-trees.md` | 3, 4 | |
-| T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 | |
-| T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16, 4 | |
-| T5.27 | `algorithms/gomory-hu/triangle-inequality.md` | 3 | |
+| T5.23 | `algorithms/gomory-hu/node-identification.md` | 6, not in the notes (03 p32 states the observation only) | skip |
+| T5.24 | `algorithms/gomory-hu/gomory-hu-trees.md` | 3, 4, not in the notes (03 p4 and p6 state only) | skip |
+| T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 (03 p17: "proof by picture") | |
+| T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16; skip the 4 of `cor:gomory-hu-contraction` (stated only, 03 p14) | |
+| T5.27 | `algorithms/gomory-hu/triangle-inequality.md` | 3, not in the notes (03 p19 states Lemmas A and B only) | skip |
 | T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | |
 | T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | |
-| T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3 | |
-| T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 4, 5 | |
-| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2, 2 | |
+| T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
+| T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | |
+| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | |
 | T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
-| T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Write each page and its commit here. | | |
+| T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. | | |
 
 **Gate D.** See §6.
 
@@ -459,6 +489,12 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 (empty)
 
 ### Open questions for the owner
+
+- Scope (2026-11-12): proofs already explained that the notes do not give: Erdős–Gallai
+  (T4.3, 95 lines) and the corollary "trees have leaves" on `theory/trees/leaves.md` (T3.1,
+  2 lines). Keep their walkthroughs or remove them?
+- Scope (2026-11-12): written proofs of statements the notes give without proof (the `skip`
+  rows of Phases 4 and 5) are still on the pages, closed. Keep them or remove them?
 
 - `theory/walks-connectivity/closed-walks.md` (T3.2): the theorem statement links "cycle" to
   `def:cycle-graph` (n ≥ 3, simple graphs), but its base cases count loops and parallel edges
