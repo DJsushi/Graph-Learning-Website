@@ -184,7 +184,7 @@ the rows at any time.
 
 | ID | Page (under `content/`) | Proof lines | Done |
 |----|-------------------------|-------------|------|
-| T4.0 | Remove what Scope (above) lists: delete the five pages; delete the nine entries with their proofs, intuitions, figures and walkthroughs (including the T4.1 walkthrough of `cor:odd-degree-count`); remove exactly those ids from `content/topics.yaml` and `content/entries.lock.json`; delete exercises and summary lines that are only about removed material; turn every other link to a removed id into plain text. Remove `extra=true` from the seven kept entries. Agent: `coder`. | | |
+| T4.0 | Remove what Scope (above) lists: delete the five pages; delete the nine entries with their proofs, intuitions, figures and walkthroughs (including the T4.1 walkthrough of `cor:odd-degree-count`); delete the walkthroughs of `thm:erdos-gallai` (T4.3) and `cor:tree-leaf` (T3.1), whose proofs the notes do not give; remove exactly those ids from `content/topics.yaml` and `content/entries.lock.json`; delete exercises and summary lines that are only about removed material; turn every other link to a removed id into plain text. Remove `extra=true` from the seven kept entries. Agent: `coder`. | | |
 | T4.1 | `theory/degrees/degrees-and-handshake.md` | 8; the 4 of `cor:odd-degree-count` go in T4.0 | 3364005 |
 | T4.2 | `theory/degrees/havel-hakimi.md` | 54 | 528662b |
 | T4.3 | `theory/degrees/erdos-gallai.md` | 95, not in the notes (2026-09-15 p7 states the theorem only); see §6 | 7a65cd5 |
@@ -540,7 +540,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   - Passed: no console errors, no horizontal scroll, at most 74 characters per line, figures follow steps, mark hover/focus, arrow keys / Next / Previous / First / Last after scrolling, Enlarge closes with Escape, sticky offset 64px (1366) and 48px (390).
 
 - **Gate B decided (2026-11-11, owner).** Pages look good. Writer model: Opus for pages with a proof over 20 lines, Sonnet for shorter ones. `math-checker` is always Opus. If a Sonnet writer fails the checker twice, rerun with Opus (as on T3.2). No change to `.claude/agents/writer.md`. The multigraph cycle convention (see open questions): the owner left it open; no definition box is added, the page states the rule itself.
-- **Scope decided (2026-11-12, owner).** Only what the notes contain (§2, Scope). One-step consequences the notes state without writing the step (Dirac–Ore from the completion lemma, a simplicial vertex from LEM2, shortest walks are paths) count as not proved: they stay `skip`.
+- **Scope decided (2026-11-12, owner).** Only what the notes contain (§2, Scope). One-step consequences the notes state without writing the step (Dirac–Ore from the completion lemma, a simplicial vertex from LEM2, shortest walks are paths) count as not proved: they stay `skip`. The finished walkthroughs of Erdős–Gallai (T4.3) and "trees have leaves" (T3.1) go, in T4.0.
 
 ### Needs reported by writers
 
@@ -548,9 +548,6 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Open questions for the owner
 
-- Scope (2026-11-12): proofs already explained that the notes do not give: Erdős–Gallai
-  (T4.3, 95 lines) and the corollary "trees have leaves" on `theory/trees/leaves.md` (T3.1,
-  2 lines). Keep their walkthroughs or remove them?
 - Scope (2026-11-12): written proofs of statements the notes give without proof (the `skip`
   rows of Phases 4 and 5) are still on the pages, closed. Keep them or remove them?
 
