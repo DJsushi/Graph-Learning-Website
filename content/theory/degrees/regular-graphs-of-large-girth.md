@@ -52,20 +52,20 @@ Base cases with small $d$.
 caption: The base cases $d = 0, 1, 2$, here for $k = 5$: $K_1$, $K_2$ and $C_5$.
 intent: New. The lecture only notes "OK for d = 2" (theory/2026-09-29 p8); the figure grows the three graphs of the written proof from one vertex, for k = 5.
 layout: fixed
-1 @(0, 1)
+1 @(0, 0.75)
 step: Good for $(k, d)$: induction on $k$, then on $d$.
 step: $d = 0$: one vertex, $K_1$.
 class highlight: 1
 mark K1: 1
 step: $d = 1$: one edge, $K_2$.
-2 @(0.95, 0.31)
+2 @(0.71, 0.23)
 1 -- 2
 class highlight: 2 1--2
 mark K2: 1 2 1--2
 step: $d = 2$: the cycle $C_5$, girth 5.
-3 @(0.59, -0.81)
-4 @(-0.59, -0.81)
-5 @(-0.95, 0.31)
+3 @(0.44, -0.61)
+4 @(-0.44, -0.61)
+5 @(-0.71, 0.23)
 2 -- 3 -- 4 -- 5 -- 1
 unclass highlight: 1 2 1--2
 class cycle: 1--2 2--3 3--4 4--5 5--1
@@ -96,7 +96,7 @@ Base cases with small $k$.
 caption: The base cases $k \le 3$ and $k = 4$, here for $d = 3$: $K_4$ has girth 3, $K_{3,3}$ has girth 4.
 intent: New. The lecture only notes "OK for k in {3, 4}" (theory/2026-09-29 p8); the figure shows the graphs of the written proof for d = 3, and K_4 turns into K_{3,3}.
 layout: fixed
-u1 @(0, 1); u2 @(0, 0); w1 @(1.5, 1); w2 @(1.5, 0)
+u1 @(0, 1); u2 @(1, 1); w1 @(0, 0); w2 @(1, 0)
 u1 -- u2; w1 -- w2; u1 -- w1; u1 -- w2; u2 -- w1; u2 -- w2
 step: $k \le 3$: $K_{d+1}$, here $K_4$.
 class cycle: u1--u2 u2--w1 u1--w1
@@ -105,7 +105,7 @@ mark tri: u1--u2 u2--w1 u1--w1
 step: $k = 4$: $K_{d,d}$, here $K_{3,3}$.
 remove u1--u2 w1--w2
 unclass cycle: u2--w1 u1--w1
-u3 @(0, -1); w3 @(1.5, -1)
+u3 @(2, 1); w3 @(2, 0)
 u3 -- w1; u3 -- w2; u3 -- w3; u1 -- w3; u2 -- w3
 class color1: u1 u2 u3
 class color2: w1 w2 w3
@@ -132,30 +132,30 @@ The induction step, part 1: building $F$. The figures of the step run the constr
 
 :::: walkthrough {for=thm:regular-large-girth}
 ```graph id=t03-girth-step-build widget=stepper
-caption: The construction with $G = K_2$ and $H = C_3$: three copies of $G$, joined along the edges of $H$, give $F = C_6$.
-intent: New; follows the lecture drawing (theory/2026-09-29 p8: copies of G in circles, joined along H) and the names and positions of t03-girth-construction. Toy numbers k = 5, d = 2, with G = K_2 good for (5, 1) and H = C_3 good for (3, 2); the step's real numbers (k at least 5, d at least 3) give graphs far too large to draw.
+caption: The construction with $G = K_2$ and $H = C_3$: three copies of $G$, joined along the edges of $H$, give $F = C_6$. Copy $G_{h_1}$ holds $a_1$ and $a_2$, $G_{h_2}$ holds the $b$s, $G_{h_3}$ the $c$s.
+intent: New; follows the lecture drawing (theory/2026-09-29 p8: copies of G in circles, joined along H) and the names of t03-girth-construction; the copies are coloured instead of drawn as labelled groups, and the layout is wide and flat, so that the figure keeps the minimum size in the walkthrough column. Toy numbers k = 5, d = 2, with G = K_2 good for (5, 1) and H = C_3 good for (3, 2); the step's real numbers (k at least 5, d at least 3) give graphs far too large to draw.
 layout: fixed
-a1 @(0, 1); a2 @(0.6, 1)
+a1 @(0.1, 0.25); a2 @(0.5, 0.85)
 a1 -- a2
 step: $G$, good for $(k, d - 1)$; here $K_2$, so $N = 2$.
 class highlight: a1 a2 a1--a2
 mark G: a1 a2 a1--a2
 step: $H$, good for $(\lceil k/2 \rceil, N)$; here $C_3$.
 class hidden: a1 a2 a1--a2
-h1 [label="$h_1$"] @(0.3, 1)
-h2 [label="$h_2$"] @(3.3, 1)
-h3 [label="$h_3$"] @(1.8, -1)
+h1 [label="$h_1$"] @(0.3, 0.55)
+h2 [label="$h_2$"] @(2.7, 0.55)
+h3 [label="$h_3$"] @(1.5, -0.45)
 h1 -- h2 -- h3 -- h1
 mark H: h1 h2 h3 h1--h2 h2--h3 h1--h3
 step: One copy $G_h$ of $G$ for each vertex $h$ of $H$.
 remove h1 h2 h3
 unclass hidden: a1 a2 a1--a2
 unclass highlight: a1 a2 a1--a2
-b1 @(3, 1); b2 @(3.6, 1); c1 @(1.5, -1); c2 @(2.1, -1)
+b1 @(2.5, 0.85); b2 @(2.9, 0.25); c1 @(1.15, -0.45); c2 @(1.85, -0.45)
 b1 -- b2; c1 -- c2
-group G1: a1 a2 [label="$G_{h_1}$"]
-group G2: b1 b2 [label="$G_{h_2}$"]
-group G3: c1 c2 [label="$G_{h_3}$"]
+class color1: a1 a2
+class color2: b1 b2
+class color3: c1 c2
 mark copies: a1 a2 b1 b2 c1 c2
 step: $\beta_{h_1}$ sends $h_1h_2$ to $a_2$ and $h_1h_3$ to $a_1$.
 class current: a1 a2
@@ -191,14 +191,14 @@ Part 2: $F$ is a simple $d$-regular graph.
 
 :::: walkthrough {for=thm:regular-large-girth}
 ```graph id=t03-girth-step-regular widget=stepper
-caption: In $F$ every vertex has degree $d - 1$ in its copy plus one $H$-edge, here $1 + 1 = 2$, and no two edges join the same pair.
+caption: In $F$ every vertex has degree $d - 1$ in its copy plus one $H$-edge, here $1 + 1 = 2$, and no two edges join the same pair. Copy $G_{h_1}$ holds $a_1$ and $a_2$, $G_{h_2}$ holds the $b$s, $G_{h_3}$ the $c$s.
 intent: New; the toy F of t03-girth-step-build (k = 5, d = 2), same names and positions.
 layout: fixed
-a1 @(0, 1); a2 @(0.6, 1); b1 @(3, 1); b2 @(3.6, 1); c1 @(1.5, -1); c2 @(2.1, -1)
+a1 @(0.1, 0.25); a2 @(0.5, 0.85); b1 @(2.5, 0.85); b2 @(2.9, 0.25); c1 @(1.15, -0.45); c2 @(1.85, -0.45)
 a1 -- a2; b1 -- b2; c1 -- c2
-group G1: a1 a2 [label="$G_{h_1}$"]
-group G2: b1 b2 [label="$G_{h_2}$"]
-group G3: c1 c2 [label="$G_{h_3}$"]
+class color1: a1 a2
+class color2: b1 b2
+class color3: c1 c2
 step: Inside its copy, $a_1$ has degree $d - 1 = 1$.
 class current: a1
 class highlight: a1--a2
@@ -237,15 +237,15 @@ Part 3: every cycle $C$ of $F$ has length at least $k$. First we show that $C$ u
 
 :::: walkthrough {for=thm:regular-large-girth}
 ```graph id=t03-girth-step-walk widget=stepper
-caption: Contracting each copy of $G$ to its vertex $h$ turns the cycle $C$ into a closed walk in $H$ that uses each edge once.
+caption: Contracting each copy of $G$ to its vertex $h$ turns the cycle $C$ into a closed walk in $H$ that uses each edge once. Copy $G_{h_1}$ holds $a_1$ and $a_2$, $G_{h_2}$ holds the $b$s, $G_{h_3}$ the $c$s.
 intent: New; the toy F of t03-girth-step-build (k = 5, d = 2). Contracting the copies turns the cycle C = F into the closed walk h_1, h_2, h_3, h_1 in H = C_3.
 layout: fixed
-a1 @(0, 1); a2 @(0.6, 1); b1 @(3, 1); b2 @(3.6, 1); c1 @(1.5, -1); c2 @(2.1, -1)
+a1 @(0.1, 0.25); a2 @(0.5, 0.85); b1 @(2.5, 0.85); b2 @(2.9, 0.25); c1 @(1.15, -0.45); c2 @(1.85, -0.45)
 a1 -- a2; b1 -- b2; c1 -- c2
 a2 -- b1 [id=f1]; b2 -- c2 [id=f2]; c1 -- a1 [id=f3]
-group G1: a1 a2 [label="$G_{h_1}$"]
-group G2: b1 b2 [label="$G_{h_2}$"]
-group G3: c1 c2 [label="$G_{h_3}$"]
+class color1: a1 a2
+class color2: b1 b2
+class color3: c1 c2
 step: A cycle without $H$-edges stays in one copy.
 class highlight: a1 a2 a1--a2
 class muted: @f1 @f2 @f3
@@ -263,7 +263,6 @@ step: Contracting each copy gives a closed walk in $H$.
 merge a1 a2 -> h1 [label="$h_1$"]
 merge b1 b2 -> h2 [label="$h_2$"]
 merge c1 c2 -> h3 [label="$h_3$"]
-remove G1 G2 G3
 unclass cycle: @f1 @f2 @f3
 class path: @f1 @f2 @f3
 mark walk: h1 h2 h3 @f1 @f2 @f3
@@ -309,15 +308,15 @@ Then we show that between two $H$-edges, $C$ also uses an edge of a copy, and we
 
 :::: walkthrough {for=thm:regular-large-girth}
 ```graph id=t03-girth-step-count widget=stepper
-caption: Between two consecutive $H$-edges the cycle uses at least one edge of a copy, so $C$ has at least $2t$ edges; here 6, against $k = 5$.
+caption: Between two consecutive $H$-edges the cycle uses at least one edge of a copy, so $C$ has at least $2t$ edges; here 6, against $k = 5$. Copy $G_{h_1}$ holds $a_1$ and $a_2$, $G_{h_2}$ holds the $b$s, $G_{h_3}$ the $c$s.
 intent: New; the toy F of t03-girth-step-build with C = F (k = 5, d = 2, t = 3).
 layout: fixed
-a1 @(0, 1); a2 @(0.6, 1); b1 @(3, 1); b2 @(3.6, 1); c1 @(1.5, -1); c2 @(2.1, -1)
+a1 @(0.1, 0.25); a2 @(0.5, 0.85); b1 @(2.5, 0.85); b2 @(2.9, 0.25); c1 @(1.15, -0.45); c2 @(1.85, -0.45)
 a1 -- a2; b1 -- b2; c1 -- c2
 a2 -- b1 [label="$f_1$"]; b2 -- c2 [label="$f_2$"]; c1 -- a1 [label="$f_3$"]
-group G1: a1 a2 [label="$G_{h_1}$"]
-group G2: b1 b2 [label="$G_{h_2}$"]
-group G3: c1 c2 [label="$G_{h_3}$"]
+class color1: a1 a2
+class color2: b1 b2
+class color3: c1 c2
 step: $C$ enters $G_{h_2}$ at $b_1$ and leaves at $b_2$.
 class current: b1 b2
 mark in: b1
