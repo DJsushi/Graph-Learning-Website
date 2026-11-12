@@ -912,3 +912,96 @@ describe('simplicial decompositions page (t04)', () => {
     }
   })
 })
+
+describe('Hamiltonian completion page (t04)', () => {
+  const steps = (id: string): GraphData[] => {
+    const f = index.figureById.get(id)!
+    const doc = parseGraph(f.source, f.info)
+    expect(doc.errors).toEqual([])
+    return doc.panels[0].steps.map(s => s.graph)
+  }
+  const deg = (g: GraphData, v: string) => new GraphIndex(g).degree(v)
+  const adj = (g: GraphData, u: string, v: string) => new GraphIndex(g).adjacent(u, v)
+  const nb = (g: GraphData, v: string) => { const ix = new GraphIndex(g); return ix.vertexIds.filter(w => ix.adjacent(v, w)).sort() }
+  const hamCycle = (g: GraphData, C: string[]) =>
+    C.length === g.vertices.length && new Set(C).size === C.length && C.every((v, i) => adj(g, v, C[(i + 1) % C.length]))
+
+  it('closure: n = 5; b,y sum 2+2 = 4 < 5; b,c sum 2+3 = 5; then x,y sum 3+2 = 5; then b,y sum 3+3 = 6; the closure is K_5', () => {
+    const [g, s2, s3, s4] = steps('t04-completion-closure')
+    expect(g.vertices.length).toBe(5)
+    expect(adj(g, 'b', 'y')).toBe(false); expect([deg(g, 'b'), deg(g, 'y')]).toEqual([2, 2])
+    expect(adj(g, 'b', 'c')).toBe(false); expect([deg(g, 'b'), deg(g, 'c')]).toEqual([2, 3])
+    expect(adj(s2, 'x', 'y')).toBe(false); expect([deg(s2, 'x'), deg(s2, 'y')]).toEqual([3, 2])
+    expect(adj(s3, 'b', 'y')).toBe(false); expect([deg(s3, 'b'), deg(s3, 'y')]).toEqual([3, 3])
+    expect(s4.edges.length).toBe(10)
+  })
+
+  it('induction: same graph as the closure figure; H_1 = G + bc, then xy with degrees 3 and 2 in H_1', () => {
+    const [g, h1, h] = steps('t04-completion-induction')
+    const [c0, c1, c2] = steps('t04-completion-closure')
+    expect(g.edges.length).toBe(c0.edges.length); expect(h1.edges.length).toBe(c1.edges.length); expect(h.edges.length).toBe(c2.edges.length)
+    expect(adj(h1, 'b', 'c')).toBe(true); expect(adj(h1, 'x', 'y')).toBe(false)
+    expect(deg(g, 'b') + deg(g, 'c')).toBe(5)
+    expect([deg(h1, 'x'), deg(h1, 'y')]).toEqual([3, 2])
+  })
+
+  const H1 = ['x', 'w2', 'w3', 'wj', 'wj1', 'w6', 'y']
+  it('easy direction: G has 7 vertices, xy not an edge, degree sum 4 + 3 = 7; C = x w3 w2 y wj wj1 w6 is Hamiltonian in G and in G + xy', () => {
+    const [g, h] = steps('t04-completion-easy')
+    expect(g.vertices.length).toBe(7); expect(adj(g, 'x', 'y')).toBe(false)
+    expect([deg(g, 'x'), deg(g, 'y')]).toEqual([4, 3])
+    const C = ['x', 'w3', 'w2', 'y', 'wj', 'wj1', 'w6']
+    expect(hamCycle(g, C)).toBe(true); expect(hamCycle(h, C)).toBe(true)
+    expect(h.edges.length).toBe(g.edges.length + 1)
+  })
+
+  it('case xy not in C: C = x w6 y w2 w3 wj wj1 is a Hamiltonian cycle of H and of H_1 = H - xy', () => {
+    const [h, h1] = steps('t04-completion-avoid')
+    const C = ['x', 'w6', 'y', 'w2', 'w3', 'wj', 'wj1']
+    expect(hamCycle(h, C)).toBe(true); expect(hamCycle(h1, C)).toBe(true)
+    expect(adj(h, 'x', 'y')).toBe(true); expect(adj(h1, 'x', 'y')).toBe(false)
+  })
+
+  it('case xy in C: n = 7, degrees 4 + 3 = 7; black w2 wj w6; red x w2 wj wj1; both w2 wj; 7 colourings on 6 vertices; new cycle x w2 w3 wj y w6 wj1', () => {
+    const [h, h1] = steps('t04-completion-switch')
+    expect(h1.vertices.length).toBe(7)
+    expect(hamCycle(h, H1)).toBe(true)
+    H1.slice(0, -1).forEach((v, i) => expect(adj(h1, v, H1[i + 1])).toBe(true))
+    expect(adj(h1, 'x', 'y')).toBe(false)
+    expect([deg(h1, 'x'), deg(h1, 'y')]).toEqual([4, 3])
+    const black = nb(h1, 'y'), red = nb(h1, 'x').map(v => H1[H1.indexOf(v) - 1]).sort()
+    expect(black).toEqual(['w2', 'w6', 'wj'])
+    expect(nb(h1, 'x')).toEqual(['w2', 'w3', 'w6', 'wj1'])
+    expect(red).toEqual(['w2', 'wj', 'wj1', 'x'])
+    expect(black.filter(v => red.includes(v)).sort()).toEqual(['w2', 'wj'])
+    expect(black.length + red.length).toBe(7); expect(H1.indexOf('y')).toBe(6)
+    expect(H1.indexOf('wj') + 1).toBe(4)
+    expect(hamCycle(h1, ['x', 'w2', 'w3', 'wj', 'y', 'w6', 'wj1'])).toBe(true)
+  })
+
+  it('walkthrough figures use the same graph', () => {
+    const e = steps('t04-completion-easy')[0], a = steps('t04-completion-avoid')[1], s = steps('t04-completion-switch')[1]
+    for (const g of [a, s]) {
+      expect(g.vertices.map(v => v.id).sort()).toEqual(e.vertices.map(v => v.id).sort())
+      expect(g.edges.length).toBe(e.edges.length)
+      for (const x of e.edges) expect(adj(g, x.tail[0], x.head[0])).toBe(true)
+    }
+  })
+})
+
+describe('Hamiltonian switch figure (t04)', () => {
+  it('meets the hypothesis: d(x) + d(y) = 3 + 4 = 7 = n, xy not an edge; black w2 w3 wj w6, red x w2 wj; both w2, wj; cycle x w2 w3 wj y w6 wj1', () => {
+    const g = fig('t04-hamiltonian-switch'), ix = new GraphIndex(g)
+    const P = ['x', 'w2', 'w3', 'wj', 'wj1', 'w6', 'y']
+    expect(g.vertices.length).toBe(7); expect(ix.adjacent('x', 'y')).toBe(false)
+    expect([ix.degree('x'), ix.degree('y')]).toEqual([3, 4])
+    const nb = (v: string) => ix.vertexIds.filter(w => ix.adjacent(v, w)).sort()
+    expect(nb('y')).toEqual(['w2', 'w3', 'w6', 'wj'])
+    expect(nb('x')).toEqual(['w2', 'w3', 'wj1'])
+    const red = nb('x').map(v => P[P.indexOf(v) - 1]).sort()
+    expect(red).toEqual(['w2', 'wj', 'x'])
+    expect(nb('y').filter(v => red.includes(v)).sort()).toEqual(['w2', 'wj'])
+    const C = ['x', 'w2', 'w3', 'wj', 'y', 'w6', 'wj1']
+    C.forEach((v, i) => expect(ix.adjacent(v, C[(i + 1) % 7])).toBe(true))
+  })
+})
