@@ -569,3 +569,6 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
   as cycles. No container defines that multigraph convention; it is only a plain paragraph at
   `theory/trees/forests-and-trees.md:23`. Should that paragraph become a definition box (and
   the statement link to it)?
+
+- Status tag (2026-11-12, owner request, d342ec5): every page header shows "Checked" (`status: reviewed`, set by the main agent after the math-checker passes, §1.4) or "Not checked yet" (`draft`). The `skip` pages never get a math check, so they stay "Not checked yet" unless T4.29 covers them. Add a check-only pass for them?
+- Pending (2026-11-12): the visual-qa run on T4.11 to T4.15 and on the status tag (light/dark, 390px, a lecture page) was stopped before it reported. Run it first next session, before T4.18.
