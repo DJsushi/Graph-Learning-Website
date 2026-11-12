@@ -1453,3 +1453,31 @@ describe('degree-sequences example figures (t01)', () => {
     for (const k of [0, 1]) { const g = fig('t01-graphic-sequence-example', k), ix = new GraphIndex(g); for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id)) }
   })
 })
+
+describe('dirac-and-ore example figures (t04)', () => {
+  it('minimum degree figure: delta 2 reached by c and d; K4 plus isolated vertex has delta 0', () => {
+    for (const [k, delta, min] of [[0, 2, ['c', 'd']], [1, 0, ['e']]] as const) {
+      const g = fig('t04-minimum-degree-example', k), ix = new GraphIndex(g)
+      expect(Math.min(...g.vertices.map(v => ix.degree(v.id)))).toBe(delta)
+      expect(g.vertices.filter(v => ix.degree(v.id) === delta).map(v => v.id).sort()).toEqual(min)
+      expect(vclsOf(g, 'current')).toEqual(min)
+      for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id))
+    }
+  })
+  it('Ore example: n=5, d(w)=2<5/2, non-adjacent pairs wc, wd sum to 5, cycle edges form a Hamiltonian cycle', () => {
+    const g = fig('t04-ore-example'), ix = new GraphIndex(g)
+    expect(g.vertices.length).toBe(5)
+    expect(g.vertices.map(v => [v.id, ix.degree(v.id)]).sort()).toEqual([['a', 4], ['b', 4], ['c', 3], ['d', 3], ['w', 2]])
+    for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id))
+    expect(ix.degree('w') < 5 / 2).toBe(true)
+    const adj = (u: string, v: string) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [u, v].sort().join())
+    const pairs = g.vertices.flatMap((u, i) => g.vertices.slice(i + 1).map(v => [u.id, v.id])).filter(([u, v]) => !adj(u, v))
+    expect(pairs).toEqual([['w', 'c'], ['w', 'd']])
+    for (const [u, v] of pairs) expect(ix.degree(u) + ix.degree(v)).toBe(5)
+    const cyc = g.edges.filter(e => e.classes.includes('cycle'))
+    expect(cyc.length).toBe(5)
+    const cd = new Map<string, number>(); for (const e of cyc) for (const v of [e.tail[0], e.head[0]]) cd.set(v, (cd.get(v) ?? 0) + 1)
+    expect([...cd.values()]).toEqual([2, 2, 2, 2, 2]); expect(cd.size).toBe(5)
+    expect(A.isConnected(new GraphIndex({ ...g, edges: cyc }))).toBe(true)
+  })
+})
