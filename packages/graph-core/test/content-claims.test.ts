@@ -1570,3 +1570,18 @@ describe('s-t cut example figure (t05)', () => {
     expect(g2.edges.filter(e => e.classes.includes('path')).map(e => e.tail[0] + e.head[0]).sort()).toEqual(['bt', 'sb'])
   })
 })
+
+describe('components example figure (t02)', () => {
+  it('left panel has 3 components, one colour each; right panel: highlighted a,b connected but not a component', () => {
+    const g = fig('t02-components-example', 0), h = fig('t02-components-example', 1)
+    const comps = A.components(new GraphIndex(g)).map(c => [...c].sort().join('')).sort()
+    expect(comps).toEqual(['abc', 'de', 'f'])
+    for (const [c, vs] of [['color1', 'abc'], ['color2', 'de'], ['color3', 'f']])
+      expect(g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort().join('')).toBe(vs)
+    const hi = new Set(h.vertices.filter(v => v.classes.includes('highlight')).map(v => v.id))
+    expect([...hi].sort()).toEqual(['a', 'b'])
+    const sub = A.components(new GraphIndex(h), e => hi.has(e.tail[0]) && hi.has(e.head[0]))
+    expect(sub.some(c => c.length === 2 && c.every(v => hi.has(v)))).toBe(true)
+    expect(A.components(new GraphIndex(h)).some(c => c.includes('a') && c.length === 3)).toBe(true)
+  })
+})
