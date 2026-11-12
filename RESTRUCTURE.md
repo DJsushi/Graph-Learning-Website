@@ -216,6 +216,9 @@ the rows at any time.
 | T4.27 | `theory/chordal/chordal-graphs.md` | 2, not in the notes | skip |
 | T4.28 | `theory/chordal/interval-graphs.md` | 6, not in the notes | skip |
 | T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. | | |
+| T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | |
+| T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. | | |
+| T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
 
 **Gate C.** See §6.
 
