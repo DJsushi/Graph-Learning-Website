@@ -196,7 +196,7 @@ the rows at any time.
 | T4.9 | `theory/trees/cayley-formula.md` | 37 | 5aa25ae |
 | T4.10 | `theory/degrees/regular-graphs-of-large-girth.md` | 37 | 30c1144 |
 | T4.11 | `theory/chordal/minimal-cuts.md` | 22 | 3e05d7d |
-| T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | |
+| T4.12 | `theory/chordal/two-simplicial-vertices.md` | 19; skip the 2 of `thm:chordal-simplicial` (stated only, 2026-10-06 p1) | 2836003 |
 | T4.13 | `theory/chordal/simplicial-decompositions.md` | 10 | |
 | T4.14 | `theory/hamiltonian/hamiltonian-completion.md` | 23; skip the 5 of `thm:dirac-ore` (stated only, 2026-10-06 p5) | |
 | T4.15 | `theory/menger/vertex-version-from-edge-version.md` | 17 | |
@@ -549,6 +549,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
 
 - T4.10 (`degrees/regular-graphs-of-large-girth.md`): no way to show several graphs side by side in one figure (G, H and F of the construction), so H gets its own step. The steps use a toy instance (k = 5, d = 2) because a real one is too large to draw.
+
+- T4.12 (`chordal/two-simplicial-vertices.md`): no two-graph view of G[A ∪ X] and G − A; muting the other part stands in.
 
 ### Open questions from Phase 4 writers
 
