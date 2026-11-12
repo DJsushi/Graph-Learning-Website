@@ -28,7 +28,7 @@ caption: A graph with degree sequence $(4, 4, 3, 3, 1, 1, 0)$. Vertex labels sho
 intent: Transcription of the lecture example; an isolated vertex contributes a 0 to the degree sequence.
 layout: fixed
 vertex-label: "{d}"
-x [d=0] @(1, 1.6)
+x [d=0] @(1, -0.8)
 l [d=4] @(0, 1); r [d=4] @(2, 1); mt [d=3] @(1, 1); mb [d=3] @(1, 0); p [d=1] @(0, 0); q [d=1] @(2, 0)
 l -- r [bend=0.5]; l -- mt; mt -- r; l -- mb; mt -- mb; r -- mb; l -- p; r -- q
 ```
@@ -51,10 +51,10 @@ other vertex available.
 :::
 
 ```graph id=t01-graphic-sequence-example widget=figure
-caption: Left, a realisation of $(3, 2, 2, 1)$, so this sequence is graphic. Right, the only attempt for $(3, 3, 1, 1)$. Vertices $a$ and $b$ need degree 3, so each is adjacent to all others; then $c$ and $d$ get degree 2, not 1.
+caption: Left, a realisation of $(3, 2, 2, 1)$, so this sequence is graphic. Right, the only attempt for $(3, 3, 1, 1)$. The two vertices of degree 3 must be adjacent to all others, so the two remaining vertices get degree 2, not 1.
 intent: New figure. Example and non-example for graphic sequences; labels show the degrees, the red vertices of the right panel break the prescribed sequence.
 layout: fixed
-vertex-label: "{id}: {d}"
+vertex-label: "{d}"
 panel: realisation of $(3, 2, 2, 1)$
 a [d=3] @(1, 0.5); b [d=2] @(2, 1); c [d=2] @(2, 0); d [d=1] @(0, 0.5)
 a -- b; a -- c; b -- c; a -- d
