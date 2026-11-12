@@ -1481,3 +1481,26 @@ describe('dirac-and-ore example figures (t04)', () => {
     expect(A.isConnected(new GraphIndex({ ...g, edges: cyc }))).toBe(true)
   })
 })
+
+describe('hamiltonian-graphs example figures (t04)', () => {
+  it('hexagon plus two chords has a Hamiltonian cycle (the green edges); the bowtie has a Hamiltonian path (blue) but no Hamiltonian cycle', () => {
+    const hamCycle = (g: GraphData) => {
+      const ids = g.vertices.map(v => v.id), adj = (u: string, v: string) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [u, v].sort().join())
+      const go = (path: string[]): boolean => path.length === ids.length ? adj(path[path.length - 1], path[0]) : ids.some(v => !path.includes(v) && adj(path[path.length - 1], v) && go([...path, v]))
+      return go([ids[0]])
+    }
+    const l = fig('t04-hamiltonian-example', 0), r = fig('t04-hamiltonian-example', 1)
+    expect(l.vertices.length).toBe(6); expect(l.edges.length).toBe(8); expect(hamCycle(l)).toBe(true)
+    const cyc = l.edges.filter(e => e.classes.includes('cycle'))
+    expect(cyc.length).toBe(6)
+    const cd = new Map<string, number>(); for (const e of cyc) for (const v of [e.tail[0], e.head[0]]) cd.set(v, (cd.get(v) ?? 0) + 1)
+    expect([...cd.values()]).toEqual([2, 2, 2, 2, 2, 2]); expect(cd.size).toBe(6)
+    expect(A.isConnected(new GraphIndex({ ...l, edges: cyc }))).toBe(true)
+    expect(r.vertices.length).toBe(5); expect(r.edges.length).toBe(6); expect(hamCycle(r)).toBe(false)
+    const pth = r.edges.filter(e => e.classes.includes('path'))
+    expect(pth.length).toBe(4)
+    const pd = new Map<string, number>(); for (const e of pth) for (const v of [e.tail[0], e.head[0]]) pd.set(v, (pd.get(v) ?? 0) + 1)
+    expect([...pd.entries()].sort()).toEqual([['a', 1], ['b', 2], ['c', 2], ['d', 2], ['e', 1]])
+    expect(A.isConnected(new GraphIndex({ ...r, edges: pth }))).toBe(true)
+  })
+})
