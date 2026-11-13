@@ -228,7 +228,7 @@ the rows at any time.
 | T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | bf7df38 |
 | T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | 1bff3ab |
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | 33de499 |
-| T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | |
+| T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | 98a5ce2 |
 | T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | |
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | |
