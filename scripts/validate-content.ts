@@ -8,6 +8,7 @@ import { markRefErrors } from '../packages/content/marks'
 import { REFERENCE_KINDS } from '../packages/content/pages'
 import { entryHashes, lockErrors } from '../packages/content/lock'
 import { structureChecks } from '../packages/content/structure'
+import { budgetChecks } from '../packages/content/budget'
 import { parseGraph, parseCall } from '../packages/graph-core/src/dsl/parser'
 import { ALGORITHMS } from '../packages/graph-core/src/algorithms'
 import { PREDICATES } from '../packages/graph-core/src/predicates'
@@ -33,6 +34,9 @@ else errors.push('content/entries.lock.json is missing (node --import tsx script
 const structure = structureChecks(root, index, loadTopics(root))
 errors.push(...structure.errors)
 warnings.push(...structure.warnings)
+const budget = budgetChecks(root, index)
+errors.push(...budget.errors)
+warnings.push(...budget.warnings)
 
 for (const c of index.containers) {
   if (c.attrs.source && !sourceTag(c.attrs.source))
@@ -132,6 +136,7 @@ const termRe = new Map(terms.map(t => {
   return [t, new RegExp(`(?<![\\w-])${esc}(?:s|es)?(?![\\w-])`, /[A-Z]/.test(t) ? 'g' : 'gi')]
 }))
 for (const l of index.lessons) {
+  if (l.kind === 'concept') continue   // CONTENT_CONVENTIONS 10: too noisy on concept pages
   const lines = l.source.split('\n')
   const sections: { start: number; text: string[] }[] = [{ start: 1, text: [] }]
   let fence = false

@@ -486,10 +486,12 @@ computes this for the reference).
 
 ## 10. Budgets, checked by `npm run validate`
 
-These budgets are for pages with `stage: taught`. Their checks in the validator are deferred
-(`BACKLOG.md` D1); until then the writer of a taught page counts by hand. The rules for
-walkthroughs and mark links (E7, E13) and for fences (E12) are checked on every page, and
-proofs without a walkthrough are listed as warnings.
+These budgets are for pages with `stage: taught`. E1 to E11 are checked by `budgetChecks`
+(`packages/content/budget.ts`). E7 (except the 2 heavy spans per step, taught pages only), E12
+and E13 are checked on every page; proofs without a walkthrough are warnings on split pages.
+E11 reads `needs`, so a taught page lists every concept page it links to there. Not checked
+yet: `symbols` resolving (E10; the registry is deferred, D2) and the warnings other than the
+600-word one.
 
 Definitions:
 
@@ -524,8 +526,8 @@ Warnings: a sentence over 30 words; a paragraph over 80 words; the same target l
 a page; a bare `[[id]]` in the reading path; more than 8 symbols; a stepper step that changes
 nothing; reading path over 600 words.
 
-Remove for concept pages: the lint "term not linked in this section"
-(`scripts/validate-content.ts`, near line 124). It produced a link in almost every sentence.
+The lint "term not linked in this section" is skipped for concept pages
+(`scripts/validate-content.ts`). It produced a link in almost every sentence.
 
 The numbers in E4, E5 and E8 are starting values calibrated on the current text. Do not loosen
 them without the owner's agreement. If a page cannot meet them, split the page.
