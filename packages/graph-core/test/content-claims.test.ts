@@ -3147,3 +3147,51 @@ describe('breadth-first-search page', () => {
     expect(Object.fromEntries(A.bfsDistances(ix, 'x'))).toEqual({ x: 0, c: 1, e: 1, a: 2, f: 2, b: 2, d: 3 })
   })
 })
+
+describe('havel-hakimi-test page', () => {
+  // the sorted sequence after each round of the test, or the line where it stops
+  const rounds = (seq: number[]) => {
+    const out: number[][] = []
+    let s = [...seq].sort((a, b) => b - a)
+    for (;;) {
+      if (s.every(d => d === 0)) return { out, stop: 'yes' }
+      if (s[0] > s.length - 1) return { out, stop: 'too-big' }
+      const [d, ...rest] = s
+      s = rest.map((x, i) => (i < d ? x - 1 : x))
+      if (s.some(x => x < 0)) return { out: [...out, s], stop: 'negative' }
+      s.sort((a, b) => b - a)
+      out.push(s)
+    }
+  }
+  const key = (e: { tail: string[]; head: string[] }) => [e.tail[0], e.head[0]].sort().join('-')
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const wishes = (g: GraphData) => g.vertices.filter(v => !v.classes.includes('muted')).map(v => num(v.data.d)).sort((a, b) => b - a)
+  it('opening: the lecture example vertices with wishes (4,4,3,3,1,1,0); three rounds, then GRAPHIC', () => {
+    const q = fig('t01-hh-question'), ex = fig('t01-degree-sequence-example')
+    expect(q.vertices.map(v => [v.id, v.x, v.y, num(v.data.d)])).toEqual(ex.vertices.map(v => [v.id, v.x, v.y, num(v.data.d)]))
+    expect(q.edges.length).toBe(0)
+    expect(rounds([4, 4, 3, 3, 1, 1, 0])).toEqual({ out: [[3, 2, 2, 1, 0, 0], [1, 1, 0, 0, 0], [0, 0, 0, 0]], stop: 'yes' })
+  })
+  it('rounds stepper: the numbers follow the test, the edges are the lecture graph', () => {
+    const s = steps('t01-hh-rounds'), r = rounds([4, 4, 3, 3, 1, 1, 0]).out
+    expect(s.map(wishes)).toEqual([[4, 4, 3, 3, 1, 1, 0], ...r, [4, 4, 3, 3, 1, 1, 0]])
+    // round 1 leaves r, mt, mb, p, q, x with 3, 2, 2, 0, 1, 0 (the caption order)
+    expect(['r', 'mt', 'mb', 'p', 'q', 'x'].map(v => num(s[1].vertices.find(x => x.id === v)!.data.d))).toEqual([3, 2, 2, 0, 1, 0])
+    const last = s.at(-1)!, ix = new GraphIndex(last)
+    expect(last.edges.map(key).sort()).toEqual(fig('t01-degree-sequence-example').edges.map(key).sort())
+    expect(last.vertices.every(v => ix.degree(v.id) === num(v.data.d))).toBe(true)
+    expect(A.degreeSequence(ix)).toEqual([4, 4, 3, 3, 1, 1, 0])
+  })
+  it('quizzes: (3,3,3,1) stops at @negative in round 2 via (2,2,0); (3,3,2,2,2) graphic with 6 edges', () => {
+    expect(rounds([3, 3, 3, 1])).toEqual({ out: [[2, 2, 0], [1, -1]], stop: 'negative' })
+    const ok = collect(ALGORITHMS['havel-hakimi'], fig('t01-graph-classes'), { seq: '3,3,2,2,2' }).result as any
+    expect(ok.graphic).toBe(true)
+    expect(ok.graph.edges.length).toBe(6)
+    expect((collect(ALGORITHMS['havel-hakimi'], fig('t01-graph-classes'), { seq: '3,3,3,1' }).result as any).graphic).toBe(false)
+  })
+  it('pitfall and More: (0,2,2) not graphic, (2,2,1,1) graphic; (2,2,2) -> (1,1) -> (0)', () => {
+    expect(rounds([0, 2, 2]).stop).not.toBe('yes')
+    expect(rounds([2, 2, 1, 1]).stop).toBe('yes')
+    expect(rounds([2, 2, 2]).out).toEqual([[1, 1], [0]])
+  })
+})
