@@ -237,7 +237,7 @@ After Gate C. Same pipeline.
 | T5.7 | `algorithms/mst/f-heavy-edges.md` | 2, not in the notes (01 p37 states the lemma only) | skip |
 | T5.8 | `algorithms/mst/verification.md` | 3 | 4672c9f |
 | T5.9 | `algorithms/mst/sampling-lemma.md` | 21 | a204aca |
-| T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | |
+| T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | 101181b |
 | T5.11 | `algorithms/arborescences/reduced-weights.md` | 2, 3, not in the notes (01 p51–52 state only) | skip |
 | T5.12 | `algorithms/arborescences/edmonds-algorithm.md` | 11, not in the notes; entry removed in T4.0 | skip |
 | T5.13 | `algorithms/flows/cuts-in-networks.md` | 4, not in the notes; entry removed in T4.0 | skip |
