@@ -223,7 +223,7 @@ the rows at any time.
 | T4.34 | Taught rewrite of `theory/basics/multigraphs-and-digraphs.md`. Rows T4.34 to T4.44: the theory pages that no writer touched (no proof in the notes, enough figures), owner 2026-11-13. Prompt §1.2 "Full rewrite", pipeline §1.4, writer Opus. | | b1c08ce |
 | T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | 961bd17 |
 | T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | b9689e6 |
-| T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | |
+| T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | 4f06c34 |
 | T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | |
 | T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | |
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | |
