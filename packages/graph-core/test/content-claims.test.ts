@@ -1884,3 +1884,158 @@ describe('sampling lemma figures (a01)', () => {
     expect(marked(ct, 'before')).toEqual(run(sample, 'bd').F.sort())
   })
 })
+
+describe('KKT complexity figures (a01)', () => {
+  const g = fig('a01-kkt-recurrence')
+  const doc = (id: string) => { const f = index.figureById.get(id)!; return parseGraph(f.source, f.info).panels[0] }
+  const nm = (ids: Iterable<string>) => [...ids].map(id => name(g, id.replace(/^@/, ''))).sort()
+  const marked = (mk: string) => nm(g.marks?.[mk] ?? [])
+  const w = (id: string) => num(g.edges.find(e => e.id === id)!.data.w)
+  type E = { id: string; u: string; v: string }
+  const edges0: E[] = g.edges.map(e => ({ id: e.id, u: e.tail[0], v: e.head[0] }))
+  // One Boruvka phase with contraction: every vertex with an edge picks its lightest edge; chosen edges are contracted,
+  // loops vanish, of parallel edges only the lightest stays, vertices without edges are deleted.
+  const phase = (vs: string[], es: E[]) => {
+    const chosen = new Set<string>()
+    for (const v of vs) {
+      const inc = es.filter(e => e.u === v || e.v === v)
+      if (inc.length) chosen.add(inc.reduce((a, b) => (w(b.id) < w(a.id) ? b : a)).id)
+    }
+    const p = new Map(vs.map(v => [v, v]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    for (const id of chosen) { const e = es.find(x => x.id === id)!; p.set(find(e.u), find(e.v)) }
+    const rel = es.filter(e => find(e.u) !== find(e.v)).map(e => ({ id: e.id, u: find(e.u), v: find(e.v) }))
+    const best = new Map<string, E>()
+    for (const e of rel) { const k = [e.u, e.v].sort().join(); if (!best.has(k) || w(e.id) < w(best.get(k)!.id)) best.set(k, e) }
+    const kept = [...best.values()]
+    const nv = [...new Set(vs.filter(v => es.some(e => e.u === v || e.v === v)).map(find))]
+    return { chosen: nm(chosen), chosenIds: [...chosen], vs: nv, before: rel, es: kept, removed: rel.filter(e => !kept.includes(e)).map(e => e.id) }
+  }
+  const p1 = phase(g.vertices.map(v => v.id), edges0)
+  const p2 = phase(p1.vs, p1.es)
+  const n = 12, m = 14
+  it('G has n = 12 vertices and m = 14 edges with distinct weights 1 to 14', () => {
+    expect([g.vertices.length, g.edges.length]).toEqual([n, m])
+    expect(g.edges.map(e => w(e.id)).sort((a, b) => a - b)).toEqual(Array.from({ length: 14 }, (_, i) => i + 1))
+  })
+  it('phase 1 chooses six edges (weights 1 to 6); G1 has 6 = n/2 vertices; two parallel edges (ac, cf) are removed, 6 edges stay', () => {
+    expect(p1.chosen).toEqual(marked('F1'))
+    expect(p1.chosenIds.map(w).sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(p1.vs.length).toBe(n / 2)
+    expect(p1.before.length).toBe(8)
+    expect(nm(p1.removed)).toEqual(marked('D1'))
+    expect(marked('D1')).toEqual(['ac', 'cf'])
+    expect(p1.es.length).toBe(6)
+    // bc (7) beats ac (14) and de (10) beats cf (13)
+    expect([w('bc'), w('ac'), w('de'), w('cf')]).toEqual([7, 14, 10, 13])
+    expect(nm(p1.es.map(e => e.id))).toEqual(['bc', 'cj', 'de', 'fg', 'hi', 'jk'])
+  })
+  it('phase 2 chooses bc, fg, jk (7, 8, 9); G2 has 3 = n/4 vertices and the 3 edges de, hi, cj, no parallel edges', () => {
+    expect(p2.chosen).toEqual(marked('F2'))
+    expect(p2.chosenIds.map(w).sort((a, b) => a - b)).toEqual([7, 8, 9])
+    expect(p2.vs.length).toBe(n / 4)
+    expect(p2.removed.length).toBe(0)
+    expect(p2.es.length).toBe(3)
+    expect(p2.es.length).toBeLessThanOrEqual(m)
+    expect(nm(p2.es.map(e => e.id))).toEqual(marked('G2'))
+    expect(marked('G2')).toEqual(['cj', 'de', 'hi'])
+    expect(marked('G2').map(w).sort((a, b) => a - b)).toEqual([10, 11, 12])
+  })
+  // G2 is a triangle on x, y, z; F' is the MSF of the sample.
+  const tri = p2.es.map(e => ({ id: name(g, e.id), u: e.u, v: e.v })).sort((a, b) => w(a.id) - w(b.id))
+  const msf = (S: string[]) => {
+    const p = new Map(p2.vs.map(v => [v, v]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    const F: string[] = []
+    for (const e of tri) if (S.includes(e.id) && find(e.u) !== find(e.v)) { F.push(e.id); p.set(find(e.u), find(e.v)) }
+    return { F, find }
+  }
+  // wF by the definition: heaviest edge on the F-path, Infinity if the ends lie in two trees.
+  const light = (S: string[]) => {
+    const { F, find } = msf(S)
+    const wF = (e: { u: string; v: string }): number => {
+      if (find(e.u) !== find(e.v)) return Infinity
+      // brute force: heaviest edge on the unique path in the forest F
+      const adj = (v: string) => tri.filter(t => F.includes(t.id) && (t.u === v || t.v === v))
+      const walk = (v: string, seen: string[]): number[] | null => {
+        if (v === e.v) return []
+        for (const t of adj(v)) { const o = t.u === v ? t.v : t.u; if (!seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [w(t.id), ...r] } }
+        return null
+      }
+      return Math.max(...walk(e.u, [e.u])!)
+    }
+    return { F, light: tri.filter(e => w(e.id) <= wF(e)).map(e => e.id), wF }
+  }
+  it('the sample {de, hi}: F\' = {de, hi} spans x, y, z; cj (12) is F\'-heavy (path weight 11); de and hi are light; H has 2 edges, expected 3/2', () => {
+    const r = light(['de', 'hi'])
+    expect(r.F).toEqual(['de', 'hi'])
+    expect(r.F.length).toBe(p2.vs.length - 1)
+    expect(r.light).toEqual(['de', 'hi'])
+    expect(r.wF(tri.find(e => e.id === 'cj')!)).toBe(11)
+    expect(w('cj')).toBeGreaterThan(11)
+    expect(3 * 0.5).toBe(1.5)
+    expect(marked('Fp')).toEqual(['de', 'hi'])
+    const st = doc('a01-kkt-recurrence').steps
+    const dashed = (i: number) => st[i].graph.edges.filter(e => e.classes.includes('dashed')).map(e => e.id).sort()
+    expect(dashed(7)).toEqual(['cj'])
+  })
+  it('over all 8 samples E|light| = 2.75, below 2|V(G2)| = 6 = n/2; with dummy edges |F\'| + dummies = |V(G2)| - 1', () => {
+    const es = tri.map(e => e.id)
+    let sum = 0
+    for (let mask = 0; mask < 8; mask++) {
+      const S = es.filter((_, i) => (mask >> i) & 1)
+      sum += light(S).light.length
+      // number of trees of F' is |V| - |F'|, so |V| - |F'| - 1 dummy edges make a spanning tree
+      expect(light(S).F.length + (p2.vs.length - light(S).F.length - 1)).toBe(p2.vs.length - 1)
+    }
+    expect(sum / 8).toBe(2.75)
+    expect(2 * p2.vs.length).toBe(6)
+    expect(2 * p2.vs.length).toBe(n / 2)
+    expect(light(['de', 'hi']).light.length).toBe(2)
+  })
+  it('F1, F2 and the MSF of H\' = {de, hi} (both edges) together are the MST of G, weight 66', () => {
+    const F3 = msf(light(['de', 'hi']).light).F
+    expect(F3).toEqual(['de', 'hi'])
+    const all = new Set([...marked('F1'), ...marked('F2'), ...F3])
+    expect(all.size).toBe(n - 1)
+    const T = mstEdges(g)
+    expect(nm(T)).toEqual([...all].sort())
+    expect(weight(g, T)).toBe(66)
+  })
+  it('recursion tree: n = 64, m = 256, sizes 2n + m; the recurrence terms add up to 2c(2n + m); the base calls have sizes 2 and 0', () => {
+    const f = index.figureById.get('a01-kkt-recursion')!
+    const last = parseGraph(f.source, f.info).panels[0].steps.at(-1)!.graph
+    const lab = Object.fromEntries(last.vertices.map(v => [v.id, Number(v.label)]))
+    const size = (a: number, b: number) => 2 * a + b
+    const kids = (a: number, b: number): [number, number][] => [[a / 4, b / 2], [a / 4, a / 2]]
+    const [k1, k2] = kids(64, 256)
+    const [l1, l2] = kids(...k1), [k3, k4] = kids(...k2)
+    expect(lab).toEqual({ r: 384, o: 2, z: 0, l: 160, k: 64, l1: size(...l1), l2: size(...l2), k1: size(...k3), k2: size(...k4) })
+    expect([size(...l1), size(...l2), size(...k3), size(...k4)]).toEqual([72, 16, 24, 16])
+    expect(lab.o).toBe(size(1, 0))
+    // base case: bound 2c(2n + 0) = 4cn, at least 4c for n >= 1
+    expect(2 * size(1, 0)).toBe(4)
+    // empty call: size and bound 0; a caller with an edge has n >= 2, so c(n + m) >= 3c
+    expect(lab.z).toBe(size(0, 0))
+    expect(2 * size(0, 0)).toBe(0)
+    expect(2 + 1).toBe(3)
+    expect(2 * lab.l).toBe(64 + 256)
+    expect(2 * lab.k).toBe(2 * 64)
+    expect(320 + 320 + 128).toBe(768)
+    expect(2 * lab.r).toBe(768)
+    for (const [a, b] of [[64, 256], [100, 7], [3, 50], [1, 1]]) {
+      const [x, y] = kids(a, b)
+      expect(2 * size(...x)).toBe(a + b)
+      expect(2 * size(...y)).toBe(2 * a)
+      expect((a + b) + (a + b) + 2 * a).toBe(2 * size(a, b))
+      // actual sizes: at most n/4 vertices and m edges, so size at most n/2 + m < 2n + m
+      expect(a / 2 + b).toBeLessThan(size(a, b))
+    }
+    const marks = last.marks ?? {}
+    expect(marks.root).toEqual(['r'])
+    expect(marks.base).toEqual(['o'])
+    expect(marks.empty).toEqual(['z'])
+    expect(marks.calls).toEqual(['l', 'k'])
+    expect(marks.below).toEqual(['l1', 'l2', 'k1', 'k2'])
+  })
+})
