@@ -3364,3 +3364,54 @@ describe('interval-graphs page', () => {
     expect(Math.min(...['b', 'c', 'f', 'd'].map(k => I[k][1]))).toBe(I.b[1]); expect(I.b[1]).toBe(4)
   })
 })
+
+describe('proving-the-edge-version page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const arc = (e: GraphData['edges'][number]) => e.tail[0] + e.head[0]
+  const withClass = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(arc)
+  // vertices (other than s, t) whose in- and out-degree in the arc set differ; size = out-degree of s, or null if s has an in-arc or t an out-arc
+  const balance = (arcs: string[]) => {
+    const d = new Map<string, number>()
+    for (const [x, y] of arcs) { d.set(x, (d.get(x) ?? 0) + 1); d.set(y, (d.get(y) ?? 0) - 1) }
+    const bad = [...d].filter(([v, n]) => n !== 0 && v !== 's' && v !== 't').map(([v]) => v).sort()
+    const ok = !arcs.some(a => a[1] === 's' || a[0] === 't') && bad.length === 0
+    return { bad, size: ok ? arcs.filter(a => a[0] === 's').length : null, intoT: arcs.filter(a => a[1] === 't').length }
+  }
+  const isPath = (arcs: string[]) => arcs.every((a, i) => i === 0 ? a[0] === 's' : a[0] === arcs[i - 1][1]) && arcs.at(-1)![1] === 't'
+  const F = ['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'de', 'et', 'ct']
+  it('opening: the bold arcs are a d-flow of size 3 with 9 arcs, 3 into t, d has 2 in and 2 out', () => {
+    const g = fig('t05-d-flow')
+    expect(withClass(g, 'path').sort()).toEqual([...F].sort())
+    expect(balance(F)).toEqual({ bad: [], size: 3, intoT: 3 })
+    expect([F.filter(a => a[1] === 'd').length, F.filter(a => a[0] === 'd').length]).toEqual([2, 2])
+  })
+  it('worked example: d-flow of size 3; adding ab unbalances a and b; adding fg, gf keeps size 3 and no s-t path uses them', () => {
+    const s = steps('t05-d-flow-check')
+    for (let i = 0; i < 4; i++) expect(balance(withClass(s[i], 'path'))).toEqual({ bad: [], size: 3, intoT: 3 })
+    expect(withClass(s[4], 'path').sort()).toEqual([...F, 'ab'].sort())
+    expect(balance(withClass(s[4], 'path')).bad).toEqual(['a', 'b'])
+    const F6 = withClass(s[5], 'path')
+    expect(F6.sort()).toEqual([...F, 'fg', 'gf'].sort())
+    expect(balance(F6).size).toBe(3)
+    // vertices reachable from s along arcs of F6: f and g are not, so fg and gf lie on no s-t path and F6 is no union of s-t paths
+    const reach = new Set(['s'])
+    for (let grew = true; grew;) { grew = false; for (const [x, y] of F6) if (reach.has(x) && !reach.has(y)) { reach.add(y); grew = true } }
+    expect(reach.has('f') || reach.has('g')).toBe(false)
+  })
+  it('claim example: three edge-disjoint s-t paths cover the 9 arcs of F; P1 and P2 share d', () => {
+    const s = steps('t05-d-flow-paths')
+    const P = ['color1', 'color2', 'color3'].map(c => withClass(s[3], c))
+    expect(P).toEqual([['sa', 'ad', 'dt'], ['sb', 'bd', 'de', 'et'], ['sc', 'ct']])
+    for (const p of P) expect(isPath(p)).toBe(true)
+    expect(P.flat().sort()).toEqual([...F].sort())
+    expect(withClass(s[0], 'bold').sort()).toEqual([...F].sort())
+  })
+  it('quizzes: removing de unbalances 2 vertices; only option 2 is a d-flow of size 2 (option 3 has size 1)', () => {
+    expect(balance(F.filter(a => a !== 'de')).bad).toEqual(['d', 'e'])
+    const opts = [['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'ct'], ['sa', 'ab', 'bd', 'dt', 'sc', 'ct'], ['sb', 'bd', 'de', 'ec', 'ct'], ['sa', 'ad', 'dt', 'ce', 'et']]
+    const g = fig('t05-d-flow')
+    for (const o of opts) for (const a of o) expect(g.edges.some(e => arc(e) === a)).toBe(true)
+    expect(opts.map(o => balance(o).size)).toEqual([null, 2, 1, null])
+    expect(balance(opts[0]).bad).toEqual(['d']); expect(balance(opts[3]).bad).toEqual(['c'])
+  })
+})
