@@ -230,7 +230,7 @@ the rows at any time.
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | 33de499 |
 | T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | 98a5ce2 |
 | T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | 25a2ffa |
-| T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | |
+| T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | |
 | T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
 
@@ -595,6 +595,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.12 (`chordal/two-simplicial-vertices.md`): no two-graph view of G[A ∪ X] and G − A; muting the other part stands in.
 
 - T4.35 (`basics/isomorphism.md`): a stepper draws only panel 0, so G and H share one graph in both new steppers.
+
+- T4.43 (`chordal/interval-graphs.md`): the DSL cannot draw intervals; bars are thick edges between two endpoint vertices, named at both ends.
 
 ### Open questions from Phase 4 writers
 
