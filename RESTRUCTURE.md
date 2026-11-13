@@ -243,7 +243,7 @@ After Gate C. Same pipeline.
 | T5.13 | `algorithms/flows/cuts-in-networks.md` | 4, not in the notes; entry removed in T4.0 | skip |
 | T5.14 | `algorithms/flows/augmenting-paths.md` | 9, not in the notes (02 p12 states the lemma only) | skip |
 | T5.15 | `algorithms/flows/characterising-maximum-flows.md` | 7, 3, not in the notes (02 p6 and p14 state only) | skip |
-| T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | |
+| T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | 2a8a3ae |
 | T5.17 | `algorithms/fast-flows/edmonds-karp-analysis.md` | 9, 8, 2 | |
 | T5.18 | `algorithms/fast-flows/dinic.md` | 4, not in the notes (02 p37 states only) | skip |
 | T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | |
