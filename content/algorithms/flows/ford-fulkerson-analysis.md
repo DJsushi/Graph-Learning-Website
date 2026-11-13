@@ -24,10 +24,10 @@ Part 1 of the proof, induction on the iterations: integers stay integers, so eac
 :::: walkthrough {for=thm:ford-fulkerson-analysis}
 ```graph id=a02-ffa-integral widget=stepper
 caption: The lecture network with the labels $f/c$ at the start and after iterations 1, 2 and 4: every label is a whole number and the value grows by a whole number each time.
-intent: From the lecture (algorithms/02 p15-21, the Ford-Fulkerson demo network; same names as a02-ford-fulkerson-player, positions squeezed to 0.8 of its width to fit the walkthrough box). The flows are those of ex:ford-fulkerson-demo; the lecture does not draw them on p23.
+intent: From the lecture (algorithms/02 p15-21, the Ford-Fulkerson demo network; same names as a02-ford-fulkerson-player, positions re-laid flat so that no edge label touches an edge or another label). The flows are those of ex:ford-fulkerson-demo; the lecture does not draw them on p23.
 type: directed
 layout: fixed
-s [class=source] @(0, 0); a @(1.2, 1); b @(1.2, 0); c @(2.4, 1); d @(2.4, 0); t [class=sink] @(3.6, 0)
+s [class=source] @(0, 0); a @(1.3, 0.4); b @(1.3, -0.4); c @(2.6, 0.4); d @(2.6, -0.4); t [class=sink] @(3.9, 0)
 s -> a [f=0 c=10]; s -> b [f=0 c=10]; a -> b [f=0 c=2]; a -> c [f=0 c=4]; a -> d [f=0 c=8]; b -> d [f=0 c=9]; d -> c [f=0 c=9]; c -> t [f=0 c=10]; d -> t [f=0 c=10]
 step: Start: $f(e) = 0$ on every edge.
 step: Iteration 1: the path $P$ has residual capacities 10, 8, 10.
@@ -83,7 +83,7 @@ caption: The final flow of the lecture demo (value 19) and the cut around $s$: t
 intent: From the lecture (algorithms/02 p21, the Ford-Fulkerson demo network with its final flow f4); the cut around s is the one of the notes (a02-network example in def:flow-cut). New figure for the proof on p23.
 type: directed
 layout: fixed
-s [class=source] @(0, 0); a @(1.2, 1); b @(1.2, 0); c @(2.4, 1); d @(2.4, 0); t [class=sink] @(3.6, 0)
+s [class=source] @(0, 0); a @(1.3, 0.4); b @(1.3, -0.4); c @(2.6, 0.4); d @(2.6, -0.4); t [class=sink] @(3.9, 0)
 s -> a [f=10 c=10]; s -> b [f=9 c=10]; a -> b [f=0 c=2]; a -> c [f=2 c=4]; a -> d [f=8 c=8]; b -> d [f=9 c=9]; d -> c [f=7 c=9]; c -> t [f=9 c=10]; d -> t [f=10 c=10]
 step: The cut: $S = \set{s}$, $T$ the five other vertices.
 class color1: a b c d t
@@ -132,19 +132,19 @@ intent: From the lecture (algorithms/02 p21: the residual graph G_f2 with its re
 type: directed
 layout: fixed
 edge-label: "{c}"
-s [class=source] @(0, 0); a @(1.2, 1); b @(1.2, 0); c @(2.4, 1); d @(2.4, 0); t [class=sink] @(3.6, 0)
-a -> s [c=10 class=back bend=0.3]; s -> b [c=10]; b -> a [c=2 class=back]; a -> c [c=4]; d -> a [c=8 class=back]; b -> d [c=7 bend=0.3]; d -> b [c=2 class=back bend=0.3]; d -> c [c=9]; c -> t [c=10]; t -> d [c=10 class=back bend=0.3]
+s [class=source] @(0, 0); a @(1.3, 0.4); b @(1.3, -0.4); c @(2.6, 0.4); d @(2.6, -0.4); t [class=sink] @(3.9, 0)
+a -> s [c=10 class=back bend=-0.2]; s -> b [c=10]; b -> a [c=2 class=back]; a -> c [c=4]; d -> a [c=8 class=back bend=-0.05]; b -> d [c=7 bend=0]; d -> b [c=2 class=back bend=0.3]; d -> c [c=9]; c -> t [c=10]; t -> d [c=10 class=back]
 step: $G_{f_2}$ has 10 edges; BFS or DFS scans them.
 step: The path $P$ has 4 edges and bottleneck 7.
 class path: s->b b->d d->c c->t
 mark P: s->b b->d d->c c->t
 step: The update changes only edges of $P$ and their reverses.
-set s->b [c=3]
+set s->b [c=3 bend=0]
 remove b->d
-set d->b [c=9]
-set d->c [c=2]
-c -> d [c=7 class=back]; b -> s [c=7 class=back bend=0.3]; t -> c [c=7 class=back bend=0.3]
-set c->t [c=3]
+set d->b [c=9 bend=0]
+set d->c [c=2 bend=0.3]
+c -> d [c=7 class=back bend=0.3]; b -> s [c=7 class=back bend=0.25]; t -> c [c=7 class=back bend=0]
+set c->t [c=3 bend=0.25]
 step: The other edges stay as they are: one iteration costs $\O(m)$.
 unclass path: s->b d->c c->t
 class muted: a->s b->a a->c d->a t->d
