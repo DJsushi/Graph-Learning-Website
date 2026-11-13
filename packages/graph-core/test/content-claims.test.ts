@@ -3320,3 +3320,47 @@ describe('spanning-trees page', () => {
     expect([1, 2, 3, 4].map(n => countSpanningTrees(complete(n)))).toEqual([1, 1, 3, 16])
   })
 })
+
+describe('interval-graphs page', () => {
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const pair = (u: string, v: string) => [u, v].sort().join('')
+  const pairs = (g: GraphData, cls?: string) => g.edges.filter(e => !cls || e.classes.includes(cls)).map(e => pair(e.tail[0], e.head[0])).sort()
+  type Iv = Record<string, [number, number]>
+  const meet = (p: [number, number], q: [number, number]) => Math.max(p[0], q[0]) <= Math.min(p[1], q[1])
+  const intervalPairs = (I: Iv) => { const k = Object.keys(I), out: string[] = []; for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) if (meet(I[k[i]], I[k[j]])) out.push(pair(k[i], k[j])); return out.sort() }
+  const I: Iv = { a: [0, 2], b: [1, 4], c: [3, 5], d: [3.5, 7], e: [6, 8], f: [4.5, 6.5] }
+  it('bars: the six bars are the intervals of the intent; 15 pairs, 8 overlap; b overlaps a, c, d and not f; a only b; graph matches t04-interval-graph', () => {
+    const g = fig('t04-interval-bars'), bars: Iv = {}
+    for (const e of g.edges) bars[e.tail[0][0]] = [g.vertices.find(v => v.id === e.tail[0])!.x! / 1.2, g.vertices.find(v => v.id === e.head[0])!.x! / 1.2]
+    for (const k of Object.keys(I)) { expect(bars[k][0]).toBeCloseTo(I[k][0]); expect(bars[k][1]).toBeCloseTo(I[k][1]) }
+    expect(Object.keys(I).length * (Object.keys(I).length - 1) / 2).toBe(15)
+    expect(intervalPairs(I).length).toBe(8)
+    expect(intervalPairs(I).filter(p => p.includes('a'))).toEqual(['ab'])
+    expect(intervalPairs(I).filter(p => p.includes('b'))).toEqual(['ab', 'bc', 'bd'])
+    expect(intervalPairs(I)).toEqual(pairs(fig('t04-interval-graph')))
+  })
+  it('stepper: same graph, chordal; bcfd a 4-cycle with chord cd (c, d contain 4); bcfed a 5-cycle with chords cd, df; C_4 not chordal', () => {
+    const s = steps('t04-interval-chords')
+    expect(pairs(s[0])).toEqual(intervalPairs(I)); expect(chordal(s[0])).toBe(true)
+    const cyc = (g: GraphData) => new Set(g.edges.filter(e => e.classes.includes('cycle')).map(e => e.id))
+    expect(A.isCycleEdgeSet(s[1], cyc(s[1]))).toBe(true); expect(pairs(s[1], 'cycle')).toEqual(['bc', 'bd', 'cf', 'df'])
+    expect(pairs(s[2], 'highlight')).toEqual(['cd']); expect(I.c[0] <= 4 && 4 <= I.c[1] && I.d[0] <= 4 && 4 <= I.d[1]).toBe(true)
+    expect(A.isCycleEdgeSet(s[3], cyc(s[3]))).toBe(true); expect(pairs(s[3], 'cycle')).toEqual(['bc', 'bd', 'cf', 'de', 'ef'])
+    expect(pairs(s[4], 'highlight')).toEqual(['cd', 'df'])
+    expect(chordal(cycle(4))).toBe(false)
+  })
+  it('quizzes and More: g = [2, 3.2] has neighbours a, b, c; K_4, K_3, P_3 from intervals; b ends first on bcfd, at 4', () => {
+    expect(intervalPairs({ ...I, g: [2, 3.2] }).filter(p => p.includes('g'))).toEqual(['ag', 'bg', 'cg'])
+    expect(intervalPairs({ p: [0, 1], q: [0, 1], r: [0, 1], s: [0, 1] }).length).toBe(6)
+    expect(intervalPairs({ p: [0, 1], q: [0, 1], r: [0, 1] }).length).toBe(3)
+    expect(intervalPairs({ p: [0, 1], q: [1, 2], r: [2, 3], s: [3, 4] })).toEqual(['pq', 'qr', 'rs'])
+    expect(Math.min(...['b', 'c', 'f', 'd'].map(k => I[k][1]))).toBe(I.b[1]); expect(I.b[1]).toBe(4)
+  })
+})
