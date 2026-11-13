@@ -225,7 +225,7 @@ the rows at any time.
 | T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | b9689e6 |
 | T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | 4f06c34 |
 | T4.46 | Walkthrough sticky figure at 390px: the figure box (`.ga-figure-anchor`, 341px) is shorter than figure plus caption, so the caption overflows by 12–81px and the scrolling step text runs over it (visual-qa 2026-11-13: `gomory-hu/correctness` 5 of 9 walkthroughs, `stoer-wagner-correctness`, `karger-success-probability`). Fix in the framework, not by shortening captions. Re-check those three pages at 390 with visual-qa. Agent: `coder`. | | 61f4961 |
-| T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | |
+| T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | bf7df38 |
 | T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | |
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | |
 | T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | |
