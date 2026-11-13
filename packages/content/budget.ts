@@ -99,8 +99,10 @@ export function budgetChecks(root: string, ix: ContentIndex): { errors: string[]
     const cap = l.frontmatter.long === true ? 1400 : 900
     if (m.words > cap) err(`reading path has ${m.words} words (at most ${cap}${cap === 900 ? ', 1400 with long: true' : ''})`)
     else if (m.words > 600) warnings.push(`${at()} reading path has ${m.words} words (over 600)`)
-    if (m.heavy > 3) err(`reading path has ${m.heavy} heavy math spans (at most 3)`)
-    if (m.spans * 100 > 12 * Math.max(m.words, 1)) err(`reading path has ${m.spans} math spans in ${m.words} words (at most 12 per 100 words)`)
+    const w = Math.max(m.words, 1)
+    if (m.heavy * 100 > 3 * w) err(`reading path has ${m.heavy} heavy math spans in ${m.words} words (at most 3 per 100 words)`)
+    if (m.spans * 100 > 12 * w) err(`reading path has ${m.spans} math spans in ${m.words} words (at most 12 per 100 words)`)
+
     // E6
     const walked = new Set(mine.filter(c => c.type === 'walkthrough' && c.attrs.for).map(c => c.attrs.for))
     for (const p of mine.filter(c => c.type === 'proof'))

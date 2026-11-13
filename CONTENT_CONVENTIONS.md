@@ -512,7 +512,7 @@ Errors (the build fails). They apply to concept pages only; items 2, 3 and 9 do 
 | E2 | At least 2 `graph` blocks, at least one of them not `widget=figure`. |
 | E3 | At most 2 definitions and at most 3 other statements. |
 | E4 | Reading path at most 900 words (1400 with `long: true`). |
-| E5 | Reading path: at most 3 heavy spans and at most 12 spans in total per 100 words. |
+| E5 | Reading path: at most 3 heavy spans and at most 12 spans in total, each per 100 words. |
 | E6 | Every `proof` has a `walkthrough` with `for=` its statement. |
 | E7 | Walkthrough: a figure when the proof is longer than 10 lines; a figure is the first child and a stepper; step counts match; each step within its limits. |
 | E8 | `intuition`: at most 50 words and 1 heavy span. Every statement has one. |

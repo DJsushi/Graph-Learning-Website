@@ -77,8 +77,10 @@ describe('budgetChecks', () => {
   it('reports reading path size and math density E4, E5 and step spans E7', () => {
     const e = errorsOf(page({}, [good, 'word '.repeat(901), '$\\sum$ $\\sum$ $\\sum$ $\\sum$', ':::: walkthrough', '::: step', '$\\sum$ $\\sum$ $\\sum$', ':::', '::::'].join('\n')))
     expect(e.some(x => /^P reading path has \d+ words \(at most 900, 1400 with long: true\)$/.test(x))).toBe(true)
-    expect(e.some(x => x.includes('heavy math spans (at most 3)'))).toBe(true)
     expect(e.some(x => x.endsWith('step has 3 heavy math spans (at most 2)'))).toBe(true)
+    // 4 heavy spans in 917 words are fine; 1 heavy span in about 20 words is not
+    expect(e.some(x => x.includes('heavy math spans in'))).toBe(false)
+    expect(errorsOf(page({}, [good, '$\\sum$ and so on.'].join('\n')))).toEqual(['P reading path has 1 heavy math spans in 19 words (at most 3 per 100 words)'])
     expect(errorsOf(page({ long: 'true' }, [good, 'word '.repeat(901)].join('\n')))).toEqual([])
     expect(errorsOf(page({}, [good, '$a$ '.repeat(10)].join('\n')))[0]).toMatch(/math spans in .* words/)
   })
