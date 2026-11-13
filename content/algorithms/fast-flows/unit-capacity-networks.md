@@ -125,7 +125,7 @@ caption: A unit-capacity network with $m = 9$ edges. Edges that carry flow at th
 intent: New figure. The lecture states the theorem on algorithms/02 p60 without a drawing. This network has 6 vertices and 9 edges; Dinic needs 3 phases (distance 1, 2, 4) and ends with value 4.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.6); a @(1.8, 1.2); b @(0.9, 0); c @(1.8, 0); d @(2.7, 0); t [class=sink] @(3.6, 0.6)
+s [class=source] @(0, 1.2); a @(1.8, 2); b @(0.9, 0); c @(1.8, 0); d @(2.7, 0); t [class=sink] @(3.6, 1.2)
 s -> t; s -> a; a -> t; s -> b; s -> c; b -> c; c -> t; c -> d; d -> t
 mark ph1: s->t
 mark ph2: s->a a->t s->c c->t
@@ -164,7 +164,7 @@ caption: The network of the previous figure after two phases. Thick edges carry 
 intent: New figure. It continues the network of the previous figure; the lecture shows no drawing for this proof (algorithms/02 p60).
 type: directed
 layout: fixed
-s [class=source] @(0, 0.6); a @(1.8, 1.2); b @(0.9, 0); c @(1.8, 0); d @(2.7, 0); t [class=sink] @(3.6, 0.6)
+s [class=source] @(0, 1.2); a @(1.8, 2); b @(0.9, 0); c @(1.8, 0); d @(2.7, 0); t [class=sink] @(3.6, 1.2)
 s -> t; s -> a; a -> t; s -> b; s -> c; b -> c; c -> t; c -> d; d -> t
 class path: s->t s->a a->t s->c c->t
 mark f: s->t s->a a->t s->c c->t
