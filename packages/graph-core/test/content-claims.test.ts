@@ -128,6 +128,61 @@ describe('minimum cuts lesson', () => {
     const phase1 = steps.slice(0, steps.findIndex(s => s.line === 'end')).filter(s => s.action).map(s => s.action!.id)
     expect(['a', ...phase1]).toEqual(['a', 'b', 'f', 'c', 'e', 'd'])
   })
+  it('Stoer–Wagner correctness and running-time walkthroughs: order a b f c e d, C = δ({a, b, e}) = 29, active f, e, d', () => {
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    const ids = ['a03-sw-setup', 'a03-sw-base', 'a03-sw-step', 'a03-sw-end', 'a03-sw-phase-time', 'a03-sw-glue']
+    for (const id of ids) expect(sig(fig(id))).toBe(sig(g))
+    const order = ['a', 'b', 'f', 'c', 'e', 'd']
+    const { steps } = collect(ALGORITHMS['stoer-wagner'], g, { start: 'a' })
+    expect(['a', ...steps.slice(0, steps.findIndex(s => s.line === 'end')).filter(s => s.action).map(s => s.action!.id)]).toEqual(order)
+    const P = new Set(['a', 'b', 'e'])
+    const cap = (a: string, b: string) => num(g.edges.find(e => [e.tail[0], e.head[0]].sort().join('') === [a, b].sort().join(''))!.data.c)
+    const inC = (e: { tail: string[]; head: string[] }) => P.has(e.tail[0]) !== P.has(e.head[0])
+    const cOf = (V: Set<string>) => g.edges.filter(e => inC(e) && V.has(e.tail[0]) && V.has(e.head[0])).reduce((z, e) => z + num(e.data.c), 0)
+    const key = (U: string[], v: string) => g.edges.filter(e => (U.includes(e.tail[0]) && e.head[0] === v) || (U.includes(e.head[0]) && e.tail[0] === v)).reduce((z, e) => z + num(e.data.c), 0)
+    // C separates s = e from t = d and has capacity 29; the dashed edges of the figures are exactly C
+    expect(cutCapacity(g, P)).toBe(29)
+    expect(P.has('e') !== P.has('d')).toBe(true)
+    const cutEdges = (id: string, i: number) => parseGraph(index.figureById.get(id)!.source, index.figureById.get(id)!.info).panels[0].steps[i].graph.edges.filter(e => e.classes.includes('cut'))
+    expect([cutEdges('a03-sw-setup', 1).length, cutEdges('a03-sw-setup', 1).reduce((z, e) => z + num(e.data.c), 0)]).toEqual([6, 29])
+    expect(cutEdges('a03-sw-setup', 1).every(inC)).toBe(true)
+    expect(cutEdges('a03-sw-end', 1).length).toBe(6)
+    expect(cutEdges('a03-sw-end', 3).reduce((z, e) => z + num(e.data.c), 0)).toBe(29)
+    // active vertices: the order jumps across C at f, e, d only
+    expect(order.slice(1).filter((v, i) => P.has(order[i]) !== P.has(v))).toEqual(['f', 'e', 'd'])
+    // the claim c(U_v, v) <= c(C_v): 11 = 11, 9 <= 22, 14 <= 29, and the chain of the inductive step 9 <= 18 <= 22
+    const claim = (i: number) => [key(order.slice(0, i), order[i]), cOf(new Set(order.slice(0, i + 1)))]
+    expect([claim(2), claim(4), claim(5)]).toEqual([[11, 11], [9, 22], [14, 29]])
+    expect([key(['a', 'b'], 'e'), key(['f', 'c'], 'e'), key(['a', 'b'], 'f'), cOf(new Set(['a', 'b', 'f']))]).toEqual([2, 7, 11, 11])
+    expect([key(['a', 'b', 'f', 'c'], 'd'), 11 + 7, cap('c', 'b')]).toEqual([7, 18, 4])
+    // the keys when f was added: f 11, c 4, e 2, d 0
+    expect(['f', 'c', 'e', 'd'].map(v => key(['a', 'b'], v))).toEqual([11, 4, 2, 0])
+    expect(cutCapacity(g, new Set(['d']))).toBe(14)
+    expect(cap('c', 'd') + cap('f', 'd') + cap('e', 'd')).toBe(14)
+    expect([cap('b', 'e'), cap('c', 'e'), cap('f', 'e'), 2 + 4 + 3]).toEqual([2, 4, 3, 9])
+    // the thick/dashed edges of the base-case and inductive-step figures
+    const cutSum = (id: string, i: number) => cutEdges(id, i).reduce((z, e) => z + num(e.data.c), 0)
+    expect([cutSum('a03-sw-base', 3), cutSum('a03-sw-step', 3), cutSum('a03-sw-step', 5), cutSum('a03-sw-step', 7)]).toEqual([11, 11, 18, 22])
+    // running time: n = 6 vertices, 5 phases, 11 edges; INCREASE-KEY per vertex 2, 3, 3, 2, 1, 0
+    expect([g.vertices.length, g.vertices.length - 1, g.edges.length]).toEqual([6, 5, 11])
+    expect(steps.filter(s => s.line === 'end').length).toBe(5)
+    const seen = new Set<string>()
+    const inc = order.map(v => { seen.add(v); return g.edges.filter(e => { const [x, y] = [e.tail[0], e.head[0]]; return (x === v && !seen.has(y)) || (y === v && !seen.has(x)) }).length })
+    expect(inc).toEqual([2, 3, 3, 2, 1, 0])
+    expect(inc.reduce((z, x) => z + x, 0)).toBe(g.edges.length)
+    // identification of e and d: 5 vertices, 8 edges; capacities 9 (c), 5 (f), 2 (b); cuts that keep e and d together keep their capacity
+    const glued = parseGraph(index.figureById.get('a03-sw-glue')!.source, index.figureById.get('a03-sw-glue')!.info).panels[0].steps
+    const h = glued[2].graph
+    expect([h.vertices.length, h.edges.length]).toEqual([5, 8])
+    const w = (x: string) => h.edges.filter(e => [e.tail[0], e.head[0]].includes(x) && [e.tail[0], e.head[0]].includes('d')).reduce((z, e) => z + num(e.data.c), 0)
+    expect([w('c'), w('f'), w('b')]).toEqual([9, 5, 2])
+    expect(glued[1].graph.edges.length).toBe(11 - 1)
+    const V = ['a', 'b', 'c', 'f']
+    for (let m = 0; m < 1 << V.length; m++) {
+      const U = new Set(V.filter((_, i) => (m >> i) & 1))
+      expect(cutCapacity(h, new Set([...U, 'd']))).toBe(cutCapacity(g, new Set([...U, 'd', 'e'])))
+    }
+  })
   it('identification figure: δ({u,v,y}) = 14 before and after', () => {
     const fg = index.figureById.get('a03-identification')!
     const steps = parseGraph(fg.source, fg.info).panels[0].steps
