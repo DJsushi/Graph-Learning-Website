@@ -3083,3 +3083,67 @@ describe('walks and paths page', () => {
     expect(steps(ix, ['a', 'b', 'd'])!.length).toBe(2)
   })
 })
+
+describe('breadth-first-search page', () => {
+  const key = (e: { tail: string[]; head: string[] }) => [e.tail[0], e.head[0]].sort().join('')
+  const dist = (g: GraphData) => A.bfsDistances(new GraphIndex(g), 'x')
+  it('question, layers and player: same graph, layers a b c | d e f | g h', () => {
+    const q = fig('t02-bfs-question'), l = fig('t02-bfs-layers'), p = fig('t02-bfs-player')
+    expect(q.edges.map(key)).toEqual(p.edges.map(key))
+    expect(l.edges.map(key)).toEqual(p.edges.map(key))
+    expect(Object.fromEntries(dist(q))).toEqual({ x: 0, a: 1, b: 1, c: 1, d: 2, e: 2, f: 2, g: 3, h: 3 })
+  })
+  it('layers figure: the thick edges are the player\'s BFS tree (8 of 13), the dashed ones the rest', () => {
+    const l = fig('t02-bfs-layers'), p = fig('t02-bfs-player')
+    const { parent } = collect(ALGORITHMS.bfs, p, { source: 'x' }).result as { parent: Map<string, string> }
+    const tree = new Set([...parent].map(([w, u]) => [w, u].sort().join('')))
+    expect(new Set(l.edges.filter(e => e.classes.includes('tree')).map(key))).toEqual(tree)
+    expect(tree.size).toBe(8)
+    expect(l.edges.length).toBe(13)
+    expect(l.edges.filter(e => e.classes.includes('dashed')).map(key).sort()).toEqual(['bd', 'ce', 'ef', 'eg', 'gh'])
+    // tree path g, d, a, x: length 3 = dist(g)
+    expect([parent.get('g'), parent.get('d'), parent.get('a')]).toEqual(['d', 'a', 'x'])
+    expect(dist(l).get('g')).toBe(3)
+  })
+  it('edges inside a layer are ef and gh; bd, ce, eg join neighbouring layers; no edge skips a layer', () => {
+    const l = fig('t02-bfs-layers'), d = dist(l)
+    const gap = (k: string) => { const e = l.edges.find(x => key(x) === k)!; return Math.abs(d.get(e.tail[0])! - d.get(e.head[0])!) }
+    expect(l.edges.filter(e => gap(key(e)) === 0).map(key).sort()).toEqual(['ef', 'gh'])
+    expect(['bd', 'ce', 'eg'].map(gap)).toEqual([1, 1, 1])
+    expect(l.edges.every(e => gap(key(e)) <= 1)).toBe(true)
+  })
+  it('route x, c, f, h is a walk of length 3 = dist(x, h)', () => {
+    const q = fig('t02-bfs-question'), ix = new GraphIndex(q)
+    expect(['cx', 'cf', 'fh'].every(k => q.edges.some(e => key(e) === k))).toBe(true)
+    expect(A.bfsDistances(ix, 'x').get('h')).toBe(3)
+  })
+  it('pitfall: marking on removal from the queue appends d twice', () => {
+    const ix = new GraphIndex(fig('t02-bfs-question')), marked = new Set<string>(), Q = ['x'], appended = new Map<string, number>()
+    while (Q.length) {
+      const u = Q.shift()!
+      if (marked.has(u)) continue
+      marked.add(u)
+      for (const w of ix.neighbors(u)) if (!marked.has(w)) { Q.push(w); appended.set(w, (appended.get(w) ?? 0) + 1) }
+    }
+    expect(appended.get('d')).toBe(2)
+  })
+  it('DFS triangle: depth-first tree x-a-b puts b at depth 2, dist(x, b) = 1', () => {
+    const t = fig('t02-bfs-dfs-triangle')
+    const { steps } = collect(ALGORITHMS.dfs, t, { source: 'x' })
+    const last = steps[steps.length - 1].overlay!
+    const treeIds = Object.entries(last.edgeClasses).filter(([, c]) => (c as string[]).includes('tree')).map(([id]) => id)
+    expect(new Set(t.edges.filter(e => treeIds.includes(e.id)).map(key))).toEqual(new Set(t.edges.filter(e => e.classes.includes('tree')).map(key)))
+    expect(t.edges.filter(e => e.classes.includes('tree')).map(key).sort()).toEqual(['ab', 'ax'])
+    expect(dist(t).get('b')).toBe(1)
+  })
+  it('exercise: BFS discovers c, e, a, f, b, d (alphabetical scan), distances 1, 1, 2, 2, 2, 3', () => {
+    const g = fig('t02-ex-bfs-order'), ix = new GraphIndex(g)
+    const { steps } = collect(ALGORITHMS.bfs, g, { source: 'x' })
+    expect(steps.filter(s => s.action).map(s => s.action!.id)).toEqual(['c', 'e', 'a', 'f', 'b', 'd'])
+    // the same order with neighbours scanned alphabetically, as the prompt says
+    const seen = new Set(['x']), Q = ['x'], order: string[] = []
+    while (Q.length) for (const w of [...ix.neighbors(Q.shift()!)].sort()) if (!seen.has(w)) { seen.add(w); Q.push(w); order.push(w) }
+    expect(order).toEqual(['c', 'e', 'a', 'f', 'b', 'd'])
+    expect(Object.fromEntries(A.bfsDistances(ix, 'x'))).toEqual({ x: 0, c: 1, e: 1, a: 2, f: 2, b: 2, d: 3 })
+  })
+})
