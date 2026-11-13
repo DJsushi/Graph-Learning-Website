@@ -564,6 +564,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T5.4–T5.10 (2026-11-13): fixes sent for the cramped `fig-a01-kkt-recurrence` and the "blue trees" wording on `boruvka`. Not fixed, framework: the pseudocode panel of the algorithm player (`fig-a01-boruvka-player` at 1366) is clipped on the right and scrolls. Probably on every player page; a coder task if the owner wants it.
 
+- Visual-qa on T5.16–T5.26 (2026-11-13): passed after layout fixes (ddb8050, a2067c4, 5295677, a942c65). Left open, minor: `fig-a01-kkt-recurrence` steps 1–2 (the 12-vertex graph) render edge labels at 13.7px at 1366, below the 14px rule; two layout rounds did not fix it, the labels are legible. Writers built their own clearance scripts on the real parser and `routeEdges` (label–label, label–edge, edge–vertex); a shared check in `viewbox.ts` would save visual-qa rounds (coder task if the owner wants it).
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
