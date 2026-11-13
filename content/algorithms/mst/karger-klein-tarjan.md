@@ -52,7 +52,7 @@ The proof adds up the cost of every line of the algorithm and of its two recursi
 caption: One run of the algorithm on a graph with 12 vertices and 14 edges. Thick edges are chosen by a Borůvka phase, dashed edges lost the sampling, and the faded edge is $F'$-heavy.
 intent: New figure (the lecture, algorithms/01 p42 to p44, has no picture). A graph on which two Borůvka phases with contractions leave 3 vertices, after removing parallel edges. It has 12 vertices because 3 vertices need n of at least 12. Marks show the edges of the two phases, the removed parallel edges, the three edges of G2 and the forest F'.
 layout: fixed
-a @(0, 0.9); b @(0, 2.1); c @(0.9, 2.1); d @(0.9, 0.3); e @(1.7, 0); f @(1.7, 1.1); g @(2.4, 1.1); h @(2.4, 0); i @(3.1, 0.3); j @(3.1, 2.1); k @(3.8, 2.1); l @(3.8, 0.9)
+a @(0, 1.1); b @(0, 2); c @(1.15, 2); d @(0.3, 0.25); e @(1.2, 0); f @(1.45, 0.85); g @(2.3, 1.1); h @(2.1, 0); i @(3.45, 0.35); j @(2.3, 2); k @(3.4, 2); l @(3.8, 1.2)
 a -- b [id=ab w=1]; c -- d [id=cd w=2]; e -- f [id=ef w=3]; g -- h [id=gh w=4]; i -- j [id=ij w=5]; k -- l [id=kl w=6]
 b -- c [id=bc w=7]; f -- g [id=fg w=8]; j -- k [id=jk w=9]; d -- e [id=de w=10]; h -- i [id=hi w=11]; c -- j [id=cj w=12]; c -- f [id=cf w=13]; a -- c [id=ac w=14]
 mark V: a b c d e f g h i j k l
