@@ -3236,3 +3236,48 @@ describe('girth-and-regular-graphs page', () => {
     expect(pathGraph(3).vertices.length).toBe(4); expect(A.girth(new GraphIndex(pathGraph(3)))).toBe(Infinity)
   })
 })
+
+describe('forests-and-trees page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const comps = (g: GraphData) => A.components(new GraphIndex(g)).map(c => [...c].sort().join(' ')).sort()
+  const cls = (g: GraphData, c: string) => new Set(g.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  it('opening: two vertices are a forest but not connected; one edge is a tree; the triangle is connected with a cycle', () => {
+    const two = new GraphIndex(fig('t03-tree-question', 0)), one = new GraphIndex(fig('t03-tree-question', 1)), tri = new GraphIndex(fig('t03-tree-question', 2))
+    expect(A.isAcyclic(two)).toBe(true); expect(A.isConnected(two)).toBe(false)
+    expect(A.isTree(one)).toBe(true)
+    expect(A.isConnected(tri)).toBe(true); expect(A.girth(tri)).toBe(3)
+  })
+  it('stepper: cycle a b c, delete ac gives a tree on all 6 vertices, delete cd gives two trees a b c and d e f', () => {
+    const s = steps('t03-forest-steps')
+    const g0 = new GraphIndex(s[0])
+    expect(A.isConnected(g0)).toBe(true); expect(A.isTree(g0)).toBe(false)
+    expect(A.isCycleEdgeSet(s[0], cls(s[0], 'cycle'))).toBe(true); expect(cls(s[0], 'cycle').size).toBe(3)
+    expect(A.girth(g0)).toBe(3) // a b c is the only cycle: 6 vertices, 6 edges, connected
+    expect(s[0].edges.length).toBe(6)
+    expect(A.isTree(new GraphIndex(s[1]))).toBe(true)
+    expect(cls(s[1], 'tree').size).toBe(s[1].edges.length)
+    const g2 = new GraphIndex(s[2])
+    expect(A.isAcyclic(g2)).toBe(true); expect(A.isConnected(g2)).toBe(false)
+    expect(comps(s[2])).toEqual(['a b c', 'd e f'])
+  })
+  it('t03-forest: three components, each a tree; z is isolated', () => {
+    const g = fig('t03-forest'), ix = new GraphIndex(g)
+    expect(A.isAcyclic(ix)).toBe(true)
+    expect(comps(g)).toEqual(['1 2 3 4 5 6', 'a b c d', 'z'])
+  })
+  it('examples: P_n and K_{1,n} are trees, C_3 is connected with a cycle, two disjoint edges are a forest and not a tree', () => {
+    for (let n = 1; n <= 6; n++) { expect(A.isTree(new GraphIndex(pathGraph(n)))).toBe(true); expect(A.isTree(new GraphIndex(completeBipartite(1, n)))).toBe(true) }
+    const c3 = new GraphIndex(cycle(3)); expect(A.isConnected(c3)).toBe(true); expect(A.isAcyclic(c3)).toBe(false)
+    const two = parseGraph('a -- b; c -- d').panels[0].graph, ix = new GraphIndex(two)
+    expect(A.isAcyclic(ix)).toBe(true); expect(A.isConnected(ix)).toBe(false)
+  })
+  it('quizzes: t03-forest + edge 3a is acyclic with two components; u=v parallel plus vw has girth 2 and is not simple', () => {
+    const g = fig('t03-forest'), h = { ...g, edges: [...g.edges, { ...g.edges[0], id: 'new', tail: ['3'], head: ['a'], classes: [] }] }
+    expect(A.isAcyclic(new GraphIndex(h))).toBe(true)
+    expect(comps(h)).toEqual(['1 2 3 4 5 6 a b c d', 'z'])
+    const m = parseGraph('u -- v; u -- v; v -- w').panels[0].graph
+    expect(m.edges.length).toBe(3)
+    expect(A.girth(new GraphIndex(m))).toBe(2)
+    expect(A.isSimple(m)).toBe(false)
+  })
+})
