@@ -2948,3 +2948,57 @@ describe('multigraphs-and-digraphs page', () => {
     expect(m.edges.filter(e => e.tail[0] === e.head[0]).map(eps)).toEqual(['c'])
   })
 })
+
+describe('isomorphism page', () => {
+  // the value of epsilon after renaming the vertices by f: 'v' for a loop, 'u>v' for an arc, 'u-v' (sorted) for an undirected edge
+  const eps = (e: GraphData['edges'][number], f: (v: string) => string = v => v) => {
+    const [t, h] = [f(e.tail[0]), f(e.head[0])]
+    return e.directed ? `${t}>${h}` : t === h ? t : [t, h].sort().join('-')
+  }
+  const perms = (xs: string[]): string[][] => xs.length ? xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [x, ...p])) : [[]]
+  const fact = (n: number): number => n <= 1 ? 1 : n * fact(n - 1)
+  // number of edge bijections g that make f an isomorphism together with g (0 if none): matching classes of equal epsilon, m! ways each
+  const edgeMaps = (g: GraphData, h: GraphData, f: (v: string) => string) => {
+    const count = (xs: string[]) => xs.reduce((m, k) => m.set(k, (m.get(k) ?? 0) + 1), new Map<string, number>())
+    const a = count(g.edges.map(e => eps(e, f))), b = count(h.edges.map(e => eps(e)))
+    if (a.size !== b.size || [...a].some(([k, m]) => b.get(k) !== m)) return 0
+    return [...a.values()].reduce((z, m) => z * fact(m), 1)
+  }
+  const isoCount = (g: GraphData, h: GraphData) => {
+    const vs = g.vertices.map(v => v.id), ws = h.vertices.map(v => v.id)
+    return perms(ws).reduce((z, p) => z + edgeMaps(g, h, v => p[vs.indexOf(v)]), 0)
+  }
+  it('lecture C4: f(a)=1, f(b)=2, f(c)=3, f(d)=4 is an isomorphism; 8 of the 24 bijections are (quiz)', () => {
+    const [g, h] = [fig('t01-iso-c4', 0), fig('t01-iso-c4', 1)]
+    const f = (v: string) => ({ a: '1', b: '2', c: '3', d: '4' } as Record<string, string>)[v]
+    expect(edgeMaps(g, h, f)).toBe(1)
+    expect(perms(h.vertices.map(v => v.id)).length).toBe(24)
+    expect(isoCount(g, h)).toBe(8)
+  })
+  it('check stepper: same two graphs; edges ab, bc, cd, da go to 12, 23, 34, 41; non-edges ac, bd go to 13, 24, not edges of H', () => {
+    const s = fig('t01-iso-check')
+    const part = (digits: boolean) => ({ vertices: s.vertices.filter(v => /\d/.test(v.id) === digits), edges: s.edges.filter(e => /\d/.test(e.tail[0]) === digits) }) as GraphData
+    const [g, h] = [part(false), part(true)]
+    const f = (v: string) => ({ a: '1', b: '2', c: '3', d: '4' } as Record<string, string>)[v]
+    expect(g.edges.map(e => eps(e, f))).toEqual(['1-2', '2-3', '3-4', '1-4'])
+    expect(h.edges.map(e => eps(e)).sort()).toEqual(['1-2', '1-4', '2-3', '3-4'])
+    expect(edgeMaps(g, h, f)).toBe(1)
+    expect(edgeMaps(g, fig('t01-iso-c4', 0), v => v)).toBe(1)
+    expect(edgeMaps(h, fig('t01-iso-c4', 1), v => v)).toBe(1)
+  })
+  it('edge-map stepper: f = (u 1, v 2, w 3) is the only vertex map, with 2 edge maps; e3 cannot go to h1', () => {
+    const s = fig('t01-iso-edge-map')
+    const part = (digits: boolean) => ({ vertices: s.vertices.filter(v => /\d/.test(v.id) === digits), edges: s.edges.filter(e => /\d/.test(e.tail[0]) === digits) }) as GraphData
+    const [g, h] = [part(false), part(true)]
+    const f = (v: string) => ({ u: '1', v: '2', w: '3' } as Record<string, string>)[v]
+    expect(edgeMaps(g, h, f)).toBe(2)
+    expect(isoCount(g, h)).toBe(2)
+    const e = (x: GraphData, id: string) => x.edges.find(y => y.id === id)!
+    expect(eps(e(g, 'e3'), f)).toBe(eps(e(h, 'h3')))
+    expect(eps(e(g, 'e3'), f)).not.toBe(eps(e(h, 'h1')))
+  })
+  it('lecture multigraphs: the identity on the labels with 4 edge maps (quiz)', () => {
+    const [g, h] = [fig('t01-iso-multigraph', 0), fig('t01-iso-multigraph', 1)]
+    expect(edgeMaps(g, h, v => v)).toBe(4)
+  })
+})
