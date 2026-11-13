@@ -139,6 +139,16 @@ describe('minimum cuts lesson', () => {
     const c = (...S: string[]) => cutCapacity(u, new Set(S))
     expect([c('p', 'q'), c('q', 'r'), c('p', 'q', 'r'), c('q')]).toEqual([4, 4, 3, 3])
   })
+  it('uncrossing walkthroughs: os is inside a region, all counts of the first and second inequality', () => {
+    const u = fig('a03-uc-count')
+    const c = (...S: string[]) => cutCapacity(u, new Set(S))
+    expect([c('p', 'q'), c('q', 'r'), c('p', 'q', 'r'), c('q')]).toEqual([4, 4, 3, 3])
+    expect([c('p'), c('r'), c('p', 'o', 's'), c('p', 'q', 'o', 's')]).toEqual([3, 3, 4, 3])
+    const r = fig('a03-uc-reduce')
+    expect(cutCapacity(r, new Set(['p', 'o', 's']))).toBe(cutCapacity(r, new Set(['q', 'r'])))
+    expect(cutCapacity(r, new Set(['p', 'q', 'o', 's']))).toBe(cutCapacity(r, new Set(['r'])))
+    expect(c('p', 'q') + c('q', 'r') - c('p', 'q', 'r') - c('q')).toBe(2)
+  })
   it('Karger players: seed 5 finds the minimum cut 2, seed 1 returns 4', () => {
     expect((collect(ALGORITHMS.karger, fig('a03-karger-good'), { seed: '5' }).result as any).value).toBe(2)
     expect((collect(ALGORITHMS.karger, fig('a03-karger-bad'), { seed: '1' }).result as any).value).toBe(4)
