@@ -1647,3 +1647,74 @@ describe('union-find / Kruskal complexity walkthroughs (a01)', () => {
     expect(Math.log2(n)).toBeLessThanOrEqual(2 * Math.log2(m))
   })
 })
+
+describe('Borůvka complexity walkthroughs (a01)', () => {
+  const g = fig('a01-boruvka-halving')
+  const h = fig('a01-boruvka-phase-cost')
+  const n = g.vertices.length, m = g.edges.length
+  const ids = (x: GraphData, ns: string[]) => ns.map(s => x.edges.find(e => name(x, e.id) === s[0] + s[1])!.id)
+  const marked = (x: GraphData, mk: string) => (x.marks?.[mk] ?? []).map(s => s.replace(/^@/, ''))
+  // Borůvka by hand, with the distinct weights of the running example.
+  const comp = new Map(g.vertices.map(v => [v.id, v.id]))
+  const phases: { chosen: Set<string>; count: number }[] = []
+  while (new Set(comp.values()).size > 1) {
+    const best = new Map<string, (typeof g.edges)[number]>()
+    for (const e of g.edges) {
+      const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+      if (a === b) continue
+      for (const r of [a, b]) if (!best.has(r) || num(e.data.w) < num(best.get(r)!.data.w)) best.set(r, e)
+    }
+    const chosen = new Set([...best.values()].map(e => name(g, e.id)))
+    for (const e of best.values()) {
+      const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+      if (a !== b) for (const [k, c] of comp) if (c === b) comp.set(k, a)
+    }
+    phases.push({ chosen, count: new Set(comp.values()).size })
+  }
+  it('same graph as the running example, 8 vertices and 12 edges', () => {
+    expect([n, m]).toEqual([8, 12])
+    const ex = fig('a01-example-graph')
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+    expect(ws(h)).toEqual(ws(ex))
+  })
+  it('phase 1 chooses ab cf de dg fh and leaves 3 components (8 -> 3 <= 4)', () => {
+    expect([...phases[0].chosen].sort()).toEqual(['ab', 'cf', 'de', 'dg', 'fh'])
+    expect(phases[0].count).toBe(3)
+    expect(phases[0].count).toBeLessThanOrEqual(n / 2)
+  })
+  it('phase 2 chooses ac and ef, leaves 1 component (bound 8/4 = 2); 2 phases, log2 8 = 3', () => {
+    expect([...phases[1].chosen].sort()).toEqual(['ac', 'ef'])
+    expect(phases[1].count).toBe(1)
+    expect(1).toBeLessThanOrEqual(n / 4)
+    expect(phases.length).toBe(2)
+    expect(Math.log2(n)).toBe(3)
+  })
+  it('the figure marks match', () => {
+    expect(new Set(marked(g, 'P1'))).toEqual(new Set(ids(g, ['ab', 'cf', 'de', 'dg', 'fh'])))
+    expect(new Set(marked(g, 'P2'))).toEqual(new Set(ids(g, ['ac', 'ef'])))
+    expect(new Set(marked(h, 'P'))).toEqual(new Set(ids(h, ['ac', 'ef'])))
+  })
+  it('start of phase 2: 5 forest edges, 6 edges inside components, 6 between them, 8 vertices, 12 edges', () => {
+    const forest = ['ab', 'cf', 'de', 'dg', 'fh']
+    const label = new Map<string, string>()
+    const cs = [['a', 'b'], ['c', 'f', 'h'], ['d', 'e', 'g']]
+    cs.forEach((c, i) => c.forEach(v => label.set(v, String(i))))
+    const inside = h.edges.filter(e => label.get(e.tail[0]) === label.get(e.head[0])).map(e => name(h, e.id)).sort()
+    const across = h.edges.filter(e => label.get(e.tail[0]) !== label.get(e.head[0])).map(e => name(h, e.id)).sort()
+    expect(forest.length).toBe(5)
+    expect(inside).toEqual(['ab', 'cf', 'de', 'dg', 'eg', 'fh'])
+    expect(across).toEqual(['ac', 'bc', 'bd', 'ce', 'ef', 'gh'])
+    expect([h.vertices.length, h.edges.length]).toEqual([8, 12])
+    expect(new Set(marked(h, 'I'))).toEqual(new Set(ids(h, inside)))
+    expect(new Set(marked(h, 'X'))).toEqual(new Set(ids(h, across)))
+    expect(new Set(marked(h, 'F'))).toEqual(new Set(ids(h, forest)))
+  })
+  it('components store ac (8), ef (5), ef (5) as lightest leaving edges', () => {
+    const w = (s: string) => num(h.edges.find(e => name(h, e.id) === s)!.data.w)
+    const cross = (c: string[]) => h.edges.filter(e => c.includes(e.tail[0]) !== c.includes(e.head[0]))
+    const lightest = (c: string[]) => { const e = cross(c).sort((x, y) => num(x.data.w) - num(y.data.w))[0]; return name(h, e.id) + num(e.data.w) }
+    expect([lightest(['a', 'b']), lightest(['c', 'f', 'h']), lightest(['d', 'e', 'g'])]).toEqual(['ac8', 'ef5', 'ef5'])
+    expect([w('ac'), w('ef')]).toEqual([8, 5])
+  })
+})
