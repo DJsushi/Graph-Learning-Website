@@ -2574,3 +2574,147 @@ describe('MPM proofs (a02-mpm-count, a02-mpm-phases)', () => {
     expect(S[0].edges.filter(e => e.classes.includes('muted')).map(e => key(S[0], e.id)).sort()).toEqual(['ab', 'dc'])
   })
 })
+
+describe('Unit-capacity networks (a02-unit-levels, a02-unit-phases, a02-unit-residual)', () => {
+  const stepsOf = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  const ek = (g: GraphData, id: string) => name(g, id)
+  const edgesOf = (g: GraphData) => g.edges.map(e => e.tail[0] + e.head[0])
+  const bfsDist = (es: string[], s: string) => {
+    const d: Record<string, number> = { [s]: 0 }, q = [s]
+    while (q.length) { const u = q.shift()!; for (const e of es) if (e[0] === u && !(e[1] in d)) { d[e[1]] = d[u] + 1; q.push(e[1]) } }
+    return d
+  }
+  // Dinic on unit capacities (net flow); returns per phase the distance and the units pushed, and the final flow
+  const dinicRun = (es: string[], V: string, s: string, t: string) => {
+    const f: Record<string, number> = Object.fromEntries(es.map(e => [e, 0]))
+    const resid = () => { const r: string[] = []; for (const e of es) { if (f[e] === 0) r.push(e); else r.push(e[1] + e[0]) } return r }
+    const phases: { dist: number; push: number; edges: string[] }[] = []
+    for (;;) {
+      const R = resid(), d = bfsDist(R, s)
+      if (!(t in d)) break
+      let push = 0; const used: string[] = []
+      const dead = new Set<string>()
+      const dfs = (u: string): string[] | undefined => {
+        if (u === t) return []
+        for (const e of es) {
+          const fwd = f[e] === 0, a = fwd ? e[0] : e[1], b = fwd ? e[1] : e[0]
+          if (a !== u || d[b] !== d[u] + 1 || dead.has(e + (fwd ? 'f' : 'r'))) continue
+          const rest = dfs(b)
+          if (rest) return [e + (fwd ? 'f' : 'r'), ...rest]
+          dead.add(e + (fwd ? 'f' : 'r'))
+        }
+        return undefined
+      }
+      for (let p = dfs(s); p; p = dfs(s)) {
+        for (const x of p) { const e = x.slice(0, 2); f[e] = x[2] === 'f' ? 1 : 0; used.push(e) }
+        push++
+      }
+      phases.push({ dist: d[t], push, edges: used })
+    }
+    return { phases, f, V }
+  }
+
+  it('levels figure: 6 vertices, 9 edges, layers s | a b | c d | t, distance l = 3', () => {
+    const S = stepsOf('a02-unit-levels')
+    expect(S.length).toBe(5)
+    const es = edgesOf(S[0])
+    expect(es.length).toBe(9)
+    expect(S[0].vertices.length).toBe(6)
+    const d = bfsDist(es, 's')
+    expect(d).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    expect(marked(S[0], 'S1').sort()).toEqual(['a', 'b', 's'])
+    expect(marked(S[0], 'L1').sort()).toEqual(['a', 'b'])
+    expect(marked(S[0], 'L2').sort()).toEqual(['c', 'd'])
+    // no antiparallel edges
+    for (const e of es) expect(es).not.toContain(e[1] + e[0])
+  })
+  it('levels figure: edges leaving S_1 are ac, ad, bd (3); cb enters, ab stays inside', () => {
+    const S = stepsOf('a02-unit-levels')
+    const es = edgesOf(S[0]), d = bfsDist(es, 's')
+    const S1 = new Set(['s', 'a', 'b'])
+    const leaving = es.filter(e => S1.has(e[0]) && !S1.has(e[1]))
+    expect(leaving.sort()).toEqual(['ac', 'ad', 'bd'])
+    expect(leaving.every(e => d[e[0]] === 1 && d[e[1]] === 2)).toBe(true)
+    expect(marked(S[0], 'cut1').length).toBe(3)
+    expect(S[1].edges.filter(e => e.classes.includes('cut')).map(e => ek(S[1], e.id)).sort()).toEqual(['ac', 'ad', 'bd'])
+    expect(S[1].edges.filter(e => e.classes.includes('muted')).map(e => ek(S[1], e.id)).sort()).toEqual(['ab', 'cb'])
+    // every edge raises the distance by at most one
+    expect(es.every(e => d[e[1]] <= d[e[0]] + 1)).toBe(true)
+  })
+  it('levels figure: maximum flow 2 along s a c t and s b d t; sets of 2, 3, 2 edges; 3 * 2 = 6 <= 9', () => {
+    const S = stepsOf('a02-unit-levels')
+    const es = edgesOf(S[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    expect(run.phases.reduce((z, p) => z + p.push, 0)).toBe(2)
+    expect(marked(S[0], 'flow').length).toBe(6)
+    expect(S[2].edges.filter(e => e.classes.includes('path')).map(e => ek(S[2], e.id)).sort()).toEqual(['ac', 'bd', 'ct', 'dt', 'sa', 'sb'])
+    const sets = [0, 1, 2].map(i => es.filter(e => bfsDist(es, 's')[e[0]] === i && bfsDist(es, 's')[e[1]] === i + 1))
+    expect(sets.map(x => x.length)).toEqual([2, 3, 2])
+    expect(sets.flat().length).toBe(7)
+    expect(new Set(sets.flat()).size).toBe(7)
+    expect(3 * 2).toBe(6)
+    expect(6).toBeLessThanOrEqual(9)
+    expect(es.filter(e => !sets.flat().includes(e)).sort()).toEqual(['ab', 'cb'])
+    const g = S[3]
+    expect(g.edges.filter(e => e.classes.includes('color5')).length).toBe(2)
+    expect(g.edges.filter(e => e.classes.includes('color6')).length).toBe(3)
+    expect(g.edges.filter(e => e.classes.includes('color7')).length).toBe(2)
+    expect(S[4].edges.filter(e => e.classes.includes('dashed')).map(e => ek(S[4], e.id)).sort()).toEqual(['ab', 'cb'])
+    // maximum flow = minimum cut: the cut out of s has 2 edges
+    expect(es.filter(e => e[0] === 's').length).toBe(2)
+  })
+  it('phases figure: m = 9, sqrt(m) = 3; Dinic needs 3 phases at distances 1, 2, 4 pushing 1, 2, 1; value 4 > 3', () => {
+    const S = stepsOf('a02-unit-phases')
+    expect(S.length).toBe(3)
+    const es = edgesOf(S[0])
+    expect(es.length).toBe(9)
+    expect(Math.sqrt(9)).toBe(3)
+    for (const e of es) expect(es).not.toContain(e[1] + e[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    expect(run.phases.map(p => p.dist)).toEqual([1, 2, 4])
+    expect(run.phases.map(p => p.push)).toEqual([1, 2, 1])
+    expect(run.phases.reduce((z, p) => z + p.push, 0)).toBe(4)
+    expect(4).toBeGreaterThan(3)
+    expect(Object.values(run.f).every(x => x === 1)).toBe(true) // every edge carries a unit at the end
+    expect(marked(S[0], 'ph1').length).toBe(1)
+    expect(marked(S[0], 'ph2').length).toBe(4)
+    expect(marked(S[0], 'ph3').length).toBe(4)
+    expect(marked(S[0], 'fstar').map(id => ek(S[0], id.replace(/^@/, ''))).sort()).toEqual(['sa', 'sb', 'sc', 'st'])
+    expect(es.filter(e => e[0] === 's').length).toBe(4) // value of f* = edges out of s = 4
+    // connected, so n - 1 <= m
+    expect(S[0].vertices.length - 1).toBeLessThanOrEqual(9)
+    // the distance sequence 1, 2, 4 starts at 1 and strictly increases
+    expect(bfsDist(es, 's').t).toBe(1)
+  })
+  it('residual figure: after 2 phases f has value 3, G_f has 9 edges, distance 4 along s b c d t, f\' = 1 = 4 - 3', () => {
+    const S = stepsOf('a02-unit-residual')
+    expect(S.length).toBe(9)
+    const es = edgesOf(S[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    const f2: Record<string, number> = Object.fromEntries(es.map(e => [e, 0]))
+    for (const p of run.phases.slice(0, 2)) for (const e of p.edges) f2[e] = 1
+    expect(Object.entries(f2).filter(([, v]) => v === 1).map(([k]) => k).sort()).toEqual(['at', 'ct', 'sa', 'sc', 'st'])
+    expect(S[0].edges.filter(e => e.classes.includes('path')).map(e => ek(S[0], e.id)).sort()).toEqual(['at', 'ct', 'sa', 'sc', 'st'])
+    const Gf = es.map(e => (f2[e] === 0 ? e : e[1] + e[0]))
+    expect(Gf.length).toBe(9)
+    expect(new Set(Gf).size).toBe(9)
+    for (const e of Gf) expect(Gf).not.toContain(e[1] + e[0]) // no antiparallel edge in G_f
+    expect(bfsDist(Gf, 's').t).toBe(4)
+    expect(bfsDist(es, 's').t).toBe(1)
+    expect(4).toBeGreaterThan(3)
+    expect(Math.floor(9 / 4)).toBe(2)
+    expect(9 / 3).toBe(3)
+    // flow of value 1 left; f* - f is 1 on sb bc cd dt
+    expect(Object.entries(f2).filter(([, v]) => v === 0).map(([k]) => k).sort()).toEqual(['bc', 'cd', 'dt', 'sb'])
+    expect(4 - 3).toBe(1)
+    // figure after step 2 shows G_f: forward edges sb bc cd dt, reverse edges ts, as, ta, cs, tc
+    expect(S[1].edges.map(e => ek(S[1], e.id)).sort()).toEqual([...Gf].sort())
+    expect(marked(S[1], 'rev').length).toBe(5)
+    expect(marked(S[1], 'fwd').length).toBe(4)
+    // remaining: one phase in G (distance 4), 2 phases done, at most 2 * 3 = 6
+    expect(run.phases.length - 2).toBe(1)
+    expect(2 * 3).toBe(6)
+    expect(Gf.filter(e => (e === 'sb' || e === 'bc' || e === 'cd' || e === 'dt')).length).toBe(4)
+  })
+})
