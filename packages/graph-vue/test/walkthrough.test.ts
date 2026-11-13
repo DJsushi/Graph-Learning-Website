@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { activeStep, inBand, scrollDelta } from '../src/walkthrough'
+import { activeStep, figureHeight, inBand, scrollDelta } from '../src/walkthrough'
 
 it('the active step is the last one that starts at or above the line', () => {
   const steps = [{ top: 0, bottom: 100 }, { top: 120, bottom: 300 }, { top: 320, bottom: 400 }]
@@ -27,4 +27,9 @@ it('scrolls a step into the band: not at all when it is in it, centred, or top-a
   expect(scrollDelta({ top: 100, bottom: 200 }, 372, 844)).toBe(150 - 608)
   expect(scrollDelta({ top: 900, bottom: 1500 }, 372, 844)).toBe(900 - 372)
   expect(scrollDelta({ top: -300, bottom: 400 }, 372, 844)).toBe(-300 - 372)
+})
+
+it('the drawing gets the figure box minus the rest, but never less than the minimum', () => {
+  expect(figureHeight(341, 150)).toBe(191)
+  expect(figureHeight(341, 400)).toBe(120)
 })

@@ -28,3 +28,8 @@ export function scrollDelta(b: Box, top: number, bottom: number): number {
   if (inBand(b, top, bottom)) return 0
   return b.bottom - b.top > bottom - top ? b.top - top : (b.top + b.bottom) / 2 - (top + bottom) / 2
 }
+
+/** The height for the drawing in a sticky figure of at most `maxH` px: what is left after the controls, caption and padding (`other` px), never under `min`. */
+export function figureHeight(maxH: number, other: number, min = 120): number {
+  return Math.max(min, Math.floor(maxH - other))
+}
