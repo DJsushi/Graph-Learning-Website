@@ -2912,3 +2912,12 @@ describe('Unit-capacity networks (a02-unit-levels, a02-unit-phases, a02-unit-res
     expect(5).toBeLessThan(6)
   })
 })
+
+describe('karger-success-probability iteration bounds', () => {
+  it('numbers of the Iterating CONTRACT walkthrough', () => {
+    expect((27 / 28) ** 64).toBeLessThan(0.098)
+    expect((31 / 32) ** 64).toBeLessThan(0.132)
+    expect((31 / 32) ** 64).toBeLessThan(Math.exp(-2))
+    expect(Math.exp(-2)).toBeGreaterThan(0.132)
+  })
+})
