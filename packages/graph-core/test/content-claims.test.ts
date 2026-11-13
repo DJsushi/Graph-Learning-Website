@@ -2275,3 +2275,137 @@ describe('Edmonds–Karp analysis (a02-eka-*)', () => {
     expect(T[2].edges.filter(e => e.classes.includes('bold')).length).toBe(8)
   })
 })
+
+describe('Blocking flows (a02-blk-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (g: GraphData, id: string) => name(g, id)
+  const cap = (g: GraphData, k: string) => Object.fromEntries(g.edges.map(e => [key(g, e.id), num(e.data[k])]))
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  // the lecture network (a02-blocking-flow): capacities, no flow
+  const c0: Record<string, number> = { sp: 9, sq: 4, pr: 5, rq: 9, rt: 3, qx: 5, xt: 9 }
+  const V = 'spqrxt'
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of V) if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c0)) { if (c0[k] > f[k]) r[k] = c0[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const f0 = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+  // the procedure of alg:dinic-blocking on the level graph of residual r; returns the flow and the step counts
+  const blocking = (r: Record<string, number>) => {
+    const d = dist(r)
+    const res = Object.fromEntries(Object.keys(r).filter(k => d[k[1]] === d[k[0]] + 1).map(k => [k, r[k]]))
+    const L = new Set(Object.keys(res))
+    const f: Record<string, number> = {}
+    const cnt = { aug: 0, ret: 0, adv: 0, runs: [] as number[], bottlenecks: [] as number[], deleted: [] as string[] }
+    let v = 's', P: string[] = [], run = 0
+    for (;;) {
+      if (v === 't') {
+        const b = Math.min(...P.map(e => res[e] - (f[e] ?? 0)))
+        for (const e of P) f[e] = (f[e] ?? 0) + b
+        cnt.aug++; cnt.runs.push(run); run = 0; cnt.bottlenecks.push(b)
+        for (const e of [...L]) if ((f[e] ?? 0) === res[e]) { L.delete(e); cnt.deleted.push(e) }
+        v = 's'; P = []
+      } else {
+        const out = [...L].find(e => e[0] === v)
+        if (out) { P.push(out); v = out[1]; cnt.adv++; run++ } else {
+          if (v === 's') break
+          for (const e of [...L]) if (e[0] === v || e[1] === v) { L.delete(e); cnt.deleted.push(e) }
+          cnt.deleted.push(v)
+          cnt.ret++; cnt.runs.push(run); run = 0
+          const last = P.pop()!; v = last[0]
+        }
+      }
+    }
+    return { f, res, d, cnt, L }
+  }
+
+  it('correctness figure: L has 6 edges (levels s0 p1 q1 r2 x2 t3, rq excluded), augmentations 3 and 4 saturate rt and sq, then the loop stops at s', () => {
+    const S = steps('a02-blk-correct')
+    expect(S.length).toBe(6)
+    const d = dist(residual(f0))
+    expect(d).toEqual({ s: 0, p: 1, q: 1, r: 2, x: 2, t: 3 })
+    const b = blocking(residual(f0))
+    expect([...b.L].sort()).toEqual(['qx', 'xt'])  // left in L, but no edge leaves s
+    expect(Object.keys(b.res).sort()).toEqual(['pr', 'qx', 'rt', 'sp', 'sq', 'xt'])
+    expect(Object.keys(c0).filter(k => !(k in b.res))).toEqual(['rq'])
+    expect(cap(S[0], 'c')).toEqual(b.res)
+    expect(b.cnt.bottlenecks).toEqual([3, 4])
+    expect(b.cnt.deleted.slice(0, 1)).toEqual(['rt'])
+    expect(b.f).toEqual({ sp: 3, pr: 3, rt: 3, sq: 4, qx: 4, xt: 4 })
+    expect(cap(S[1], 'f')).toEqual({ sp: 3, sq: 0, pr: 3, rt: 3, qx: 0, xt: 0 })
+    expect(cap(S[4], 'f')).toEqual(b.f)
+    // two open paths at the start, none at the end: every s-t path of L has a saturated edge
+    expect(['sp', 'pr', 'rt'].some(e => b.f[e] === b.res[e])).toBe(true)
+    expect(['sq', 'qx', 'xt'].some(e => b.f[e] === b.res[e])).toBe(true)
+    expect(b.f.sp + b.f.sq).toBe(7)
+    expect(marked(S[0], 'open').length).toBe(6)
+    // deleted: rt (saturated), r with pr, p with sp, sq (saturated)
+    expect(S[1].edges.filter(e => e.classes.includes('muted')).map(e => key(S[1], e.id))).toEqual(['rt'])
+    expect(S[2].vertices.filter(v => v.classes.includes('muted')).map(v => v.id)).toEqual(['r'])
+    expect(S[3].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['p', 'r'])
+    expect(S[4].edges.filter(e => e.classes.includes('muted')).map(e => key(S[4], e.id)).sort()).toEqual(['pr', 'rt', 'sp', 'sq'])
+    expect(S[5].vertices.filter(v => v.classes.includes('current')).map(v => v.id)).toEqual(['s'])
+  })
+
+  it('time figure: 2 augmentations, 2 retreats, 8 advances in runs 3,2,0,3; n = 6, the path s q x t has 3 edges', () => {
+    const S = steps('a02-blk-time')
+    expect(S.length).toBe(5)
+    const b = blocking(residual(f0))
+    expect(b.cnt.aug).toBe(2)
+    expect(b.cnt.ret).toBe(2)
+    expect(b.cnt.adv).toBe(8)
+    expect(b.cnt.runs).toEqual([3, 2, 0, 3])
+    expect(b.cnt.runs.every(r => r <= 6 - 1)).toBe(true)
+    expect(V.length).toBe(6)
+    expect(Object.keys(b.res).length).toBe(6)
+    expect(marked(S[0], 'aug').length).toBe(2)
+    expect(S[0].edges.filter(e => e.classes.includes('muted')).map(e => key(S[0], e.id)).sort()).toEqual(['rt', 'sq'])
+    expect(S[1].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['p', 'r'])
+    expect(marked(S[1], 'dead').length).toBe(2)
+    expect(marked(S[2], 'run').length).toBe(3)
+    expect(marked(S[3], 'P').length).toBe(3)
+    expect(S[4].vertices.filter(v => v.classes.includes('visited')).length).toBe(6)
+  })
+
+  it('dinic figure: phase 1 (distance 3) gives 7, phase 2 (distance 5, path s p r q x t, 1 unit) gives 8 = max flow; then no path; m = 7, n = 6', () => {
+    const S = steps('a02-blk-dinic')
+    expect(S.length).toBe(4)
+    expect(cap(S[0], 'c')).toEqual(c0)
+    expect(Object.keys(c0).length).toBe(7)
+    expect(V.length).toBe(6)
+    const r0 = residual(f0)
+    const d0 = dist(r0)
+    expect(d0.t).toBe(3)
+    // rq does not climb a level of phase 1; the other six edges do
+    expect(Object.keys(c0).filter(k => d0[k[1]] !== d0[k[0]] + 1)).toEqual(['rq'])
+    const b1 = blocking(r0)
+    const f1 = { ...f0 }; for (const k of Object.keys(b1.f)) f1[k] += b1.f[k]
+    expect(f1.sp + f1.sq).toBe(7)
+    expect(cap(S[0], 'f')).toEqual(f1)
+    expect(S[0].edges.filter(e => e.classes.includes('bold')).length).toBe(6)
+    // phase 2
+    const r1 = residual(f1)
+    const d1 = dist(r1)
+    expect(d1.t).toBe(5)
+    const b2 = blocking(r1)
+    expect(b2.cnt.aug).toBe(1)
+    expect(b2.cnt.bottlenecks).toEqual([1])
+    expect(Object.keys(b2.f).sort()).toEqual(['pr', 'qx', 'rq', 'sp', 'xt'])
+    const f2 = { ...f1 }; for (const k of Object.keys(b2.f)) f2[k] += b2.f[k]
+    expect(f2).toEqual({ sp: 4, sq: 4, pr: 4, rq: 1, rt: 3, qx: 5, xt: 5 })
+    expect(cap(S[2], 'f')).toEqual({ ...f2, rt: 3, sq: 4 })
+    expect(f2.sp + f2.sq).toBe(8)
+    expect(dist(residual(f2)).t).toBeUndefined()
+    const g = S[0]
+    expect(maxFlowValue(g, 's', 't').value).toBe(8)
+    // 2 phases of at most n = 6
+    expect(2).toBeLessThanOrEqual(6)
+    expect(marked(S[2], 'P2').length).toBe(5)
+    expect(S[3].edges.filter(e => e.classes.includes('bold')).length).toBe(7)
+  })
+})
