@@ -7,7 +7,7 @@ import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
-import { cycle, completeBipartite, complete } from '../src/dsl/generators'
+import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -3193,5 +3193,46 @@ describe('havel-hakimi-test page', () => {
     expect(rounds([0, 2, 2]).stop).not.toBe('yes')
     expect(rounds([2, 2, 1, 1]).stop).toBe('yes')
     expect(rounds([2, 2, 2]).out).toEqual([[1, 1], [0]])
+  })
+})
+
+describe('girth-and-regular-graphs page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const degs = (ix: GraphIndex) => [...new Set(ix.vertexIds.map(v => ix.degree(v)))]
+  const cls = (g: GraphData, c: string) => new Set(g.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  it('opening: prism and K_{3,3} have 6 vertices, are 3-regular, girth 3 and 4; the marked prism edges are a triangle', () => {
+    const prism = fig('t03-girth-question', 0), k33 = fig('t03-girth-question', 1)
+    for (const g of [prism, k33]) { const ix = new GraphIndex(g); expect(ix.vertexIds.length).toBe(6); expect(degs(ix)).toEqual([3]) }
+    expect(A.girth(new GraphIndex(prism))).toBe(3)
+    expect(A.girth(new GraphIndex(k33))).toBe(4)
+    expect(A.isCycleEdgeSet(prism, cls(prism, 'cycle'))).toBe(true)
+    expect(cls(prism, 'cycle').size).toBe(3)
+  })
+  it('stepper: K_{3,3} 3-regular, u1 has neighbours w1 w2 w3; cycles of length 6 and 4; the dashed edge u1u2 is absent; girth 4', () => {
+    const s = steps('t03-girth-k33'), ix = new GraphIndex(s[0])
+    expect(degs(ix)).toEqual([3])
+    expect([...ix.neighbors('u1')].sort()).toEqual(['w1', 'w2', 'w3'])
+    expect(A.isCycleEdgeSet(s[1], cls(s[1], 'cycle'))).toBe(true); expect(cls(s[1], 'cycle').size).toBe(6)
+    expect(A.isCycleEdgeSet(s[2], cls(s[2], 'cycle'))).toBe(true); expect(cls(s[2], 'cycle').size).toBe(4)
+    expect(A.girth(ix)).toBe(4)
+    expect(s[3].edges.filter(e => e.classes.includes('dashed')).map(e => [e.tail[0], e.head[0]])).toEqual([['u1', 'u2']])
+  })
+  it('families: K_n girth 3 (n = 3..6), K_{m,n} girth 4 (m, n = 2..4), C_n girth n; Petersen 0,1,2,3,4 is a 5-cycle', () => {
+    for (let n = 3; n <= 6; n++) expect(A.girth(new GraphIndex(complete(n)))).toBe(3)
+    for (let m = 2; m <= 4; m++) for (let n = 2; n <= 4; n++) expect(A.girth(new GraphIndex(completeBipartite(m, n)))).toBe(4)
+    for (let n = 3; n <= 8; n++) expect(A.girth(new GraphIndex(cycle(n)))).toBe(n)
+    const g = fig('t03-petersen'), five = (g.marks.five ?? []).map(x => x.replace(/^@/, ''))
+    expect(five.length).toBe(5)
+    expect(A.isCycleEdgeSet(g, new Set(five))).toBe(true)
+  })
+  it('quizzes: K_{3,3} + u1u2 has degrees 4,4,3,3,3,3 and girth 3; P_3 is acyclic; C_6 girth 6; K_4 girth 3', () => {
+    const g = fig('t03-girth-k33'), ix = new GraphIndex({ ...g, edges: [...g.edges, { ...g.edges[0], id: 'new', tail: ['u1'], head: ['u2'], classes: [] }] })
+    expect(A.degreeSequence(ix)).toEqual([4, 4, 3, 3, 3, 3])
+    expect(A.girth(ix)).toBe(3)
+    const step4 = steps('t03-girth-k33')[3]
+    expect(A.girth(new GraphIndex(step4))).toBe(3) // the dashed edge drawn in, as the quiz asks
+    expect(A.girth(new GraphIndex(cycle(6)))).toBe(6)
+    expect(A.girth(new GraphIndex(complete(4)))).toBe(3)
+    expect(pathGraph(3).vertices.length).toBe(4); expect(A.girth(new GraphIndex(pathGraph(3)))).toBe(Infinity)
   })
 })
