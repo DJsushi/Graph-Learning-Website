@@ -1596,3 +1596,54 @@ describe('distance example figure (t02)', () => {
     expect(A.components(new GraphIndex(h)).some(c => c.includes('u') && c.includes('x'))).toBe(false)
   })
 })
+
+describe('union-find / Kruskal complexity walkthroughs (a01)', () => {
+  const g = fig('a01-complexity-loop')
+  const h = fig('a01-complexity-sum')
+  const n = g.vertices.length, m = g.edges.length
+  const sorted = [...g.edges].sort((x, y) => num(x.data.w) - num(y.data.w))
+  // Kruskal with the operation counts the steps state: MAKE-SET, FIND-SET, UNION.
+  const comp = new Map(g.vertices.map(v => [v.id, v.id]))
+  let finds = 0, unions = 0
+  const accepted: string[] = [], rejected: string[] = []
+  for (const e of sorted) {
+    finds += 2
+    const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+    if (a !== b) { unions++; accepted.push(name(g, e.id)); for (const [k, c] of comp) if (c === b) comp.set(k, a) } else rejected.push(name(g, e.id))
+  }
+  it('same graph as the running example, 8 vertices and 12 edges', () => {
+    expect([n, m]).toEqual([8, 12])
+    expect(h.vertices.length).toBe(8)
+    expect(h.edges.length).toBe(12)
+    const ex = fig('a01-example-graph')
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+  })
+  it('sorted order cf de fh ab ef dg ce ac bd gh bc eg', () => {
+    expect(sorted.map(e => name(g, e.id))).toEqual(['cf', 'de', 'fh', 'ab', 'ef', 'dg', 'ce', 'ac', 'bd', 'gh', 'bc', 'eg'])
+  })
+  it('24 FIND-SET calls, 7 UNION calls, 5 rejected edges; 31 loop operations, 39 with MAKE-SET', () => {
+    expect(finds).toBe(24)
+    expect(unions).toBe(7)
+    expect(unions).toBe(n - 1)
+    expect(rejected.sort()).toEqual(['bc', 'bd', 'ce', 'eg', 'gh'])
+    expect(finds + unions).toBe(31)
+    expect(finds + unions).toBeLessThanOrEqual(3 * m)
+    expect(n + finds + unions).toBe(39)
+    expect(m).toBeGreaterThanOrEqual(n - 1)
+  })
+  it('tree class and marked edges are the accepted ones', () => {
+    expect(accepted.sort()).toEqual(['ab', 'ac', 'cf', 'de', 'dg', 'ef', 'fh'])
+    expect(new Set(mstEdges(g)).size).toBe(7)
+    expect(weight(g, mstEdges(g))).toBe(29)
+  })
+  it('numbers of the sum figure: log2 8 = 3, log2 12 ~ 3.58, m <= n^2, 12 against 64, 6', () => {
+    expect(Math.log2(n)).toBe(3)
+    expect(Math.log2(m)).toBeCloseTo(3.585, 2)
+    expect(m).toBeLessThanOrEqual(n * n)
+    expect(n * n).toBe(64)
+    expect(2 * Math.log2(n)).toBe(6)
+    expect(Math.log2(m)).toBeLessThanOrEqual(2 * Math.log2(n))
+    expect(Math.log2(n)).toBeLessThanOrEqual(2 * Math.log2(m))
+  })
+})
