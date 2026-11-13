@@ -2039,3 +2039,117 @@ describe('KKT complexity figures (a01)', () => {
     expect(marks.below).toEqual(['l1', 'l2', 'k1', 'k2'])
   })
 })
+
+describe('Ford–Fulkerson analysis (a02-ffa-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const flow = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.f)]))
+  const cap = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.c)]))
+  const value = (g: GraphData) => g.edges.reduce((z, e) => z + (e.tail[0] === 's' ? num(e.data.f) : 0), 0)
+  const isFlow = (g: GraphData) => {
+    for (const e of g.edges) { expect(num(e.data.f)).toBeGreaterThanOrEqual(0); expect(num(e.data.f)).toBeLessThanOrEqual(num(e.data.c)) }
+    for (const v of ['a', 'b', 'c', 'd'])
+      expect(g.edges.filter(e => e.head[0] === v).reduce((z, e) => z + num(e.data.f), 0))
+        .toBe(g.edges.filter(e => e.tail[0] === v).reduce((z, e) => z + num(e.data.f), 0))
+  }
+  // residual capacities of a flow: forward c - f when positive, reverse f when positive
+  const residual = (c: Record<string, number>, f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c)) { if (c[k] > f[k]) r[k] = c[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const augment = (f: Record<string, number>, path: string, d: number) => {
+    const g = { ...f }
+    for (let i = 0; i + 1 < path.length; i++) { const e = path[i] + path[i + 1]; if (e in g) g[e] += d; else g[path[i + 1] + path[i]] -= d }
+    return g
+  }
+  const bottleneck = (r: Record<string, number>, path: string) => Math.min(...[...path].slice(0, -1).map((u, i) => r[u + path[i + 1]]))
+
+  it('integrality figure: integral flows of values 0, 8, 10, 19; bottlenecks 8, 2, 7, 2, each at least 1', () => {
+    const S = steps('a02-ffa-integral')
+    expect(S.length).toBe(5)
+    const c = cap(S[0])
+    expect(Object.keys(c).length).toBe(9)
+    S.forEach(g => { isFlow(g); expect(Object.values(flow(g)).every(Number.isInteger)).toBe(true); expect(cap(g)).toEqual(c) })
+    expect(S.map(value)).toEqual([0, 0, 8, 10, 19])
+    // start: residual capacities are the capacities (all 9 edges)
+    expect(residual(c, flow(S[0]))).toEqual(c)
+    // iteration 1: path s a d t, residual capacities 10, 8, 10
+    const f1 = augment(flow(S[0]), 'sadt', 8)
+    expect([...'sadt'].slice(0, -1).map((u, i) => residual(c, flow(S[0]))[u + 'sadt'[i + 1]])).toEqual([10, 8, 10])
+    expect(bottleneck(residual(c, flow(S[0])), 'sadt')).toBe(8)
+    expect(f1).toEqual(flow(S[2]))
+    // iteration 2: path s a b d t, residual capacities 2, 2, 9, 2 (as on the page augmenting-paths)
+    expect(bottleneck(residual(c, f1), 'sabdt')).toBe(2)
+    const f2 = augment(f1, 'sabdt', 2)
+    expect(f2).toEqual(flow(S[3]))
+    // iteration 3: path s b d c t, bottleneck 7; iteration 4: s b a c t, bottleneck 2 (b -> a cancels a -> b)
+    expect(bottleneck(residual(c, f2), 'sbdct')).toBe(7)
+    const f3 = augment(f2, 'sbdct', 7)
+    expect(bottleneck(residual(c, f3), 'sbact')).toBe(2)
+    const f4 = augment(f3, 'sbact', 2)
+    expect(f4).toEqual(flow(S[4]))
+    expect(f4.ab).toBe(0)
+    expect(maxFlowValue(S[0], 's', 't').value).toBe(19)
+    // every gain is a whole number of at least 1
+    expect([8, 2, 7, 2].every(d => Number.isInteger(d) && d >= 1)).toBe(true)
+    expect(8 + 2 + 7 + 2).toBe(19)
+    expect(S[1].marks.P).toEqual(S[1].edges.filter(e => ['sa', 'ad', 'dt'].includes(name(S[1], e.id))).map(e => '@' + e.id))
+  })
+
+  it('bound figure: cut around s has capacity 20, 2 edges leave s, n = 6, C = 10, (n-1)C = 50, nC = 60, 4 iterations', () => {
+    const S = steps('a02-ffa-bound')
+    expect(S.length).toBe(5)
+    const g = S[0]
+    isFlow(g)
+    const n = g.vertices.length, m = g.edges.length
+    expect([n, m]).toEqual([6, 9])
+    const C = Math.max(...g.edges.map(e => num(e.data.c)))
+    expect(C).toBe(10)
+    expect(cutCapacity(g, new Set(['s']))).toBe(20)
+    expect(g.edges.filter(e => e.tail[0] === 's').map(e => name(g, e.id))).toEqual(['sa', 'sb'])
+    expect(value(g)).toBe(19)
+    expect(19).toBeLessThanOrEqual(20)
+    expect(maxFlowValue(g, 's', 't').value).toBe(19)
+    expect((n - 1) * C).toBe(50)
+    expect(n * C).toBe(60)
+    expect(S[0].vertices.length - 1).toBe(5)
+    expect(S[0].marks.T).toEqual(['a', 'b', 'c', 'd', 't'])
+    expect(S[1].marks.cross.length).toBe(2)
+    expect(cutCapacity(g, new Set(['s']))).toBeLessThanOrEqual((n - 1) * C)
+    // the demo uses 4 iterations, below the bound
+    expect(4).toBeLessThanOrEqual((n - 1) * C)
+    // the final flow is that of the integrality figure
+    expect(flow(g)).toEqual(flow(steps('a02-ffa-integral')[4]))
+  })
+
+  it('time figure: G_f2 has 10 edges (at most 2m = 18), P = s b d c t has 4 edges (at most 5) and bottleneck 7; G_f3 has 12 edges', () => {
+    const S = steps('a02-ffa-time')
+    expect(S.length).toBe(4)
+    const I = steps('a02-ffa-integral')
+    const c = cap(I[0]), f2 = flow(I[3])
+    const res = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.c)]))
+    expect(res(S[0])).toEqual(residual(c, f2))
+    expect(S[0].edges.length).toBe(10)
+    expect(2 * Object.keys(c).length).toBe(18)
+    expect(S[1].marks.P.length).toBe(4)
+    expect(bottleneck(res(S[0]), 'sbdct')).toBe(7)
+    expect([10, 7, 9, 10]).toEqual([...'sbdct'].slice(0, -1).map((u, i) => res(S[0])[u + 'sbdct'[i + 1]]))
+    expect(4).toBeLessThanOrEqual(6 - 1)
+    const f3 = augment(f2, 'sbdct', 7)
+    expect(res(S[2])).toEqual(residual(c, f3))
+    expect(S[2].edges.length).toBe(12)
+    // only edges of P and their reverses change; b -> d disappears, three reverse edges appear
+    const r2 = residual(c, f2), r3 = residual(c, f3)
+    const onP = new Set(['sb', 'bd', 'dc', 'ct', 'bs', 'db', 'cd', 'tc'])
+    const changed = [...new Set([...Object.keys(r2), ...Object.keys(r3)])].filter(k => r2[k] !== r3[k])
+    expect(changed.every(k => onP.has(k))).toBe(true)
+    expect(Object.keys(r2).filter(k => !(k in r3))).toEqual(['bd'])
+    expect(Object.keys(r3).filter(k => !(k in r2)).sort()).toEqual(['bs', 'cd', 'tc'])
+    // the unchanged edges are the muted ones
+    const unchanged = Object.keys(r3).filter(k => r2[k] === r3[k]).sort()
+    expect(unchanged).toEqual(['ac', 'as', 'ba', 'da', 'td'])
+    expect(S[3].edges.filter(e => e.classes.includes('muted')).map(e => name(S[3], e.id)).sort()).toEqual(unchanged)
+    // total time: at most nC = 60 iterations of O(m)
+    expect(6 * 10).toBe(60)
+  })
+})
