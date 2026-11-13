@@ -8,10 +8,10 @@ stage: split
 status: reviewed
 ---
 
-Borůvka (1926), designing the electrical network of Moravia, grew **blue trees everywhere at once**: start with each vertex as a one-vertex blue
+Borůvka (1926), designing the electrical network of Moravia, grew **trees everywhere at once**: start with each vertex as a one-vertex
 tree; for each tree choose the lightest edge leaving it (it belongs to the [[def:mst|MST]] by the cut property); merge the trees joined by the
 selected edges; repeat until a single tree remains. Each
-iteration of the outer loop is called a **phase**.
+iteration of the outer loop is called a **phase**.<!-- REVIEW: removed "blue" from the intro (the lecture's colour); the player draws each component in its own colour. -->
 
 ::: algorithm {#alg:boruvka title="Borůvka's algorithm" source="algorithms/01 p17–18"}
 **Assumption:** all edge weights are distinct.
