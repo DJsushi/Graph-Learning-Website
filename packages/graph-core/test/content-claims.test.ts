@@ -3,7 +3,7 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadContent } from '../../content/index'
 import { parseGraph } from '../src/dsl/parser'
-import { ALGORITHMS, collect, cutCapacity, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
+import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
@@ -1773,5 +1773,114 @@ describe('MST verification walkthroughs (a01)', () => {
     expect(new Set(marked(h, 'e'))).toEqual(new Set(ids(h, ['ce'])))
     expect(new Set(marked(h, 'C'))).toEqual(new Set(ids(h, ['ce', 'cf', 'ef'])))
     expect(new Set(marked(h, 'P'))).toEqual(new Set(ids(h, ['cf', 'ef'])))
+  })
+})
+
+describe('sampling lemma figures (a01)', () => {
+  const ex = fig('a01-example-graph')
+  const s = fig('a01-sampling-example')
+  const pr = fig('a01-sampling-process')
+  const ct = fig('a01-sampling-count')
+  const nm = (x: GraphData, ids: Iterable<string>) => [...ids].map(id => name(x, id)).sort()
+  const cls = (x: GraphData, c: string) => nm(x, x.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  const marked = (x: GraphData, mk: string) => nm(x, (x.marks?.[mk] ?? []).map(t => t.replace(/^@/, '')))
+  const w = (x: GraphData, n: string) => num(x.edges.find(e => name(x, e.id) === n)!.data.w)
+  const order = edgeOrder(s).map(e => name(s, e.id))
+  const sample = new Set(s.edges.filter(e => !e.classes.includes('dashed')).map(e => name(s, e.id)))
+  // The process of the proof: Kruskal on G, an edge enters L when it joins two trees, and F when it is also sampled.
+  const run = (smp: Set<string>, stopAt?: string) => {
+    const p = new Map(s.vertices.map(v => [v.id, v.id]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    const L: string[] = [], F: string[] = []
+    for (const e of order) {
+      if (e === stopAt) return { L, F, joined: find(e[0]) === find(e[1]) }
+      if (find(e[0]) !== find(e[1])) { L.push(e); if (smp.has(e)) { F.push(e); p.set(find(e[0]), find(e[1])) } }
+    }
+    return { L, F, joined: false }
+  }
+  // w_F(e) by the definition: heaviest edge on the F-path, or Infinity.
+  const wF = (F: string[], a: string, b: string): number => {
+    const walk = (v: string, seen: string[]): number[] | null => {
+      if (v === b) return []
+      for (const e of F) {
+        const o = e[0] === v ? e[1] : e[1] === v ? e[0] : null
+        if (o && !seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [w(s, e), ...r] }
+      }
+      return null
+    }
+    const r = walk(a, [a])
+    return r ? Math.max(...r) : Infinity
+  }
+  const { L, F } = run(sample)
+  it('the MSF panel weighs 6 and is the MSF; the other panel is a spanning forest of weight 7', () => {
+    const m = fig('a01-msf', 0), o = fig('a01-msf', 1)
+    const tree = (x: GraphData) => new Set(x.edges.filter(e => e.classes.includes('tree')).map(e => e.id))
+    expect(tree(m)).toEqual(mstEdges(m))
+    expect(weight(m, tree(m))).toBe(6)
+    expect(weight(o, tree(o))).toBe(7)
+    expect(nm(o, tree(o))).toEqual(['ab', 'ac', 'de', 'ef'])
+  })
+  it('same graph as the running example, n = 8; the sample has 8 of 12 edges and leaves a alone', () => {
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    for (const x of [s, pr, ct]) expect(ws(x)).toEqual(ws(ex))
+    expect(s.vertices.length).toBe(8)
+    expect(sample.size).toBe(8)
+    expect(cls(s, 'dashed')).toEqual(['ab', 'ac', 'bd', 'gh'])
+    expect([...sample].some(e => e.includes('a'))).toBe(false)
+    expect(order[0]).toBe('cf')
+    expect(order.slice(0, 3).map(e => w(s, e))).toEqual([1, 2, 3])
+    expect(order[11]).toBe('eg')
+  })
+  it('F is the MSF of the sample (6 edges); L is the set of F-light edges (9); ce, gh, eg are F-heavy', () => {
+    const H: GraphData = { ...s, edges: s.edges.filter(e => sample.has(name(s, e.id))) }
+    expect(F.slice().sort()).toEqual(nm(s, mstEdges(H)))
+    expect(F.slice().sort()).toEqual(cls(s, 'tree'))
+    expect(F.length).toBe(6)
+    const light = order.filter(e => w(s, e) <= wF(F, e[0], e[1]))
+    expect(L.slice().sort()).toEqual(light.slice().sort())
+    expect(L.length).toBe(9)
+    expect(order.filter(e => !light.includes(e)).sort()).toEqual(['ce', 'eg', 'gh'])
+    expect(cls(s, 'muted')).toEqual(['ce', 'eg', 'gh'])
+  })
+  it('the steps: ab, ce, bc and bd', () => {
+    expect(run(sample, 'ab').F.sort()).toEqual(['cf', 'de', 'fh'])
+    expect(run(sample, 'ab').joined).toBe(false)
+    expect(run(sample, 'ce').joined).toBe(true)
+    expect([w(s, 'ce'), w(s, 'cf'), w(s, 'ef')]).toEqual([7, 1, 5])
+    expect(wF(F, 'c', 'e')).toBe(5)
+    expect(run(sample, 'bc').joined).toBe(false)
+    expect(F).toContain('bc')
+    expect(w(s, 'bc')).toBe(11)
+    const atBd = run(sample, 'bd')
+    expect(atBd.joined).toBe(false)
+    expect(atBd.F.sort()).toEqual(['cf', 'de', 'dg', 'ef', 'fh'])
+    expect(F).not.toContain('bd')
+    expect([w(s, 'bd'), wF(F, 'b', 'd')]).toEqual([9, 11])
+  })
+  it('over all 4096 samples E|L| = 10.79, E|F| = 5.39 = E|L| / 2, below (n - 1)/p = 14 and n/p = 16', () => {
+    let sL = 0, sF = 0
+    const N = 1 << order.length
+    for (let m = 0; m < N; m++) {
+      const r = run(new Set(order.filter((_, i) => (m >> i) & 1)))
+      sL += r.L.length; sF += r.F.length
+    }
+    expect(N).toBe(4096)
+    expect((sL / N).toFixed(2)).toBe('10.79')
+    expect((sF / N).toFixed(2)).toBe('5.39')
+    expect(2 * sF).toBe(sL)
+    expect([(8 - 1) / 0.5, 8 / 0.5]).toEqual([14, 16])
+  })
+  it('the marks match', () => {
+    for (const x of [pr, ct]) {
+      expect(marked(x, 'L')).toEqual(L.slice().sort())
+      expect(marked(x, 'F')).toEqual(F.slice().sort())
+      expect(marked(x, 'bd')).toEqual(['bd'])
+    }
+    expect(marked(pr, 'out')).toEqual(cls(s, 'dashed'))
+    expect(marked(pr, 'heavy')).toEqual(['ce', 'eg', 'gh'])
+    expect(marked(pr, 'Pce')).toEqual(['cf', 'ef'])
+    expect(marked(pr, 'Pbd')).toEqual(['bc', 'cf', 'de', 'ef'])
+    expect(marked(pr, 'first')).toEqual(['cf'])
+    expect(marked(ct, 'before')).toEqual(run(sample, 'bd').F.sort())
   })
 })
