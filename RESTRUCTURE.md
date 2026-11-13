@@ -221,7 +221,7 @@ the rows at any time.
 | T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
 | T4.33 | `BACKLOG.md` D1 (budget checks for taught pages), needed before the rewrites below. Agent: `coder`. Added by the owner, 2026-11-13. | | a9b449b |
 | T4.34 | Taught rewrite of `theory/basics/multigraphs-and-digraphs.md`. Rows T4.34 to T4.44: the theory pages that no writer touched (no proof in the notes, enough figures), owner 2026-11-13. Prompt §1.2 "Full rewrite", pipeline §1.4, writer Opus. | | b1c08ce |
-| T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | |
+| T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | 961bd17 |
 | T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | |
 | T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | |
 | T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | |
@@ -589,6 +589,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.10 (`degrees/regular-graphs-of-large-girth.md`): no way to show several graphs side by side in one figure (G, H and F of the construction), so H gets its own step. The steps use a toy instance (k = 5, d = 2) because a real one is too large to draw.
 
 - T4.12 (`chordal/two-simplicial-vertices.md`): no two-graph view of G[A ∪ X] and G − A; muting the other part stands in.
+
+- T4.35 (`basics/isomorphism.md`): a stepper draws only panel 0, so G and H share one graph in both new steppers.
 
 ### Open questions from Phase 4 writers
 
