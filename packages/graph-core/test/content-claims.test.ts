@@ -1718,3 +1718,60 @@ describe('Borůvka complexity walkthroughs (a01)', () => {
     expect([w('ac'), w('ef')]).toEqual([8, 5])
   })
 })
+
+describe('MST verification walkthroughs (a01)', () => {
+  const g = fig('a01-verif-all-heavy')
+  const h = fig('a01-verif-converse')
+  const ex = fig('a01-example-graph')
+  const marked = (x: GraphData, mk: string) => (x.marks?.[mk] ?? []).map(s => s.replace(/^@/, ''))
+  const ids = (x: GraphData, ns: string[]) => ns.map(s => x.edges.find(e => name(x, e.id) === s)!.id)
+  const treeNames = ['ab', 'ac', 'cf', 'de', 'dg', 'ef', 'fh']
+  const outside = ['bc', 'bd', 'ce', 'eg', 'gh']
+  // w_T(e): heaviest edge on the tree path between the ends of e.
+  const wT = (x: GraphData, a: string, b: string) => {
+    const t = x.edges.filter(e => treeNames.includes(name(x, e.id)))
+    const walk = (v: string, seen: string[]): number[] | null => {
+      if (v === b) return []
+      for (const e of t) {
+        const o = e.tail[0] === v ? e.head[0] : e.head[0] === v ? e.tail[0] : null
+        if (o && !seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [num(e.data.w), ...r] }
+      }
+      return null
+    }
+    return Math.max(...walk(a, [a])!)
+  }
+  const w = (x: GraphData, s: string) => num(x.edges.find(e => name(x, e.id) === s)!.data.w)
+  it('same graph as the running example; T is its MST with 7 edges, n = 8, 5 edges outside', () => {
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+    expect(ws(h)).toEqual(ws(ex))
+    expect(g.vertices.length).toBe(8)
+    expect(new Set(mstEdges(g))).toEqual(new Set(ids(g, treeNames)))
+    expect(treeNames.length).toBe(7)
+    expect(g.edges.length - treeNames.length).toBe(5)
+  })
+  it('w_T of the five outside edges is 8, 8, 5, 6, 6 and each edge is T-heavy', () => {
+    expect(outside.map(s => wT(g, s[0], s[1]))).toEqual([8, 8, 5, 6, 6])
+    expect(outside.map(s => w(g, s))).toEqual([11, 9, 7, 12, 10])
+    for (const s of outside) expect(w(g, s)).toBeGreaterThan(wT(g, s[0], s[1]))
+  })
+  it('bc closes the cycle a b c: 11 against 4 and 8 (and w_T = max(4, 8) = 8)', () => {
+    expect([w(g, 'bc'), w(g, 'ab'), w(g, 'ac')]).toEqual([11, 4, 8])
+    expect(wT(g, 'b', 'c')).toBe(8)
+  })
+  it('ce closes the cycle c f e: 7 against 1 and 5, w_T(ce) = 5', () => {
+    expect([w(h, 'ce'), w(h, 'cf'), w(h, 'ef')]).toEqual([7, 1, 5])
+    expect(wT(h, 'c', 'e')).toBe(5)
+  })
+  it('the marks match', () => {
+    for (const x of [g, h]) {
+      expect(new Set(marked(x, 'T'))).toEqual(new Set(ids(x, treeNames)))
+      expect(new Set(marked(x, 'N'))).toEqual(new Set(ids(x, outside)))
+    }
+    expect(new Set(marked(g, 'e'))).toEqual(new Set(ids(g, ['bc'])))
+    expect(new Set(marked(g, 'C'))).toEqual(new Set(ids(g, ['ab', 'ac', 'bc'])))
+    expect(new Set(marked(h, 'e'))).toEqual(new Set(ids(h, ['ce'])))
+    expect(new Set(marked(h, 'C'))).toEqual(new Set(ids(h, ['ce', 'cf', 'ef'])))
+    expect(new Set(marked(h, 'P'))).toEqual(new Set(ids(h, ['cf', 'ef'])))
+  })
+})
