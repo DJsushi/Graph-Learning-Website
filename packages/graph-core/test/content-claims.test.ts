@@ -2814,4 +2814,46 @@ describe('Unit-capacity networks (a02-unit-levels, a02-unit-phases, a02-unit-res
     expect(2 * 3).toBe(6)
     expect(Gf.filter(e => (e === 'sb' || e === 'bc' || e === 'cd' || e === 'dt')).length).toBe(4)
   })
+  it('global-minimum-cuts walkthroughs: f(a, t) = 18, 13, 13, 13, 17 for t = b..f, lambda = 13 reached only by {c, d, e}; U = {a, b} has capacity 17 = f(a, f)', () => {
+    const g = fig('a03-network')
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    const t = (id: string) => index.figureById.get(id)!
+    for (const id of ['a03-gmc-lower', 'a03-gmc-upper']) expect(sig(fig(id))).toBe(sig(g))
+    // a03-gmc-time: undirected base graph is G; its step 1 replaces af by two arcs of capacity 8
+    expect(sig(fig('a03-gmc-time'))).toBe(sig(g))
+    const steps = (id: string) => parseGraph(t(id).source, t(id).info).panels[0].steps
+    const arcs = steps('a03-gmc-time')[0].graph.edges.filter(e => e.directed)
+    expect(arcs.map(e => e.tail[0] + e.head[0] + num(e.data.c)).sort()).toEqual(['af8', 'fa8'])
+    expect(g.vertices.length).toBe(6)
+    expect(g.vertices.length - 1).toBe(5)
+    const f = (p: string, q: string) => minSTCut(g, p, q).value
+    const vals = ['b', 'c', 'd', 'e', 'f'].map(q => f('a', q))
+    expect(vals).toEqual([18, 13, 13, 13, 17])
+    expect(Math.min(...vals)).toBe(13)
+    expect(globalMinCut(g).value).toBe(13)
+    const V = g.vertices.map(v => v.id)
+    const cap = (S: string[]) => cutCapacity(g, new Set(S))
+    const subsets: string[][] = []
+    for (let m = 1; m < (1 << V.length) - 1; m++) subsets.push(V.filter((_, i) => (m >> i) & 1))
+    // the minimum cut is unique: {c, d, e} against {a, b, f}
+    expect(subsets.filter(S => cap(S) === 13).map(S => S.join('')).sort()).toEqual(['abf', 'cde'])
+    expect(cap(['c', 'd', 'e'])).toBe(13)
+    // U = {a, b}: unique minimum a–f cut, capacity 17; its edges af bf bc be have capacities 8, 3, 4, 2
+    expect(subsets.filter(S => S.includes('a') && !S.includes('f') && cap(S) === 17).map(S => S.join(''))).toEqual(['ab'])
+    expect(cap(['a', 'b'])).toBe(17)
+    expect(8 + 3 + 4 + 2).toBe(17)
+    // thick/cut edges in the figures
+    const cutSum = (id: string, step: number, cls: string) => {
+      const h = steps(id)[step].graph
+      return h.edges.filter(e => e.classes.includes(cls)).reduce((z, e) => z + num(e.data.c), 0)
+    }
+    expect([cutSum('a03-gmc-lower', 1, 'bold'), cutSum('a03-gmc-lower', 2, 'cut'), cutSum('a03-gmc-lower', 3, 'cut')]).toEqual([17, 17, 13])
+    expect([cutSum('a03-gmc-upper', 0, 'cut'), cutSum('a03-gmc-upper', 3, 'bold')]).toEqual([13, 13])
+    // U = {a, b} is not empty and not V; a lies in U and f does not; the far side {c, d, e} is non-empty, d is on it
+    expect(cap(['a', 'b'])).toBeGreaterThanOrEqual(13)
+    // the arc a→f leaves U = {a, b}, f→a does not: 8 of the 17
+    expect(new Set(['a', 'b']).has('a') && !new Set(['a', 'b']).has('f')).toBe(true)
+    // MPM time: 5 runs of O(n^3); (n - 1) < n
+    expect(5).toBeLessThan(6)
+  })
 })
