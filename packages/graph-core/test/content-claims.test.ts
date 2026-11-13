@@ -186,6 +186,56 @@ describe('minimum cuts lesson', () => {
     const sides = [X, new Set(['d', 'e', 'f'])]
     for (const S of sides) for (const p of S) for (const q of g.vertices.map(v => v.id).filter(v => !S.has(v))) expect(minSTCut(g, p, q).value).toBeLessThan(c)
   })
+  it('Gomory–Hu invariant walkthroughs: rounds x–s, y–x, z–a, a–b cut 5, 7, 6, 9 uniquely; f(x, a) = 5, G_B values 5 and 9', () => {
+    const g = fig('a03-ghc-round')
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    for (const id of ['a03-ghc-new-edge', 'a03-ghc-far-edge', 'a03-ghc-reattach', 'a03-ghc-swap']) expect(sig(fig(id))).toBe(sig(g))
+    const V = g.vertices.map(v => v.id)
+    const subsets: Set<string>[] = []
+    for (let m = 1; m < (1 << V.length) - 1; m++) subsets.push(new Set(V.filter((_, i) => (m >> i) & 1)))
+    // minimum p–q cuts of G with each block identified: [value, sides containing p]
+    const mins = (p: string, q: string, blocks: string[][] = []) => {
+      const ok = subsets.filter(U => U.has(p) && !U.has(q) && !blocks.some(b => b.some(v => U.has(v)) && b.some(v => !U.has(v))))
+      const k = Math.min(...ok.map(U => cutCapacity(g, U)))
+      return [k, ok.filter(U => cutCapacity(g, U) === k).map(U => [...U].sort().join(''))]
+    }
+    const { steps } = collect(ALGORITHMS['gomory-hu'], g, { pairs: 'x s, y x, z a, a b, b s' })
+    expect(steps.filter(s => s.line === 'mincut').map(s => /capacity \$(\d+)\$/.exec(s.message)![1]).slice(0, 4)).toEqual(['5', '7', '6', '9'])
+    // each round's minimum cut is unique: tree y–x–S–z with S = {a, b, s} before round 4, and A = {a, x, y, z}
+    expect(mins('x', 's')).toEqual([5, ['xy']])
+    expect(mins('y', 'x', [['a', 'b', 's', 'z']])).toEqual([7, ['y']])
+    expect(mins('z', 'a', [['x', 'y']])).toEqual([6, ['z']])
+    expect(mins('a', 'b', [['x', 'y']])).toEqual([9, ['axyz']])
+    const f = (p: string, q: string) => minSTCut(g, p, q).value
+    expect([f('y', 'x'), f('x', 's'), f('z', 'a'), f('a', 'b'), f('x', 'a')]).toEqual([7, 5, 6, 9, 5])
+    const c = (...S: string[]) => cutCapacity(g, new Set(S))
+    expect([c('y'), c('x', 'y'), c('z'), c('a', 'x', 'y', 'z'), 2 + 3 + 1 + 1 + 2]).toEqual([7, 5, 6, 9, 9])
+    // G_B with B = {b, s}: f(x, v_B) = 5 by the cut of {x, y} (1 + 1 + 3), f(v_B, a) = 9 by the cut of v_B, f(x, a) = 5
+    expect(mins('x', 'b', [['b', 's']])).toEqual([5, ['xy']])
+    expect(mins('b', 'a', [['b', 's']])).toEqual([9, ['bs']])
+    expect(mins('x', 'a', [['b', 's']])[0]).toBe(5)
+    expect(1 + 1 + 3).toBe(5)
+    // the thick edges of the steps that quote a capacity
+    const thick = (id: string, step: number) => {
+      const f0 = index.figureById.get(id)!
+      const h = parseGraph(f0.source, f0.info).panels[0].steps[step].graph
+      return h.edges.filter(e => e.classes.includes('bold')).reduce((z, e) => z + num(e.data.c ?? e.data.w), 0)
+    }
+    expect([thick('a03-ghc-round', 3), thick('a03-ghc-round', 4), thick('a03-ghc-new-edge', 0), thick('a03-ghc-new-edge', 2), thick('a03-ghc-new-edge', 4)]).toEqual([9, 9, 5, 6, 9])
+    expect([thick('a03-ghc-far-edge', 0), thick('a03-ghc-reattach', 0), thick('a03-ghc-reattach', 2)]).toEqual([7, 5, 6])
+    expect([1, 2, 5, 6, 7, 8].map(i => thick('a03-ghc-swap', i))).toEqual([5, 9, 5, 9, 9, 5])
+  })
+  it('Gomory–Hu correctness walkthroughs: path a, b, f, e, d with 18, 17, 13, 14; cuts {a, b} = 17 and {a, b, f} = 13', () => {
+    const key = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.w)).sort().join()
+    for (const id of ['a03-ghc-final-tree', 'a03-ghc-ft', 'a03-ghc-fg', 'a03-ghc-cut']) expect(key(fig(id))).toBe(key(tree))
+    expect([f('a', 'b'), f('b', 'f'), f('f', 'e'), f('e', 'd'), f('a', 'd')]).toEqual([18, 17, 13, 14, 13])
+    const c = (...S: string[]) => cutCapacity(g, new Set(S))
+    expect([c('a', 'b'), 8 + 4 + 3 + 2, c('a', 'b', 'f'), 4 + 2 + 2 + 3 + 2]).toEqual([17, 17, 13, 13])
+    expect(Math.min(18, 17, 13, 14)).toBe(13)
+    // round 5 of the lecture example splits {c, e} with the cut of {c}, of capacity 15; f and d go to the side of e
+    expect(minSTCut(g, 'c', 'e').value).toBe(15)
+    expect(g.vertices.length - 1).toBe(5)
+  })
   it('Karger players: seed 5 finds the minimum cut 2, seed 1 returns 4', () => {
     expect((collect(ALGORITHMS.karger, fig('a03-karger-good'), { seed: '5' }).result as any).value).toBe(2)
     expect((collect(ALGORITHMS.karger, fig('a03-karger-bad'), { seed: '1' }).result as any).value).toBe(4)
