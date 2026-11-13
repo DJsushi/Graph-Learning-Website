@@ -3038,3 +3038,48 @@ describe('cliques and independent sets page', () => {
     }
   })
 })
+
+describe('walks and paths page', () => {
+  const edgeOf = (ix: GraphIndex, u: string, v: string) => ix.edgesBetween(u, v)[0]?.id
+  /** The edge ids of the vertex sequence W, or undefined if some step is not an edge. */
+  const steps = (ix: GraphIndex, W: string[]) => {
+    const es = W.slice(1).map((v, i) => edgeOf(ix, W[i], v))
+    return es.every(Boolean) ? es : undefined
+  }
+  const G = fig('t02-walk-route'), ix = new GraphIndex(G)
+  const edgeSet = (g: GraphData) => g.edges.map(e => [...e.tail, ...e.head].sort().join('')).sort()
+  it('all four figures draw the same graph G', () => {
+    for (const id of ['t02-walk-steps', 't02-path-cycle', 't02-shortcut']) expect(edgeSet(fig(id))).toEqual(edgeSet(G))
+  })
+  it('opening: route a,b,c,d,b,e has length 5, uses every edge once, passes b twice; a,b,e has length 2 and distinct vertices; dist(a,e) = 2', () => {
+    const W = ['a', 'b', 'c', 'd', 'b', 'e'], es = steps(ix, W)!
+    expect(es.length).toBe(5)
+    expect(new Set(es).size).toBe(G.edges.length)
+    expect(W.filter(v => v === 'b').length).toBe(2)
+    expect(steps(ix, ['a', 'b', 'e'])!.length).toBe(2)
+    expect(A.bfsDistances(ix, 'a').get('e')).toBe(2)
+  })
+  it('worked example: (a,b,e,b,a) is a closed walk of length 4, five vertex entries, each of its two edges used twice; a and c are not adjacent', () => {
+    const W = ['a', 'b', 'e', 'b', 'a'], es = steps(new GraphIndex(fig('t02-walk-steps')), W)!
+    expect([W.length, es.length, W[0] === W[4]]).toEqual([5, 4, true])
+    expect(new Set(es).size).toBe(2)
+    expect(es.every(e => es.filter(f => f === e).length === 2)).toBe(true)
+    expect(ix.adjacent('a', 'c')).toBe(false)
+  })
+  it('path-cycle figure: dashed edges ab, be form a path a-b-e (P_2); solid triangle b, c, d is a cycle C_3', () => {
+    const g = fig('t02-path-cycle')
+    const path = new Set(g.edges.filter(e => e.classes.includes('path')).map(e => e.id))
+    const cyc = new Set(g.edges.filter(e => e.classes.includes('cycle')).map(e => e.id))
+    const p = new GraphIndex(A.subgraphOfEdges(g, path))
+    expect(p.vertexIds.slice().sort()).toEqual(['a', 'b', 'e'])
+    expect([p.degree('a'), p.degree('b'), p.degree('e'), path.size]).toEqual([1, 2, 1, 2])
+    expect(A.isCycleEdgeSet(g, cyc) && cyc.size === 3).toBe(true)
+    expect(new GraphIndex(A.subgraphOfEdges(g, cyc)).vertexIds.slice().sort()).toEqual(['b', 'c', 'd'])
+  })
+  it('quiz: 4 walks of length 2 start at a; a shortest a-d walk has length 2 (a,b,d)', () => {
+    const two = [...ix.neighbors('a')].flatMap(u => [...ix.neighbors(u)].map(w => ['a', u, w]))
+    expect(two.length).toBe(4)
+    expect(A.bfsDistances(ix, 'a').get('d')).toBe(2)
+    expect(steps(ix, ['a', 'b', 'd'])!.length).toBe(2)
+  })
+})
