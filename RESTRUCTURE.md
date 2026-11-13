@@ -229,7 +229,7 @@ the rows at any time.
 | T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | 1bff3ab |
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | 33de499 |
 | T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | 98a5ce2 |
-| T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | |
+| T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | 25a2ffa |
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | |
 | T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
