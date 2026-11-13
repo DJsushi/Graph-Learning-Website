@@ -2921,3 +2921,30 @@ describe('karger-success-probability iteration bounds', () => {
     expect(Math.exp(-2)).toBeGreaterThan(0.132)
   })
 })
+
+describe('multigraphs-and-digraphs page', () => {
+  // the value of epsilon as a string: 'v' for a loop, 'u>v' for an arc, 'u-v' (sorted) for an undirected edge
+  const eps = (e: GraphData['edges'][number]) => e.directed ? `${e.tail[0]}>${e.head[0]}` : e.tail[0] === e.head[0] ? e.tail[0] : [e.tail[0], e.head[0]].sort().join('-')
+  const parallelPairs = (g: GraphData) => g.edges.flatMap((e, i) => g.edges.slice(i + 1).filter(f => eps(f) === eps(e)).map(f => [e.id, f.id]))
+  it('lecture figure: 3 parallel c-d edges, loop at f, arcs g->e twice and e->g once; 4 parallel pairs (quiz)', () => {
+    const g = fig('t01-mixed-multigraph')
+    expect(g.edges.filter(e => eps(e) === 'c-d').length).toBe(3)
+    expect(g.edges.filter(e => eps(e) === 'f').length).toBe(1)
+    expect(g.edges.filter(e => e.directed).map(eps).sort()).toEqual(['e>g', 'g>e', 'g>e'])
+    expect(parallelPairs(g).length).toBe(4)
+  })
+  it('reading-epsilon stepper: values of epsilon, only e1 and e2 parallel', () => {
+    const g = fig('t01-reading-epsilon')
+    expect(Object.fromEntries(g.edges.map(e => [e.id, eps(e)]))).toEqual({ e1: 'u-v', e2: 'u-v', e3: 'x', e4: 'v>w', e5: 'w>v', e6: 'x-y', e7: 'y>w' })
+    expect(parallelPairs(g)).toEqual([['e1', 'e2']])
+  })
+  it('special cases: graph panel simple and undirected, digraph panel only arcs and injective (a->b, b->a), multigraph panel undirected with parallel a-b and loop at c', () => {
+    const [g, d, m] = [0, 1, 2].map(i => fig('t01-special-cases', i))
+    expect(g.edges.every(e => !e.directed && e.tail[0] !== e.head[0]) && parallelPairs(g).length === 0).toBe(true)
+    expect(d.edges.every(e => e.directed) && parallelPairs(d).length === 0).toBe(true)
+    expect(d.edges.map(eps)).toEqual(expect.arrayContaining(['a>b', 'b>a']))
+    expect(m.edges.every(e => !e.directed)).toBe(true)
+    expect(parallelPairs(m).map(p => eps(m.edges.find(e => e.id === p[0])!))).toEqual(['a-b'])
+    expect(m.edges.filter(e => e.tail[0] === e.head[0]).map(eps)).toEqual(['c'])
+  })
+})
