@@ -5,7 +5,7 @@ chapter: hamiltonian
 order: 2
 lectures: [t04]
 stage: split
-status: draft
+status: reviewed
 ---
 
 Unlike Euler tours (which traverse every *edge* once and have a simple characterisation), deciding whether a
@@ -22,6 +22,19 @@ $\delta(G) \ge k$ says that **every** vertex has at least $k$ [[def:adjacent|nei
 [[def:degree|degrees]]. Examples: $\delta(C_n) = 2$, $\delta(K_n) = n - 1$, $\delta(K_{m,n}) = \min(m, n)$. A graph with an
 isolated vertex has $\delta = 0$, however many edges the rest has.
 :::
+
+```graph id=t04-minimum-degree-example widget=figure
+caption: Each label is the degree. Left, $K_4$ minus an edge has $\delta = 2$, reached by the two highlighted vertices. Right, $K_4$ plus an isolated vertex has $\delta = 0$ (the highlighted vertex), although the other four vertices form a complete graph.
+intent: New figure. Example and non-example for the minimum degree; labels show the degrees, the highlighted vertices reach the minimum.
+layout: fixed
+vertex-label: "{d}"
+panel: $\delta = 2$
+a [d=3] @(1, 1); b [d=3] @(1, 0); c [d=2 class=current] @(0, 0.5); d [d=2 class=current] @(2, 0.5)
+a -- b; a -- c; b -- c; a -- d; b -- d
+panel: $\delta = 0$
+a [d=3] @(0, 1); b [d=3] @(1, 1); c [d=3] @(0, 0); d [d=3] @(1, 0); e [d=0 class=current] @(2, 0.5)
+a -- b; a -- c; a -- d; b -- c; b -- d; c -- d
+```
 
 ::: theorem {#thm:dirac-ore title="Dirac's and Ore's theorem" source="theory/2026-10-06 p5"}
 Let $G$ be a graph with $n = \abs{V(G)} \ge 3$ vertices, and assume
@@ -43,9 +56,19 @@ Hamiltonian by Dirac. Ore is more flexible: add to $K_4$ a vertex $w$ adjacent t
 Dirac fails, but each non-adjacent pair is $w$ and a vertex of degree $3$, with degree sum $5 \ge n$.
 :::
 
+```graph id=t04-ore-example widget=figure
+caption: Each label is the degree. $K_4$ plus a highlighted vertex of degree $2$ adjacent to two of its vertices. Here $n = 5$ and $2 < \frac{5}{2}$, so Dirac fails. The two non-adjacent pairs, the highlighted vertex with a degree-3 vertex, have degree sum $5 \ge n$, so Ore applies; the thick edges form a Hamiltonian cycle.
+intent: New figure. The Ore example of the intuition block: Dirac fails at the highlighted vertex, Ore holds, and a Hamiltonian cycle exists.
+layout: fixed
+vertex-label: "{d}"
+w [d=2 class=current] @(0, 0.5); a [d=4] @(1, 1); b [d=4] @(1, 0); c [d=3] @(2, 1); d [d=3] @(2, 0)
+w -- a [class=cycle]; w -- b [class=cycle]; a -- b; a -- c [class=cycle]; a -- d; b -- c; b -- d [class=cycle]; c -- d [class=cycle]
+```
+
 ::: pitfall
 Both conditions are **sufficient, not necessary**. The cycle $C_n$ ($n \ge 5$) is Hamiltonian although $\delta(C_n) = 2 < n/2$
-and non-adjacent degree sums are $4 < n$. So failing Dirac's or Ore's condition says nothing (see also the Petersen quiz below).
+and non-adjacent degree sums are $4 < n$. So failing Dirac's or Ore's condition says nothing (see also the [[theory/04-chordal-hamiltonian|Petersen quiz on the lecture page]]).
+<!-- REVIEW: the quiz q:t04-petersen-ore lives on the lecture page, not here; the link replaces "below". -->
 Ore's condition is required only for **non-adjacent** pairs.
 :::
 

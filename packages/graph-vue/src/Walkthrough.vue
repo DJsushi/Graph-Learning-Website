@@ -2,9 +2,10 @@
 // A walkthrough with a figure (CONTENT_CONVENTIONS.md 9): numbered steps beside (or under) a sticky stepper.
 // The active step follows scrolling, a click or focus on a step, the arrow keys on a step and the stepper's controls.
 import { nextTick, onBeforeUnmount, onMounted, provide, ref, watch } from 'vue'
-import { WALKTHROUGH, activeStep, scrollDelta } from './walkthrough'
+import { WALKTHROUGH, activeStep, figureHeight, scrollDelta } from './walkthrough'
 
 const root = ref<HTMLElement>()
+const body = ref<HTMLElement>()
 const step = ref(0)
 const els: HTMLElement[] = []
 let fromScroll = false
@@ -53,6 +54,17 @@ function place() {
   root.value?.style.setProperty('--ga-wt-top', `${px}px`)
 }
 
+// In one column the figure box has a maximum height; the drawing gets what the controls and the caption leave (a long caption wraps on a phone).
+// Beside the text the box has no maximum and the CSS value stays.
+function fit() {
+  const el = body.value, box = el?.querySelector<HTMLElement>(':scope > .ga-figure-anchor'), svg = box?.querySelector<SVGElement>('svg.gv-root')
+  if (!el || !box || !svg) return
+  const maxH = parseFloat(getComputedStyle(box).maxHeight)
+  if (!maxH) return el.style.removeProperty('--ga-fig-h')
+  el.style.setProperty('--ga-fig-h', `${figureHeight(maxH, box.scrollHeight - svg.getBoundingClientRect().height)}px`)
+}
+let ro: ResizeObserver | undefined
+
 let raf = 0
 function sync() {
   raf = 0
@@ -81,6 +93,12 @@ function onKey(ev: KeyboardEvent) {
 
 onMounted(() => {
   place()
+  // the width changes how the caption wraps; the figcaption is observed too so a late font or KaTeX is caught
+  ro = new ResizeObserver(fit)
+  if (body.value) ro.observe(body.value)
+  const cap = body.value?.querySelector('.ga-figure-anchor figcaption')
+  if (cap) ro.observe(cap)
+  fit()
   window.addEventListener('scroll', onScroll, { passive: true })
   window.addEventListener('resize', onScroll, { passive: true })
   window.addEventListener('scrollend', onScrollEnd)
@@ -91,11 +109,12 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', onScroll)
   window.removeEventListener('scrollend', onScrollEnd)
   cancelAnimationFrame(raf)
+  ro?.disconnect()
 })
 </script>
 
 <template>
   <div ref="root" class="ga-walkthrough" @keydown="onKey">
-    <div class="ga-wt-body"><slot /></div>
+    <div ref="body" class="ga-wt-body"><slot /></div>
   </div>
 </template>

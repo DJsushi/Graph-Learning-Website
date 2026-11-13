@@ -110,7 +110,7 @@ Third part: we apply B to $G'$ and translate the paths back to $G$.
 
 :::: walkthrough
 ```graph id=t05-b-to-a-back widget=stepper
-caption: Two edge-disjoint $s$–$t$ paths of $G'$ (red and blue) contract to two internally disjoint paths of $G$.
+caption: Two edge-disjoint $s$–$t$ paths of $G'$ (drawn in two different colours: one through $a$, one through $b$) contract to two internally disjoint paths of $G$.
 intent: New. The lecture (theory/2026-10-13 p5) stops before this part. Same $G'$ as the figures above.
 type: directed
 layout: fixed

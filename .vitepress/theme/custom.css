@@ -242,15 +242,33 @@
 .gv-vertex.source .gv-vertex-shape { fill: var(--gv-source); stroke-width: 2.4; }
 .gv-vertex.sink .gv-vertex-shape { fill: var(--gv-sink); stroke-width: 2.4; }
 .gv-vertex.rejected .gv-vertex-shape { stroke: var(--gv-cut); stroke-width: 2.6; }
-.gv-vertex.muted { opacity: 0.35; }
 .gv-vertex.selected .gv-vertex-shape { fill: var(--gv-select-soft); stroke: var(--gv-select); stroke-width: 3.6; }
 .gv-vertex.color1 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c1) 45%, var(--gv-paper)); } .gv-vertex.color2 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c2) 45%, var(--gv-paper)); }
 .gv-vertex.color3 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c3) 45%, var(--gv-paper)); } .gv-vertex.color4 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c4) 45%, var(--gv-paper)); }
 .gv-vertex.color5 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c5) 45%, var(--gv-paper)); } .gv-vertex.color6 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c6) 45%, var(--gv-paper)); }
 .gv-vertex.color7 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c7) 45%, var(--gv-paper)); } .gv-vertex.color8 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c8) 45%, var(--gv-paper)); }
+/* muted / spotlight-dimmed vertex: fade toward the paper instead of lowering opacity, so the opaque disc still hides edges behind it; class fills keep their hue */
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)) .gv-vertex-shape { fill: var(--gv-paper); stroke: color-mix(in srgb, var(--gv-ink) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).gv-dot .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-ink) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).highlight .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-accent-soft) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).current .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-accent-soft) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).visited .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-done) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).done .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-done) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).source .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-source) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).sink .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-sink) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).selected .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-select-soft) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color1 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c1) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color2 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c2) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color3 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c3) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color4 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c4) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color5 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c5) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color6 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c6) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color7 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c7) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).color8 .gv-vertex-shape { fill: color-mix(in srgb, color-mix(in srgb, var(--gv-c8) 45%, var(--gv-paper)) 35%, var(--gv-paper)); }
+:is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)) :is(.gv-vertex-label, .gv-fo) { opacity: 0.35; }
 
 /* spotlight of a mark (MarkLink): marked elements get the accent, the rest of that figure fades to 30% */
-.gv-spot .gv-vertex:not(.gv-marked), .gv-spot .gv-edge:not(.gv-marked), .gv-spot .gv-edge-label:not(.gv-marked),
+.gv-spot .gv-edge:not(.gv-marked), .gv-spot .gv-edge-label:not(.gv-marked),
 .gv-spot .gv-face:not(.gv-marked), .gv-spot .gv-group:not(.gv-marked), .gv-spot .gv-hyperedge:not(.gv-marked), .gv-spot .gv-hyperarc:not(.gv-marked) { opacity: 0.3; }
 .gv-vertex.gv-marked .gv-vertex-shape { stroke: var(--gv-accent); stroke-width: 3.6; }
 .gv-edge.gv-marked .gv-line { stroke: var(--gv-accent); stroke-width: 3.6; }

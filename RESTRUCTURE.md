@@ -25,7 +25,7 @@ board (§2) is the only state: a new session resumes from it.
 1. Work on branch `restructure`. Never push. Never touch `main`: it is the live site.
 2. Read §1 and §2 of this file. Open §3 to §6, `BACKLOG.md`, the convention files and source
    files only when a step tells you to.
-3. Take the first row of §2 that has no commit hash and is not marked `skip`. Do the rows in
+3. Take the first row of §2 that has no commit hash and is not marked `skip` or `deferred`. Do the rows in
    order; later rows depend on earlier ones. A `skip` row is never done (§2, Scope).
 4. Spawn the agent named in the row (§1.1, §1.2). When it returns, verify (§1.3), commit
    (Conventional Commits, task id in the subject: `feat(T1.3): entry lock`), and write the
@@ -215,10 +215,24 @@ the rows at any time.
 | T4.26 | `theory/trees/spanning-trees.md` | 4, not in the notes; entry removed in T4.0 | skip |
 | T4.27 | `theory/chordal/chordal-graphs.md` | 2, not in the notes | skip |
 | T4.28 | `theory/chordal/interval-graphs.md` | 6, not in the notes | skip |
-| T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171, `basics/graphs` 306d5d9, `basics/subgraphs` 1b0c3c1, `bipartite/bipartite-graphs` 7741daf. | | |
+| T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171, `basics/graphs` 306d5d9, `basics/subgraphs` 1b0c3c1, `bipartite/bipartite-graphs` 7741daf, `chordal/chordal-graphs` cfe4986, `chordal/simplicial-vertices` 5958c50, `degrees/degree-sequences` 27e341f, `hamiltonian/dirac-and-ore` db1ba44, `hamiltonian/hamiltonian-graphs` 7dad7c6, `menger/k-connectivity` d81e96d, `menger/mengers-theorem` fd0d973, `menger/paths-and-cuts` 2b9cc5d, `walks-connectivity/connected-components` 151d57e, `walks-connectivity/distance` 40e3556. | | 40e3556 |
 | T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | 548b857 |
 | T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches; t02: 1 mismatch, 5 additions; t03: 0 mismatches; t04: 1 mismatch; t05: 1 mismatch, 5 marked REVIEW (§6, Audit). | | 5e4e314 |
-| T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
+| T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | deferred |
+| T4.33 | `BACKLOG.md` D1 (budget checks for taught pages), needed before the rewrites below. Agent: `coder`. Added by the owner, 2026-11-13. | | a9b449b |
+| T4.34 | Taught rewrite of `theory/basics/multigraphs-and-digraphs.md`. Rows T4.34 to T4.44: the theory pages that no writer touched (no proof in the notes, enough figures), owner 2026-11-13. Prompt §1.2 "Full rewrite", pipeline §1.4, writer Opus. | | b1c08ce |
+| T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | 961bd17 |
+| T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | b9689e6 |
+| T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | 4f06c34 |
+| T4.46 | Walkthrough sticky figure at 390px: the figure box (`.ga-figure-anchor`, 341px) is shorter than figure plus caption, so the caption overflows by 12–81px and the scrolling step text runs over it (visual-qa 2026-11-13: `gomory-hu/correctness` 5 of 9 walkthroughs, `stoer-wagner-correctness`, `karger-success-probability`). Fix in the framework, not by shortening captions. Re-check those three pages at 390 with visual-qa. Agent: `coder`. | | 61f4961 |
+| T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | bf7df38 |
+| T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | 1bff3ab |
+| T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | 33de499 |
+| T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | 98a5ce2 |
+| T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | 25a2ffa |
+| T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
+| T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
+| T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
 
 **Gate C.** See §6.
 
@@ -231,37 +245,38 @@ After Gate C. Same pipeline.
 | T5.1 | `algorithms/mst/cut-and-cycle-properties.md` | 3, 3, not in the notes (01 p5 states both properties only) | skip |
 | T5.2 | `algorithms/mst/distinct-weights.md` | 7, 3, not in the notes (01 p5 states only); `cor:mst-unique` removed in T4.0 | skip |
 | T5.3 | `algorithms/mst/generalized-greedy.md` | 15, not in the notes; entry removed in T4.0 | skip |
-| T5.4 | `algorithms/mst/union-find.md` | 3 | |
-| T5.5 | `algorithms/mst/boruvka.md` | 4 | |
+| T5.4 | `algorithms/mst/union-find.md` | 3 | f94a22a |
+| T5.5 | `algorithms/mst/boruvka.md` | 4 | 0d8e01d |
 | T5.6 | `algorithms/mst/contractions.md` | 8, not in the notes (01 p20 states the lemma only) | skip |
 | T5.7 | `algorithms/mst/f-heavy-edges.md` | 2, not in the notes (01 p37 states the lemma only) | skip |
-| T5.8 | `algorithms/mst/verification.md` | 3 | |
-| T5.9 | `algorithms/mst/sampling-lemma.md` | 21 | |
-| T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | |
+| T5.8 | `algorithms/mst/verification.md` | 3 | 4672c9f |
+| T5.9 | `algorithms/mst/sampling-lemma.md` | 21 | a204aca |
+| T5.10 | `algorithms/mst/karger-klein-tarjan.md` | 8 | 101181b |
 | T5.11 | `algorithms/arborescences/reduced-weights.md` | 2, 3, not in the notes (01 p51–52 state only) | skip |
 | T5.12 | `algorithms/arborescences/edmonds-algorithm.md` | 11, not in the notes; entry removed in T4.0 | skip |
 | T5.13 | `algorithms/flows/cuts-in-networks.md` | 4, not in the notes; entry removed in T4.0 | skip |
 | T5.14 | `algorithms/flows/augmenting-paths.md` | 9, not in the notes (02 p12 states the lemma only) | skip |
 | T5.15 | `algorithms/flows/characterising-maximum-flows.md` | 7, 3, not in the notes (02 p6 and p14 state only) | skip |
-| T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | |
-| T5.17 | `algorithms/fast-flows/edmonds-karp-analysis.md` | 9, 8, 2 | |
+| T5.16 | `algorithms/flows/ford-fulkerson-analysis.md` | 4 | 2a8a3ae |
+| T5.17 | `algorithms/fast-flows/edmonds-karp-analysis.md` | 9, 8, 2 | d7309fc |
 | T5.18 | `algorithms/fast-flows/dinic.md` | 4, not in the notes (02 p37 states only) | skip |
-| T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | |
-| T5.20 | `algorithms/fast-flows/mpm.md` | 4, 1 | |
+| T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | e6d68f7 |
+| T5.20 | `algorithms/fast-flows/mpm.md` | 4, 1 | dbb44a1 |
 | T5.21 | `algorithms/flows/matchings-as-flows.md` | 4, not in the notes (02 p57 is a picture of the network only) | skip |
-| T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | |
+| T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | 5e436f9 |
 | T5.23 | `algorithms/gomory-hu/node-identification.md` | 6, not in the notes (03 p32 states the observation only) | skip |
 | T5.24 | `algorithms/gomory-hu/gomory-hu-trees.md` | 3, 4, not in the notes (03 p4 and p6 state only) | skip |
-| T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 (03 p17: "proof by picture") | |
-| T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16; skip the 4 of `cor:gomory-hu-contraction` (stated only, 03 p14) | |
+| T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 (03 p17: "proof by picture") | 7f98e2e |
+| T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16; skip the 4 of `cor:gomory-hu-contraction` (stated only, 03 p14) | abd9525 |
 | T5.27 | `algorithms/gomory-hu/triangle-inequality.md` | 3, not in the notes (03 p19 states Lemmas A and B only) | skip |
-| T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | |
-| T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | |
+| T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | 156ce7a |
+| T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | aab45b0 |
 | T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
-| T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | |
-| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | |
+| T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | 4fca56a |
+| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | ada79d0 |
 | T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
 | T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | |
+| T5.35 | Audit slides 01 to 03 against the algorithms concept pages, read-only, as T4.31: one run per slide deck (a01 to a03), `general-purpose` with `model: "opus"`, comparing with the PDFs under `resources/`. Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
 
 **Gate D.** See §6.
 
@@ -549,6 +564,28 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T4.6–T4.10 (2026-11-12): passed after fixes 7b71be6 (odd-cycles) and the T4.10 layout fix. Lesson for writers: a walkthrough figure gets a box of about 314×195 px at 1366; near-square layouts and group hulls (their label padding) shrink it below 26px vertices / 14px labels. Use wide, flat layouts and colour classes instead of hulls. Minor, not fixed: consecutive walkthrough steps with identical figures (unique-paths, girth).
 
+- Visual-qa on T4.18–T4.20, graph-families, graphs (2026-11-13): passed except two minor points. (1) `ear-decompositions` `fig-t05-ear-max-edge` step 5: muted vertices are translucent, so edge 1–8 shows through labels 1 and 8. A renderer issue for every muted vertex: fix in the framework (opaque backing under muted vertices). (2) `set-version` at 390: `fig-t05-total-menger` labels scale to 8.7px (the size rule is for 1366 only). Header unchanged by T4.30. Chrome cannot go below ~495px; 390 measured in an iframe.
+
+- T4.29 `degrees/degree-sequences` (2026-11-13): the checker failed it twice (labels template without a `d` attribute, then `[d=2, class=rejected]` with a comma). The second failure was a one-character syntax slip, so the main agent allowed a third round instead of stopping the task; it passed. Lesson for writers: DSL attribute lists are space-separated; a comma becomes part of the value. Muted-vertex fix: 1ce4c80 (CSS only, not yet seen in a browser).
+
+- T4.29 `menger/mengers-theorem` (2026-11-13), for the owner: the REVIEW comment at line 14 inside the locked `thm:menger` entry points to "the remark after the proof" for multigraphs, but the page has no such remark and no proof of a). Editorial only. Fixing it needs `scripts/lock-entries.ts --accept thm:menger`; left as is.
+
+- Visual-qa on the T4.29 pages (2026-11-13): fixed after review: dots instead of circles from long `{id}: {d}` labels (degree-sequences, dirac-and-ore), a vertex on an edge (degree-sequences, mengers-theorem), a caption naming Left/Middle/Right on a wrapping figure (paths-and-cuts), and captions naming colours that render differently (hamiltonian-graphs, dirac-and-ore, distance, graphs, vertex-version-from-edge-version, hamiltonian-completion). Proposed writer rule for the owner: captions describe a marking (thick, dashed, filled, ringed), never a colour name, and vertex labels stay short. Added to `.claude/agents/writer.md` (owner, 2026-11-13).
+
+- **Gate C (2026-11-13, owner).** T4.32 (the audit mismatches) is put off; the owner decides it later. No merge into `main` was asked for, so none is done. Go on with Phase 5 until Gate D. The `thm:menger` REVIEW comment (an HTML comment readers do not see) stays as it is.
+- T4.33 (coder): rules E1–E11 run only on `stage: taught` pages. E11 reads frontmatter `needs`: a taught page lists every concept page it links to. Not done: `symbols` resolving (needs D2). The "term not linked" lint is skipped on concept pages (§10). 30 split-page steps exceed 2 heavy spans; that only matters once a page is taught.
+- T4.46 visual-qa at 390 (2026-11-13): captions fit in every walkthrough but one. `karger-success-probability` walkthrough 3 (the product, 6 steps): its caption still overflows by 35px with the figure at the 120px floor (circles 18.9px, labels 9.1px); the caption is too long for a phone, a writer shortens it. Same page, walkthrough 4: the box height jumps 317→344px between steps (coder, minor). Smallest figures at 390: 120px on `gomory-hu/correctness` 6–9 and karger. 1366 unchanged.
+- **Owner (2026-11-13).** The taught rewrites T4.34–T4.37 look right: keep the style for T4.38–T4.44. T4.32 is `deferred`: the owner reviews the audit mismatches while studying. T5.35 stays.
+- Visual-qa on T5.28, T5.29, T5.31, T5.32, T4.34 (2026-11-13): passed at 1366 on every page; at 390, the caption overflow of T4.46 on three pages. `karger-success-probability` walkthroughs 4 and 5 have no figure (proofs of 2 lines, allowed by E7). 390 measured in an iframe (the window minimum is 412px).
+- **Old theory pages (2026-11-13, owner).** 11 theory pages kept their old text and "Not checked yet": no proof in the notes, enough figures, so no task touched them. The owner chose a taught rewrite of all 11 (T4.33 to T4.44), done after T5.32 and before T5.33. Same question for the ~36 algorithms pages: left until Gate D.
+
+- T5.10 `mst/karger-klein-tarjan` (2026-11-13): the written proof applies `thm:mst-verification` to the forest F′ (the theorem states spanning trees). Not edited (locked); the walkthrough supplies the dummy-edge argument and a REVIEW comment sits before the proof. The Sonnet writer failed the checker twice (the second error came from the main agent's incomplete base-case instruction); an Opus writer took over the remaining fixes, and the page passed on the fourth check. Exception to §1.4's stop rule, as for degree-sequences.
+- T5.4 `mst/union-find`: the lecture slide 10 gives Galler–Fischer as 1954 (it is 1964) and slide 11 gives O(n log n) for the loop (O(m log n) is right). Both marked REVIEW on the page.
+
+- Visual-qa on T5.4–T5.10 (2026-11-13): fixes sent for the cramped `fig-a01-kkt-recurrence` and the "blue trees" wording on `boruvka`. Not fixed, framework: the pseudocode panel of the algorithm player (`fig-a01-boruvka-player` at 1366) is clipped on the right and scrolls. Probably on every player page; a coder task if the owner wants it.
+
+- Visual-qa on T5.16–T5.26 (2026-11-13): passed after layout fixes (ddb8050, a2067c4, 5295677, a942c65). Left open, minor: `fig-a01-kkt-recurrence` steps 1–2 (the 12-vertex graph) render edge labels at 13.7px at 1366, below the 14px rule; two layout rounds did not fix it, the labels are legible. Writers built their own clearance scripts on the real parser and `routeEdges` (label–label, label–edge, edge–vertex); a shared check in `viewbox.ts` would save visual-qa rounds (coder task if the owner wants it).
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
@@ -556,6 +593,10 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.10 (`degrees/regular-graphs-of-large-girth.md`): no way to show several graphs side by side in one figure (G, H and F of the construction), so H gets its own step. The steps use a toy instance (k = 5, d = 2) because a real one is too large to draw.
 
 - T4.12 (`chordal/two-simplicial-vertices.md`): no two-graph view of G[A ∪ X] and G − A; muting the other part stands in.
+
+- T4.35 (`basics/isomorphism.md`): a stepper draws only panel 0, so G and H share one graph in both new steppers.
+
+- T4.43 (`chordal/interval-graphs.md`): the DSL cannot draw intervals; bars are thick edges between two endpoint vertices, named at both ends.
 
 ### Open questions from Phase 4 writers
 

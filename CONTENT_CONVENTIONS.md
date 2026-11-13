@@ -486,10 +486,12 @@ computes this for the reference).
 
 ## 10. Budgets, checked by `npm run validate`
 
-These budgets are for pages with `stage: taught`. Their checks in the validator are deferred
-(`BACKLOG.md` D1); until then the writer of a taught page counts by hand. The rules for
-walkthroughs and mark links (E7, E13) and for fences (E12) are checked on every page, and
-proofs without a walkthrough are listed as warnings.
+These budgets are for pages with `stage: taught`. E1 to E11 are checked by `budgetChecks`
+(`packages/content/budget.ts`). E7 (except the 2 heavy spans per step, taught pages only), E12
+and E13 are checked on every page; proofs without a walkthrough are warnings on split pages.
+E11 reads `needs`, so a taught page lists every concept page it links to there. Not checked
+yet: `symbols` resolving (E10; the registry is deferred, D2) and the warnings other than the
+600-word one.
 
 Definitions:
 
@@ -510,7 +512,7 @@ Errors (the build fails). They apply to concept pages only; items 2, 3 and 9 do 
 | E2 | At least 2 `graph` blocks, at least one of them not `widget=figure`. |
 | E3 | At most 2 definitions and at most 3 other statements. |
 | E4 | Reading path at most 900 words (1400 with `long: true`). |
-| E5 | Reading path: at most 3 heavy spans and at most 12 spans in total per 100 words. |
+| E5 | Reading path: at most 3 heavy spans and at most 12 spans in total, each per 100 words. |
 | E6 | Every `proof` has a `walkthrough` with `for=` its statement. |
 | E7 | Walkthrough: a figure when the proof is longer than 10 lines; a figure is the first child and a stepper; step counts match; each step within its limits. |
 | E8 | `intuition`: at most 50 words and 1 heavy span. Every statement has one. |
@@ -524,8 +526,8 @@ Warnings: a sentence over 30 words; a paragraph over 80 words; the same target l
 a page; a bare `[[id]]` in the reading path; more than 8 symbols; a stepper step that changes
 nothing; reading path over 600 words.
 
-Remove for concept pages: the lint "term not linked in this section"
-(`scripts/validate-content.ts`, near line 124). It produced a link in almost every sentence.
+The lint "term not linked in this section" is skipped for concept pages
+(`scripts/validate-content.ts`). It produced a link in almost every sentence.
 
 The numbers in E4, E5 and E8 are starting values calibrated on the current text. Do not loosen
 them without the owner's agreement. If a page cannot meet them, split the page.

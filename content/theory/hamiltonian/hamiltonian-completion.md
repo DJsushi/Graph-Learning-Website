@@ -169,7 +169,7 @@ The second case is the heart of the proof: a count with the pigeonhole principle
 
 :::: walkthrough {for=lem:hamiltonian-completion}
 ```graph id=t04-completion-switch widget=stepper
-caption: $H = H_1 + xy$ on $7$ vertices, with $d_{H_1}(x) + d_{H_1}(y) = 4 + 3 = 7$. Black vertices are filled, red ones have a red ring; $w_2$ and $w_j$ get both.
+caption: $H = H_1 + xy$ on $7$ vertices, with $d_{H_1}(x) + d_{H_1}(y) = 4 + 3 = 7$. The vertices the proof calls black (neighbours of $y$) are filled, those it calls red (just before a neighbour of $x$) have a ring; $w_2$ and $w_j$ get both.
 intent: From the lecture (theory/2026-10-06 p6): the drawing of $H_1$ with $x$ and $y$ on top, the path below, and the black and red circles. The lecture names the double-coloured vertex $u$ and its successor $v$; we use the proof's $w_j$ and $w_{j+1}$, and the vertex names of the figure after the proof.
 layout: fixed
 x @(0, 1.3); w2 [label="$w_2$"] @(0.15, 0.45); w3 [label="$w_3$"] @(0.9, 0); wj [label="$w_j$"] @(1.8, -0.15); wj1 [label="$w_{j+1}$"] @(2.7, 0); w6 [label="$w_6$"] @(3.45, 0.45); y @(3.6, 1.3)

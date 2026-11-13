@@ -4,9 +4,36 @@ course: theory
 chapter: degrees
 order: 4
 lectures: [t01]
-stage: split
-status: draft
+goal: Decide by hand whether a sequence of numbers is the degree sequence of a graph, and build such a graph.
+needs: [theory/degrees/degree-sequences, theory/degrees/havel-hakimi, theory/basics/graph-families]
+stage: taught
+status: reviewed
 ---
+
+Seven vertices carry the numbers 4, 4, 3, 3, 1, 1 and 0. Can we draw edges so that every vertex
+gets exactly as many neighbours as its number says? Guessing edges takes long. The Havel–Hakimi
+test answers in three rounds.
+
+```graph id=t01-hh-question widget=figure
+caption: Seven vertices and the degree each one should get. There are no edges yet.
+intent: New figure for the opening question. The vertices and positions of t01-degree-sequence-example (the lecture example of theory/2026-09-15 p5) with its edges removed; the labels are the prescribed degrees.
+layout: fixed
+vertex-label: "{d}"
+x [d=0] @(1, -0.8)
+l [d=4] @(0, 1); r [d=4] @(2, 1); mt [d=3] @(1, 1); mb [d=3] @(1, 0); p [d=1] @(0, 0); q [d=1] @(2, 0)
+mark big: l
+mark next: r mt mb p
+```
+
+Start with [[fig:t01-hh-question#big|a vertex that wants 4 neighbours]]. It wants the most, so
+it is the hardest to serve. We serve it first and give it the vertices that want the most:
+[[fig:t01-hh-question#next|the other 4, both 3s and one of the 1s]]. Now this vertex is done.
+Each of its four neighbours needs one neighbour less, so we lower their numbers by one.
+
+What is left is the same question for six vertices. [[thm:havel-hakimi|The Havel–Hakimi
+theorem]] says that this greedy choice never loses a solution: the old numbers can be met
+exactly when the new ones can. We repeat until every number is 0, or until a number cannot be
+met.
 
 ::: algorithm {#alg:havel-hakimi title="Havel–Hakimi test"}
 **Input:** a sequence $(d_1, \dots, d_n)$ of non-negative integers. **Output:** whether it is
@@ -23,25 +50,86 @@ repeat:                                                    // @loop
 :::
 
 ::: intuition
-Each round settles one vertex for good: it is given its neighbours, and the remaining sequence
-records what the other vertices still need. So the test is [[thm:havel-hakimi]] applied at most
-$n$ times, each round a sort and at most $n$ subtractions. Example:
-$(2, 2, 2) \to (1, 1) \to (0)$, so the sequence is graphic, and running the rounds backwards gives
-the triangle. Non-example: $(4, 4, 2, 2, 0) \to (3, 1, 1, -1)$ stops at `@negative`.
+Each round settles one vertex for good: it gets its neighbours, and the shorter sequence records
+what the other vertices still need. All zeros means every wish is met. A first entry larger
+than the number of other vertices, or a negative entry, is a wish that cannot be met.
 :::
 
-::: pitfall
-Always **re-sort** before the next round, and always remove the **largest** entry. Working on
-an unsorted sequence gives wrong answers: treating $(1, 1, 2, 2)$ as if $1$ were the largest
-entry gives $(0, 2, 2)$, which is not graphic, although $(2, 2, 1, 1)$ is realised by $P_3$
-(compare [[exr:t01-havel-hakimi-ties]]).
-:::
+Here is the test on the seven numbers from the start. The number on a vertex is how many
+neighbours it still needs. A settled vertex is muted. We draw the new edges of a round thick.
 
-Each round shortens the sequence by one, so the test finishes after at most $n$ rounds. By
-[[thm:havel-hakimi]], every round preserves graphicness (the conditions in lines `@too-big` and
-`@negative` detect sequences that are obviously not graphic), and the all-zero sequence is
-realised by a graph without edges. Running the rounds backwards and adding the removed vertex
-each time, as in the ($\Leftarrow$) part of the proof, builds a realisation.
+```graph id=t01-hh-rounds widget=stepper
+caption: The Havel–Hakimi test on (4, 4, 3, 3, 1, 1, 0). Each number is the degree the vertex still needs; muted vertices are settled.
+intent: New figure, worked example. The vertices and positions of t01-degree-sequence-example (theory/2026-09-15 p5); the rounds draw exactly the edges of that lecture graph. The ties between the two 1s are broken towards p.
+layout: fixed
+vertex-label: "{d}"
+x [d=0] @(1, -0.8)
+l [d=4] @(0, 1); r [d=4] @(2, 1); mt [d=3] @(1, 1); mb [d=3] @(1, 0); p [d=1] @(0, 0); q [d=1] @(2, 0)
+mark r1: l r mt mb p
+mark r2: r mt mb q
+step: The sorted sequence (4, 4, 3, 3, 1, 1, 0). No edges yet.
+step: Round 1. The first 4 joins the next four vertices. It is settled, and their numbers drop by one. Left: (3, 2, 2, 0, 1, 0).
+l -- r [bend=0.5 class=bold]; l -- mt [class=bold]; l -- mb [class=bold]; l -- p [class=bold]
+set l [d=0 class=muted]
+set r [d=3]
+set mt [d=2]
+set mb [d=2]
+set p [d=0]
+step: Round 2. Sorted: (3, 2, 2, 1, 0, 0). The 3 joins both 2s and the 1. Left: (1, 1, 0, 0, 0).
+unclass bold: l--r l--mt l--mb l--p
+r -- mt [class=bold]; r -- mb [class=bold]; r -- q [class=bold]
+set r [d=0 class=muted]
+set mt [d=1]
+set mb [d=1]
+set q [d=0]
+step: Round 3. The first 1 joins the other 1. Left: (0, 0, 0, 0).
+unclass bold: r--mt r--mb r--q
+mt -- mb [class=bold]
+set mt [d=0 class=muted]
+set mb [d=0]
+step: All entries are 0, so the answer is GRAPHIC. The labels now show the degrees of the drawn graph: (4, 4, 3, 3, 1, 1, 0).
+unclass bold: mt--mb
+unclass muted: l r mt
+set l [d=4]
+set r [d=4]
+set mt [d=3]
+set mb [d=3]
+set p [d=1]
+set q [d=1]
+```
+
+In [[fig:t01-hh-rounds#r1|round 1]] the two 1s tie, and either of them may be chosen. In
+[[fig:t01-hh-rounds#r2|round 2]] we sort again first: the leftover 1 moves in front of the two
+0s. The edges drawn in the rounds form a graph with exactly the wished degrees.
+
+Now run the test yourself, one line of the algorithm at a time.
+
+```graph id=t01-havel-hakimi-player widget=player
+caption: Run the Havel–Hakimi test step by step on the degree sequence of the example graph above.
+intent: Algorithm player for the sequence test; the state panel shows the current sequence and the graph is built backwards at the end.
+algo: havel-hakimi
+params: seq="4,4,3,3,1,1,0"
+```
+
+## Why the answer is right
+
+The test stops. Each round removes one entry, so there are at most $n$ rounds.
+
+Each round keeps the answer. Line `@sort` makes the sequence non-increasing, and line `@too-big`
+has checked that the first entry is at most the number of other entries. These are the
+hypotheses of [[thm:havel-hakimi]]. So the sequence before the round is graphic exactly when the
+shorter sequence after it is.
+
+The two NOT GRAPHIC lines are right. At `@too-big` a vertex needs more neighbours than there are
+other vertices. At `@negative` the shorter sequence asks for a negative degree, so it is not
+graphic, and by the theorem neither was the sequence before. The all-zero sequence is graphic:
+the graph without edges realises it.
+
+To build a realisation, run the rounds backwards. Each time, add the removed vertex and join it
+to the vertices whose entries it lowered, as in the ⇐ part of the proof. These are the edges we
+drew during the rounds.
+
+The lecture ran the test on a longer sequence.
 
 ::: example {#ex:havel-hakimi-11 title="A long Havel–Hakimi run" source="theory/2026-09-15 p6"}
 Is $(7, 6, 6, 5, 4, 2, 2, 2, 2, 1, 1)$ graphic? (The sum is $38$, which is even.)
@@ -81,6 +169,8 @@ unclass highlight: v2--v3 v2--v4 v2--v5 v2--v9 v2--v6
 v1 -- v2 [class=highlight]; v1 -- v3 [class=highlight]; v1 -- v4 [class=highlight]; v1 -- v5 [class=highlight]; v1 -- v6 [class=highlight]; v1 -- v7 [class=highlight]; v1 -- v8 [class=highlight]
 ```
 
+Two sequences that fail, one at each NOT GRAPHIC line:
+
 ::: example {#ex:havel-hakimi-fail title="Sequences that are not graphic" source="theory/2026-09-15 p6"}
 1. $(4, 4, 2, 2, 0) \xrightarrow{-4} (3, 1, 1, -1)$. A negative entry appears, so the sequence is
    not graphic. (Directly: two vertices of degree 4 among five vertices would both be adjacent to
@@ -89,9 +179,46 @@ v1 -- v2 [class=highlight]; v1 -- v3 [class=highlight]; v1 -- v4 [class=highligh
    for the first one, although the sum $14$ is even. Not graphic.
 :::
 
-```graph id=t01-havel-hakimi-player widget=player
-caption: Run the Havel–Hakimi test step by step on the degree sequence of the example graph above.
-intent: Algorithm player for the sequence test; the state panel shows the current sequence and the graph is built backwards at the end.
-algo: havel-hakimi
-params: seq="4,4,3,3,1,1,0"
-```
+::: pitfall
+Always **re-sort** before the next round, and always remove the **largest** entry. On an
+unsorted sequence the test can answer wrongly. Take 1, 1, 2, 2 and treat the first 1 as the
+largest entry: we get 0, 2, 2, which is not graphic. Yet 2, 2, 1, 1 is the degree sequence of
+a path with three edges (compare [[exr:t01-havel-hakimi-ties]]).
+:::
+
+## Check yourself
+
+:::: quiz {#q:t01-hh-stop}
+The sequence (3, 3, 3, 1) has an even sum, and no entry is larger than 3. Where does the
+Havel–Hakimi test stop?
+
+- [ ] At `@yes`: the sequence is graphic.
+- [ ] At `@too-big` in the first round.
+- [x] At `@negative` in the second round.
+
+::: explanation
+Round 1 removes a 3 and lowers the next three entries: (2, 2, 0). Round 2 removes a 2 and
+lowers the next two entries: (1, −1). A negative entry appears, so the sequence is not graphic.
+:::
+::::
+
+:::: quiz {#q:t01-hh-edges}
+The test on (3, 3, 2, 2, 2) returns GRAPHIC. How many edges does the graph built from its rounds
+have?
+
+answer: 6
+
+::: explanation
+Each round joins the removed vertex to as many vertices as its entry says. The rounds remove a
+3, then a 2, then a 1, so they draw 3 + 2 + 1 = 6 edges. This agrees with the handshake lemma:
+the degrees add up to 12, twice the number of edges.
+:::
+::::
+
+## More
+
+Each round of the test is one application of [[thm:havel-hakimi]]. There are at most $n$
+rounds, each a sort and at most $n$ subtractions, so the test is fast.
+
+The smallest example: $(2, 2, 2) \to (1, 1) \to (0)$, so $(2, 2, 2)$ is graphic, and running
+the rounds backwards gives the triangle.

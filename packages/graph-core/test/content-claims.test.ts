@@ -3,11 +3,11 @@ import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { loadContent } from '../../content/index'
 import { parseGraph } from '../src/dsl/parser'
-import { ALGORITHMS, collect, cutCapacity, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
+import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree, maxFlowValue, minArborescenceCost, minSTCut, mstEdges } from '../src/algorithms'
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
-import { cycle, completeBipartite, complete } from '../src/dsl/generators'
+import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -128,6 +128,61 @@ describe('minimum cuts lesson', () => {
     const phase1 = steps.slice(0, steps.findIndex(s => s.line === 'end')).filter(s => s.action).map(s => s.action!.id)
     expect(['a', ...phase1]).toEqual(['a', 'b', 'f', 'c', 'e', 'd'])
   })
+  it('Stoer–Wagner correctness and running-time walkthroughs: order a b f c e d, C = δ({a, b, e}) = 29, active f, e, d', () => {
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    const ids = ['a03-sw-setup', 'a03-sw-base', 'a03-sw-step', 'a03-sw-end', 'a03-sw-phase-time', 'a03-sw-glue']
+    for (const id of ids) expect(sig(fig(id))).toBe(sig(g))
+    const order = ['a', 'b', 'f', 'c', 'e', 'd']
+    const { steps } = collect(ALGORITHMS['stoer-wagner'], g, { start: 'a' })
+    expect(['a', ...steps.slice(0, steps.findIndex(s => s.line === 'end')).filter(s => s.action).map(s => s.action!.id)]).toEqual(order)
+    const P = new Set(['a', 'b', 'e'])
+    const cap = (a: string, b: string) => num(g.edges.find(e => [e.tail[0], e.head[0]].sort().join('') === [a, b].sort().join(''))!.data.c)
+    const inC = (e: { tail: string[]; head: string[] }) => P.has(e.tail[0]) !== P.has(e.head[0])
+    const cOf = (V: Set<string>) => g.edges.filter(e => inC(e) && V.has(e.tail[0]) && V.has(e.head[0])).reduce((z, e) => z + num(e.data.c), 0)
+    const key = (U: string[], v: string) => g.edges.filter(e => (U.includes(e.tail[0]) && e.head[0] === v) || (U.includes(e.head[0]) && e.tail[0] === v)).reduce((z, e) => z + num(e.data.c), 0)
+    // C separates s = e from t = d and has capacity 29; the dashed edges of the figures are exactly C
+    expect(cutCapacity(g, P)).toBe(29)
+    expect(P.has('e') !== P.has('d')).toBe(true)
+    const cutEdges = (id: string, i: number) => parseGraph(index.figureById.get(id)!.source, index.figureById.get(id)!.info).panels[0].steps[i].graph.edges.filter(e => e.classes.includes('cut'))
+    expect([cutEdges('a03-sw-setup', 1).length, cutEdges('a03-sw-setup', 1).reduce((z, e) => z + num(e.data.c), 0)]).toEqual([6, 29])
+    expect(cutEdges('a03-sw-setup', 1).every(inC)).toBe(true)
+    expect(cutEdges('a03-sw-end', 1).length).toBe(6)
+    expect(cutEdges('a03-sw-end', 3).reduce((z, e) => z + num(e.data.c), 0)).toBe(29)
+    // active vertices: the order jumps across C at f, e, d only
+    expect(order.slice(1).filter((v, i) => P.has(order[i]) !== P.has(v))).toEqual(['f', 'e', 'd'])
+    // the claim c(U_v, v) <= c(C_v): 11 = 11, 9 <= 22, 14 <= 29, and the chain of the inductive step 9 <= 18 <= 22
+    const claim = (i: number) => [key(order.slice(0, i), order[i]), cOf(new Set(order.slice(0, i + 1)))]
+    expect([claim(2), claim(4), claim(5)]).toEqual([[11, 11], [9, 22], [14, 29]])
+    expect([key(['a', 'b'], 'e'), key(['f', 'c'], 'e'), key(['a', 'b'], 'f'), cOf(new Set(['a', 'b', 'f']))]).toEqual([2, 7, 11, 11])
+    expect([key(['a', 'b', 'f', 'c'], 'd'), 11 + 7, cap('c', 'b')]).toEqual([7, 18, 4])
+    // the keys when f was added: f 11, c 4, e 2, d 0
+    expect(['f', 'c', 'e', 'd'].map(v => key(['a', 'b'], v))).toEqual([11, 4, 2, 0])
+    expect(cutCapacity(g, new Set(['d']))).toBe(14)
+    expect(cap('c', 'd') + cap('f', 'd') + cap('e', 'd')).toBe(14)
+    expect([cap('b', 'e'), cap('c', 'e'), cap('f', 'e'), 2 + 4 + 3]).toEqual([2, 4, 3, 9])
+    // the thick/dashed edges of the base-case and inductive-step figures
+    const cutSum = (id: string, i: number) => cutEdges(id, i).reduce((z, e) => z + num(e.data.c), 0)
+    expect([cutSum('a03-sw-base', 3), cutSum('a03-sw-step', 3), cutSum('a03-sw-step', 5), cutSum('a03-sw-step', 7)]).toEqual([11, 11, 18, 22])
+    // running time: n = 6 vertices, 5 phases, 11 edges; INCREASE-KEY per vertex 2, 3, 3, 2, 1, 0
+    expect([g.vertices.length, g.vertices.length - 1, g.edges.length]).toEqual([6, 5, 11])
+    expect(steps.filter(s => s.line === 'end').length).toBe(5)
+    const seen = new Set<string>()
+    const inc = order.map(v => { seen.add(v); return g.edges.filter(e => { const [x, y] = [e.tail[0], e.head[0]]; return (x === v && !seen.has(y)) || (y === v && !seen.has(x)) }).length })
+    expect(inc).toEqual([2, 3, 3, 2, 1, 0])
+    expect(inc.reduce((z, x) => z + x, 0)).toBe(g.edges.length)
+    // identification of e and d: 5 vertices, 8 edges; capacities 9 (c), 5 (f), 2 (b); cuts that keep e and d together keep their capacity
+    const glued = parseGraph(index.figureById.get('a03-sw-glue')!.source, index.figureById.get('a03-sw-glue')!.info).panels[0].steps
+    const h = glued[2].graph
+    expect([h.vertices.length, h.edges.length]).toEqual([5, 8])
+    const w = (x: string) => h.edges.filter(e => [e.tail[0], e.head[0]].includes(x) && [e.tail[0], e.head[0]].includes('d')).reduce((z, e) => z + num(e.data.c), 0)
+    expect([w('c'), w('f'), w('b')]).toEqual([9, 5, 2])
+    expect(glued[1].graph.edges.length).toBe(11 - 1)
+    const V = ['a', 'b', 'c', 'f']
+    for (let m = 0; m < 1 << V.length; m++) {
+      const U = new Set(V.filter((_, i) => (m >> i) & 1))
+      expect(cutCapacity(h, new Set([...U, 'd']))).toBe(cutCapacity(g, new Set([...U, 'd', 'e'])))
+    }
+  })
   it('identification figure: δ({u,v,y}) = 14 before and after', () => {
     const fg = index.figureById.get('a03-identification')!
     const steps = parseGraph(fg.source, fg.info).panels[0].steps
@@ -138,6 +193,103 @@ describe('minimum cuts lesson', () => {
     const u = fig('a03-uncrossing')
     const c = (...S: string[]) => cutCapacity(u, new Set(S))
     expect([c('p', 'q'), c('q', 'r'), c('p', 'q', 'r'), c('q')]).toEqual([4, 4, 3, 3])
+  })
+  it('uncrossing walkthroughs: os is inside a region, all counts of the first and second inequality', () => {
+    const u = fig('a03-uc-count')
+    const c = (...S: string[]) => cutCapacity(u, new Set(S))
+    expect([c('p', 'q'), c('q', 'r'), c('p', 'q', 'r'), c('q')]).toEqual([4, 4, 3, 3])
+    expect([c('p'), c('r'), c('p', 'o', 's'), c('p', 'q', 'o', 's')]).toEqual([3, 3, 4, 3])
+    const r = fig('a03-uc-reduce')
+    expect(cutCapacity(r, new Set(['p', 'o', 's']))).toBe(cutCapacity(r, new Set(['q', 'r'])))
+    expect(cutCapacity(r, new Set(['p', 'q', 'o', 's']))).toBe(cutCapacity(r, new Set(['r'])))
+    expect(c('p', 'q') + c('q', 'r') - c('p', 'q', 'r') - c('q')).toBe(2)
+  })
+  it('Gomory–Hu lemma walkthroughs: delta(S) costs 4, X and both candidates cost 5, union and X minus S cost 4', () => {
+    const set = (...S: string[]) => new Set(S)
+    // setup: S = {s, v, w}, X = {s, v, p, q} (or its complement {w, r}), v–w cut
+    const g = fig('a03-gh-setup')
+    const c = (...S: string[]) => cutCapacity(g, set(...S))
+    expect([c('s', 'v', 'w'), c('w', 'r'), c('s', 'v', 'p', 'q'), c('s', 'v'), c('w')]).toEqual([4, 5, 5, 5, 5])
+    expect(minSTCut(g, 'v', 'w').value).toBe(5)
+    expect(minSTCut(g, 's', 'r').value).toBe(4)
+    expect(minSTCut(g, 's', 'q').value).toBe(4)
+    // case t not in X (t = r of the setup figure): union cut 4, 4 + 5 <= 4 + 5
+    const h = fig('a03-gh-case1')
+    const ch = (...S: string[]) => cutCapacity(h, set(...S))
+    expect([ch('s', 'v', 'w'), ch('s', 'v', 'w', 'p', 'q'), ch('s', 'v'), ch('s', 'v', 'p', 'q')]).toEqual([4, 4, 5, 5])
+    expect(minSTCut(h, 's', 't').value).toBe(4)
+    expect(minSTCut(h, 'v', 'w').value).toBe(5)
+    // case t in X (t = q of the setup figure): cut of X minus S is 4, 4 + 5 <= 4 + 5
+    const k = fig('a03-gh-case2')
+    const ck = (...S: string[]) => cutCapacity(k, set(...S))
+    expect([ck('s', 'v', 'w'), ck('p', 't'), ck('w'), ck('s', 'v', 'p', 't')]).toEqual([4, 4, 5, 5])
+    expect(minSTCut(k, 's', 't').value).toBe(4)
+    expect(minSTCut(k, 'v', 'w').value).toBe(5)
+    // the dashed cut of each figure is delta(S)
+    for (const [fg, ids] of [[g, ['vq', 'sq', 'wr']], [h, ['vq', 'sq', 'wt']], [k, ['vt', 'st', 'wr']]] as const) {
+      const dashed = fg.edges.filter(e => e.classes.includes('cut')).map(e => e.tail[0] + e.head[0]).map(x => [...x].sort().join('')).sort()
+      expect(dashed).toEqual(ids.map(x => [...x].sort().join('')).sort())
+    }
+  })
+  it('contracting {a,b,c} in the lecture network raises f(e,f) from 13 to 16 and {a,b,c} is no side of a minimum cut', () => {
+    const g = fig('a03-network')
+    const X = new Set(['a', 'b', 'c'])
+    expect(minSTCut(g, 'e', 'f').value).toBe(13)
+    // contracted graph: X-f 8+3+2, X-e 2+4, X-d 5, f-e 3, f-d 2, e-d 7
+    expect(Math.min(13 + 3 + 2, 6 + 3 + 7, 6 + 5 + 3 + 2)).toBe(16)
+    const c = cutCapacity(g, X)
+    const sides = [X, new Set(['d', 'e', 'f'])]
+    for (const S of sides) for (const p of S) for (const q of g.vertices.map(v => v.id).filter(v => !S.has(v))) expect(minSTCut(g, p, q).value).toBeLessThan(c)
+  })
+  it('Gomory–Hu invariant walkthroughs: rounds x–s, y–x, z–a, a–b cut 5, 7, 6, 9 uniquely; f(x, a) = 5, G_B values 5 and 9', () => {
+    const g = fig('a03-ghc-round')
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    for (const id of ['a03-ghc-new-edge', 'a03-ghc-far-edge', 'a03-ghc-reattach', 'a03-ghc-swap']) expect(sig(fig(id))).toBe(sig(g))
+    const V = g.vertices.map(v => v.id)
+    const subsets: Set<string>[] = []
+    for (let m = 1; m < (1 << V.length) - 1; m++) subsets.push(new Set(V.filter((_, i) => (m >> i) & 1)))
+    // minimum p–q cuts of G with each block identified: [value, sides containing p]
+    const mins = (p: string, q: string, blocks: string[][] = []) => {
+      const ok = subsets.filter(U => U.has(p) && !U.has(q) && !blocks.some(b => b.some(v => U.has(v)) && b.some(v => !U.has(v))))
+      const k = Math.min(...ok.map(U => cutCapacity(g, U)))
+      return [k, ok.filter(U => cutCapacity(g, U) === k).map(U => [...U].sort().join(''))]
+    }
+    const { steps } = collect(ALGORITHMS['gomory-hu'], g, { pairs: 'x s, y x, z a, a b, b s' })
+    expect(steps.filter(s => s.line === 'mincut').map(s => /capacity \$(\d+)\$/.exec(s.message)![1]).slice(0, 4)).toEqual(['5', '7', '6', '9'])
+    // each round's minimum cut is unique: tree y–x–S–z with S = {a, b, s} before round 4, and A = {a, x, y, z}
+    expect(mins('x', 's')).toEqual([5, ['xy']])
+    expect(mins('y', 'x', [['a', 'b', 's', 'z']])).toEqual([7, ['y']])
+    expect(mins('z', 'a', [['x', 'y']])).toEqual([6, ['z']])
+    expect(mins('a', 'b', [['x', 'y']])).toEqual([9, ['axyz']])
+    const f = (p: string, q: string) => minSTCut(g, p, q).value
+    expect([f('y', 'x'), f('x', 's'), f('z', 'a'), f('a', 'b'), f('x', 'a')]).toEqual([7, 5, 6, 9, 5])
+    const c = (...S: string[]) => cutCapacity(g, new Set(S))
+    expect([c('y'), c('x', 'y'), c('z'), c('a', 'x', 'y', 'z'), 2 + 3 + 1 + 1 + 2]).toEqual([7, 5, 6, 9, 9])
+    // G_B with B = {b, s}: f(x, v_B) = 5 by the cut of {x, y} (1 + 1 + 3), f(v_B, a) = 9 by the cut of v_B, f(x, a) = 5
+    expect(mins('x', 'b', [['b', 's']])).toEqual([5, ['xy']])
+    expect(mins('b', 'a', [['b', 's']])).toEqual([9, ['bs']])
+    expect(mins('x', 'a', [['b', 's']])[0]).toBe(5)
+    expect(1 + 1 + 3).toBe(5)
+    // the thick edges of the steps that quote a capacity
+    const thick = (id: string, step: number) => {
+      const f0 = index.figureById.get(id)!
+      const h = parseGraph(f0.source, f0.info).panels[0].steps[step].graph
+      return h.edges.filter(e => e.classes.includes('bold')).reduce((z, e) => z + num(e.data.c ?? e.data.w), 0)
+    }
+    expect([thick('a03-ghc-round', 3), thick('a03-ghc-round', 4), thick('a03-ghc-new-edge', 0), thick('a03-ghc-new-edge', 2), thick('a03-ghc-new-edge', 4)]).toEqual([9, 9, 5, 6, 9])
+    expect([thick('a03-ghc-far-edge', 0), thick('a03-ghc-reattach', 0), thick('a03-ghc-reattach', 2)]).toEqual([7, 5, 6])
+    expect([1, 2, 5, 6, 7, 8].map(i => thick('a03-ghc-swap', i))).toEqual([5, 9, 5, 9, 9, 5])
+  })
+  it('Gomory–Hu correctness walkthroughs: path a, b, f, e, d with 18, 17, 13, 14; cuts {a, b} = 17 and {a, b, f} = 13', () => {
+    const key = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.w)).sort().join()
+    for (const id of ['a03-ghc-final-tree', 'a03-ghc-ft', 'a03-ghc-fg', 'a03-ghc-cut']) expect(key(fig(id))).toBe(key(tree))
+    expect([f('a', 'b'), f('b', 'f'), f('f', 'e'), f('e', 'd'), f('a', 'd')]).toEqual([18, 17, 13, 14, 13])
+    const c = (...S: string[]) => cutCapacity(g, new Set(S))
+    expect([c('a', 'b'), 8 + 4 + 3 + 2, c('a', 'b', 'f'), 4 + 2 + 2 + 3 + 2]).toEqual([17, 17, 13, 13])
+    expect(Math.min(18, 17, 13, 14)).toBe(13)
+    // round 5 of the lecture example splits {c, e} with the cut of {c}, of capacity 15; f and d go to the side of e
+    expect(minSTCut(g, 'c', 'e').value).toBe(15)
+    expect(g.vertices.length - 1).toBe(5)
   })
   it('Karger players: seed 5 finds the minimum cut 2, seed 1 returns 4', () => {
     expect((collect(ALGORITHMS.karger, fig('a03-karger-good'), { seed: '5' }).result as any).value).toBe(2)
@@ -1395,5 +1547,1871 @@ describe('bipartite example figures (t02)', () => {
     expect(k.edges.map(key).sort()).toEqual(['01', '03', '12', '23'])
     expect(k.edges.filter(e => e.classes.includes('bold')).map(key).sort()).toEqual(['01', '12', '23'])
     expect(k.edges.filter(e => e.classes.includes('dashed')).map(key)).toEqual(['03'])
+  })
+})
+
+describe('chordal-graphs example figures (t04)', () => {
+  const solid = (g: GraphData): GraphData => ({ ...g, edges: g.edges.filter(e => !e.classes.includes('dashed')) })
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  it('G is the triangulated pentagon (7 edges, chords 13, 14), chordal; G - 2 is induced, chordal, keeps chord 14; dropping 14 gives C4, not chordal', () => {
+    const g = fig('t04-chordal-induced-subgraph', 0), h = fig('t04-chordal-induced-subgraph', 1), c = fig('t04-chordal-induced-subgraph', 2)
+    expect(g.edges.map(key).sort()).toEqual(['12', '13', '14', '15', '23', '34', '45'])
+    expect(chordal(g)).toBe(true)
+    expect(h.vertices.map(v => v.id).sort()).toEqual(['1', '3', '4', '5'])
+    expect(h.edges.map(key).sort()).toEqual(del(g, ['2']).edges.map(key).sort())
+    expect(chordal(h)).toBe(true)
+    expect(h.edges.filter(e => e.classes.includes('bold')).map(key).sort()).toEqual(['13', '14'])
+    expect(c.edges.filter(e => e.classes.includes('dashed')).map(key)).toEqual(['14'])
+    expect(solid(c).edges.map(key).sort()).toEqual(['13', '15', '34', '45'])
+    expect(chordal(solid(c))).toBe(false)
+  })
+})
+
+describe('simplicial-vertices example figures (t04)', () => {
+  const key = (e: GraphData['edges'][number]) => [e.tail[0], e.head[0]].sort().join('')
+  const simplicial = (g: GraphData) => { const ix = new GraphIndex(g); return ix.vertexIds.filter(v => A.isSimplicial(ix, v)).sort() }
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal({ ...g, vertices: g.vertices.filter(v => v.id !== s), edges: g.edges.filter(e => !e.tail.concat(e.head).includes(s)) })
+  }
+  it('strip graph has 9 edges, is chordal, simplicial vertices are exactly 1 and 6 (marked current); C5 is not chordal and has none', () => {
+    const g = fig('t04-chordal-simplicial', 0), c = fig('t04-chordal-simplicial', 1)
+    expect(g.vertices.length).toBe(6)
+    expect(g.edges.map(key).sort()).toEqual(['12', '13', '23', '24', '34', '35', '45', '46', '56'])
+    expect(chordal(g)).toBe(true)
+    expect(simplicial(g)).toEqual(['1', '6'])
+    expect(vclsOf(g, 'current')).toEqual(['1', '6'])
+    expect(c.vertices.length).toBe(5); expect(c.edges.length).toBe(5)
+    expect(chordal(c)).toBe(false)
+    expect(simplicial(c)).toEqual([])
+  })
+})
+
+describe('degree-sequences example figures (t01)', () => {
+  it('left panel realises (3,2,2,1); right panel forced edges give (3,3,2,2), not (3,3,1,1)', () => {
+    const l = new GraphIndex(fig('t01-graphic-sequence-example', 0)), r = new GraphIndex(fig('t01-graphic-sequence-example', 1))
+    expect(['a', 'b', 'c', 'd'].map(v => l.degree(v))).toEqual([3, 2, 2, 1])
+    expect(['a', 'b', 'c', 'd'].map(v => r.degree(v))).toEqual([3, 3, 2, 2])
+    expect(vclsOf(fig('t01-graphic-sequence-example', 1), 'rejected')).toEqual(['c', 'd'])
+    for (const k of [0, 1]) { const g = fig('t01-graphic-sequence-example', k), ix = new GraphIndex(g); for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id)) }
+  })
+})
+
+describe('dirac-and-ore example figures (t04)', () => {
+  it('minimum degree figure: delta 2 reached by c and d; K4 plus isolated vertex has delta 0', () => {
+    for (const [k, delta, min] of [[0, 2, ['c', 'd']], [1, 0, ['e']]] as const) {
+      const g = fig('t04-minimum-degree-example', k), ix = new GraphIndex(g)
+      expect(Math.min(...g.vertices.map(v => ix.degree(v.id)))).toBe(delta)
+      expect(g.vertices.filter(v => ix.degree(v.id) === delta).map(v => v.id).sort()).toEqual(min)
+      expect(vclsOf(g, 'current')).toEqual(min)
+      for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id))
+    }
+  })
+  it('Ore example: n=5, d(w)=2<5/2, non-adjacent pairs wc, wd sum to 5, cycle edges form a Hamiltonian cycle', () => {
+    const g = fig('t04-ore-example'), ix = new GraphIndex(g)
+    expect(g.vertices.length).toBe(5)
+    expect(g.vertices.map(v => [v.id, ix.degree(v.id)]).sort()).toEqual([['a', 4], ['b', 4], ['c', 3], ['d', 3], ['w', 2]])
+    for (const v of g.vertices) expect(num(v.data.d)).toBe(ix.degree(v.id))
+    expect(ix.degree('w') < 5 / 2).toBe(true)
+    const adj = (u: string, v: string) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [u, v].sort().join())
+    const pairs = g.vertices.flatMap((u, i) => g.vertices.slice(i + 1).map(v => [u.id, v.id])).filter(([u, v]) => !adj(u, v))
+    expect(pairs).toEqual([['w', 'c'], ['w', 'd']])
+    for (const [u, v] of pairs) expect(ix.degree(u) + ix.degree(v)).toBe(5)
+    const cyc = g.edges.filter(e => e.classes.includes('cycle'))
+    expect(cyc.length).toBe(5)
+    const cd = new Map<string, number>(); for (const e of cyc) for (const v of [e.tail[0], e.head[0]]) cd.set(v, (cd.get(v) ?? 0) + 1)
+    expect([...cd.values()]).toEqual([2, 2, 2, 2, 2]); expect(cd.size).toBe(5)
+    expect(A.isConnected(new GraphIndex({ ...g, edges: cyc }))).toBe(true)
+  })
+})
+
+describe('hamiltonian-graphs example figures (t04)', () => {
+  it('hexagon plus two chords has a Hamiltonian cycle (the thick solid edges); the bowtie has a Hamiltonian path (thick dashed) but no Hamiltonian cycle', () => {
+    const hamCycle = (g: GraphData) => {
+      const ids = g.vertices.map(v => v.id), adj = (u: string, v: string) => g.edges.some(e => [e.tail[0], e.head[0]].sort().join() === [u, v].sort().join())
+      const go = (path: string[]): boolean => path.length === ids.length ? adj(path[path.length - 1], path[0]) : ids.some(v => !path.includes(v) && adj(path[path.length - 1], v) && go([...path, v]))
+      return go([ids[0]])
+    }
+    const l = fig('t04-hamiltonian-example', 0), r = fig('t04-hamiltonian-example', 1)
+    expect(l.vertices.length).toBe(6); expect(l.edges.length).toBe(8); expect(hamCycle(l)).toBe(true)
+    const cyc = l.edges.filter(e => e.classes.includes('cycle'))
+    expect(cyc.length).toBe(6)
+    const cd = new Map<string, number>(); for (const e of cyc) for (const v of [e.tail[0], e.head[0]]) cd.set(v, (cd.get(v) ?? 0) + 1)
+    expect([...cd.values()]).toEqual([2, 2, 2, 2, 2, 2]); expect(cd.size).toBe(6)
+    expect(A.isConnected(new GraphIndex({ ...l, edges: cyc }))).toBe(true)
+    expect(r.vertices.length).toBe(5); expect(r.edges.length).toBe(6); expect(hamCycle(r)).toBe(false)
+    const pth = r.edges.filter(e => e.classes.includes('path'))
+    expect(pth.length).toBe(4)
+    const pd = new Map<string, number>(); for (const e of pth) for (const v of [e.tail[0], e.head[0]]) pd.set(v, (pd.get(v) ?? 0) + 1)
+    expect([...pd.entries()].sort()).toEqual([['a', 1], ['b', 2], ['c', 2], ['d', 2], ['e', 1]])
+    expect(A.isConnected(new GraphIndex({ ...r, edges: pth }))).toBe(true)
+  })
+})
+
+describe('k-connectivity example figure (t05)', () => {
+  // brute force: connectivity after deleting any vertex set / edge set of the given size
+  const conn = (g: GraphData, vs: string[], es: Set<string>) => A.isConnected(new GraphIndex({ ...g, vertices: g.vertices.filter(v => !vs.includes(v.id)), edges: g.edges.filter(e => !es.has(e.id) && !vs.includes(e.tail[0]) && !vs.includes(e.head[0])) }))
+  const lv = (g: GraphData) => [[] as string[], ...g.vertices.map(v => [v.id])]
+  const le = (g: GraphData) => [new Set<string>(), ...g.edges.map(e => new Set([e.id]))]
+  it('bowtie: 2-edge-connected, deleting c disconnects (not 2-connected); pentagon with chord is 2-connected', () => {
+    const l = fig('t05-k-connected-example', 0), r = fig('t05-k-connected-example', 1)
+    expect(l.vertices.length).toBe(5); expect(l.edges.length).toBe(6)
+    expect(le(l).every(es => conn(l, [], es))).toBe(true)
+    expect(lv(l).filter(vs => !conn(l, vs, new Set())).map(vs => vs.join())).toEqual(['c'])
+    expect(A.components(new GraphIndex({ ...l, vertices: l.vertices.filter(v => v.id !== 'c'), edges: l.edges.filter(e => ![e.tail[0], e.head[0]].includes('c')) })).map(c => [...c].sort().join('')).sort()).toEqual(['ab', 'de'])
+    expect(r.vertices.length).toBe(5); expect(r.edges.length).toBe(6)
+    expect(lv(r).every(vs => conn(r, vs, new Set()))).toBe(true)
+  })
+})
+
+describe('Menger directed example figure (t05)', () => {
+  const reachable = (g: GraphData, s: string, t: string, delV: string[], delE: Set<string>) => {
+    const seen = new Set([s]); const q = [s]
+    while (q.length) { const x = q.pop()!; for (const e of g.edges) if (!delE.has(e.id) && e.tail[0] === x && !delV.includes(e.head[0]) && !seen.has(e.head[0])) { seen.add(e.head[0]); q.push(e.head[0]) } }
+    return seen.has(t)
+  }
+  const subsets = <T,>(xs: T[], k: number): T[][] => k === 0 ? [[]] : xs.flatMap((x, i) => subsets(xs.slice(i + 1), k - 1).map(r => [x, ...r]))
+  const unit = (g: GraphData) => ({ ...g, edges: g.edges.map(e => ({ ...e, data: { ...e.data, c: 1 } })) })
+  it('A: no arc st, min vertex cut {a,b} of size 2, no single-vertex cut, 2 internally disjoint paths', () => {
+    const g = fig('t05-menger-directed-example', 0)
+    expect(g.edges.some(e => e.tail[0] === 's' && e.head[0] === 't')).toBe(false)
+    const inner = ['a', 'b', 'c']
+    expect(subsets(inner, 1).some(X => !reachable(g, 's', 't', X, new Set()))).toBe(false)
+    expect(subsets(inner, 2).filter(X => !reachable(g, 's', 't', X, new Set())).map(X => X.join())).toEqual(['a,b'])
+    const p = (c: string) => g.edges.filter(e => e.classes.includes(c)).map(e => e.tail[0] + e.head[0]).sort()
+    expect(p('color1')).toEqual(['at', 'sa']); expect(p('color2')).toEqual(['bt', 'sb'])
+    expect(g.vertices.filter(v => v.classes.includes('cut')).map(v => v.id).sort()).toEqual(['a', 'b'])
+  })
+  it('B: min edge cut 3 (max flow 3, no 2 arcs cut), 3 edge-disjoint paths colour 1-3', () => {
+    const g = fig('t05-menger-directed-example', 1)
+    expect(g.edges.length).toBe(7)
+    expect(maxFlowValue(unit(g), 's', 't').value).toBe(3)
+    expect(subsets(g.edges.map(e => e.id), 2).some(F => !reachable(g, 's', 't', [], new Set(F)))).toBe(false)
+    expect(g.edges.filter(e => e.tail[0] === 's').length).toBe(3)
+    const cols = ['color1', 'color2', 'color3'].map(c => g.edges.filter(e => e.classes.includes(c)).map(e => e.tail[0] + e.head[0]).sort())
+    expect(cols).toEqual([['at', 'sa'], ['ab', 'bt', 'sa'], ['bt', 'sb']])
+  })
+})
+
+describe('s-t cut example figure (t05)', () => {
+  const conn = (g: GraphData, s: string, t: string, delV: string[], delE: Set<string>) => {
+    const seen = new Set([s]); const q = [s]
+    while (q.length) { const x = q.pop()!; for (const e of g.edges) { if (delE.has(e.id)) continue; const [u, v] = [e.tail[0], e.head[0]]; for (const [p, r] of [[u, v], [v, u]]) if (p === x && !delV.includes(r) && !seen.has(r)) { seen.add(r); q.push(r) } } }
+    return seen.has(t)
+  }
+  const cls = (g: GraphData, c: string) => g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort()
+  it('{a,b} is a cut; {at,bt} is an edge cut; {a} is not a cut and s b t survives', () => {
+    const g0 = fig('t05-st-cut-example', 0), g1 = fig('t05-st-cut-example', 1), g2 = fig('t05-st-cut-example', 2)
+    expect(conn(g0, 's', 't', [], new Set())).toBe(true)
+    expect(cls(g0, 'cut')).toEqual(['a', 'b'])
+    expect(conn(g0, 's', 't', ['a', 'b'], new Set())).toBe(false)
+    const F = g1.edges.filter(e => e.classes.includes('cut'))
+    expect(F.map(e => e.tail[0] + e.head[0]).sort()).toEqual(['at', 'bt'])
+    expect(conn(g1, 's', 't', [], new Set(F.map(e => e.id)))).toBe(false)
+    expect(cls(g2, 'cut')).toEqual(['a'])
+    expect(conn(g2, 's', 't', ['a'], new Set())).toBe(true)
+    expect(g2.edges.filter(e => e.classes.includes('path')).map(e => e.tail[0] + e.head[0]).sort()).toEqual(['bt', 'sb'])
+  })
+})
+
+describe('components example figure (t02)', () => {
+  it('left panel has 3 components, one colour each; right panel: highlighted a,b connected but not a component', () => {
+    const g = fig('t02-components-example', 0), h = fig('t02-components-example', 1)
+    const comps = A.components(new GraphIndex(g)).map(c => [...c].sort().join('')).sort()
+    expect(comps).toEqual(['abc', 'de', 'f'])
+    for (const [c, vs] of [['color1', 'abc'], ['color2', 'de'], ['color3', 'f']])
+      expect(g.vertices.filter(v => v.classes.includes(c)).map(v => v.id).sort().join('')).toBe(vs)
+    const hi = new Set(h.vertices.filter(v => v.classes.includes('highlight')).map(v => v.id))
+    expect([...hi].sort()).toEqual(['a', 'b'])
+    const sub = A.components(new GraphIndex(h), e => hi.has(e.tail[0]) && hi.has(e.head[0]))
+    expect(sub.some(c => c.length === 2 && c.every(v => hi.has(v)))).toBe(true)
+    expect(A.components(new GraphIndex(h)).some(c => c.includes('a') && c.length === 3)).toBe(true)
+  })
+})
+
+describe('distance example figure (t02)', () => {
+  it('left: dist(u,v) = 2 via u c v, the other walk u a b v has length 3; right: u and x in different components', () => {
+    const g = fig('t02-distance-example', 0), h = fig('t02-distance-example', 1)
+    expect(A.bfsDistances(new GraphIndex(g), 'u').get('v')).toBe(2)
+    expect(g.edges.filter(e => e.classes.includes('path')).map(e => e.tail[0] + e.head[0]).sort()).toEqual(['cv', 'uc'])
+    expect(g.edges.filter(e => e.classes.includes('muted')).length).toBe(3)
+    expect(A.bfsDistances(new GraphIndex(h), 'u').has('x')).toBe(false)
+    expect(A.components(new GraphIndex(h)).some(c => c.includes('u') && c.includes('x'))).toBe(false)
+  })
+})
+
+describe('union-find / Kruskal complexity walkthroughs (a01)', () => {
+  const g = fig('a01-complexity-loop')
+  const h = fig('a01-complexity-sum')
+  const n = g.vertices.length, m = g.edges.length
+  const sorted = [...g.edges].sort((x, y) => num(x.data.w) - num(y.data.w))
+  // Kruskal with the operation counts the steps state: MAKE-SET, FIND-SET, UNION.
+  const comp = new Map(g.vertices.map(v => [v.id, v.id]))
+  let finds = 0, unions = 0
+  const accepted: string[] = [], rejected: string[] = []
+  for (const e of sorted) {
+    finds += 2
+    const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+    if (a !== b) { unions++; accepted.push(name(g, e.id)); for (const [k, c] of comp) if (c === b) comp.set(k, a) } else rejected.push(name(g, e.id))
+  }
+  it('same graph as the running example, 8 vertices and 12 edges', () => {
+    expect([n, m]).toEqual([8, 12])
+    expect(h.vertices.length).toBe(8)
+    expect(h.edges.length).toBe(12)
+    const ex = fig('a01-example-graph')
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+  })
+  it('sorted order cf de fh ab ef dg ce ac bd gh bc eg', () => {
+    expect(sorted.map(e => name(g, e.id))).toEqual(['cf', 'de', 'fh', 'ab', 'ef', 'dg', 'ce', 'ac', 'bd', 'gh', 'bc', 'eg'])
+  })
+  it('24 FIND-SET calls, 7 UNION calls, 5 rejected edges; 31 loop operations, 39 with MAKE-SET', () => {
+    expect(finds).toBe(24)
+    expect(unions).toBe(7)
+    expect(unions).toBe(n - 1)
+    expect(rejected.sort()).toEqual(['bc', 'bd', 'ce', 'eg', 'gh'])
+    expect(finds + unions).toBe(31)
+    expect(finds + unions).toBeLessThanOrEqual(3 * m)
+    expect(n + finds + unions).toBe(39)
+    expect(m).toBeGreaterThanOrEqual(n - 1)
+  })
+  it('tree class and marked edges are the accepted ones', () => {
+    expect(accepted.sort()).toEqual(['ab', 'ac', 'cf', 'de', 'dg', 'ef', 'fh'])
+    expect(new Set(mstEdges(g)).size).toBe(7)
+    expect(weight(g, mstEdges(g))).toBe(29)
+  })
+  it('numbers of the sum figure: log2 8 = 3, log2 12 ~ 3.58, m <= n^2, 12 against 64, 6', () => {
+    expect(Math.log2(n)).toBe(3)
+    expect(Math.log2(m)).toBeCloseTo(3.585, 2)
+    expect(m).toBeLessThanOrEqual(n * n)
+    expect(n * n).toBe(64)
+    expect(2 * Math.log2(n)).toBe(6)
+    expect(Math.log2(m)).toBeLessThanOrEqual(2 * Math.log2(n))
+    expect(Math.log2(n)).toBeLessThanOrEqual(2 * Math.log2(m))
+  })
+})
+
+describe('Borůvka complexity walkthroughs (a01)', () => {
+  const g = fig('a01-boruvka-halving')
+  const h = fig('a01-boruvka-phase-cost')
+  const n = g.vertices.length, m = g.edges.length
+  const ids = (x: GraphData, ns: string[]) => ns.map(s => x.edges.find(e => name(x, e.id) === s[0] + s[1])!.id)
+  const marked = (x: GraphData, mk: string) => (x.marks?.[mk] ?? []).map(s => s.replace(/^@/, ''))
+  // Borůvka by hand, with the distinct weights of the running example.
+  const comp = new Map(g.vertices.map(v => [v.id, v.id]))
+  const phases: { chosen: Set<string>; count: number }[] = []
+  while (new Set(comp.values()).size > 1) {
+    const best = new Map<string, (typeof g.edges)[number]>()
+    for (const e of g.edges) {
+      const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+      if (a === b) continue
+      for (const r of [a, b]) if (!best.has(r) || num(e.data.w) < num(best.get(r)!.data.w)) best.set(r, e)
+    }
+    const chosen = new Set([...best.values()].map(e => name(g, e.id)))
+    for (const e of best.values()) {
+      const a = comp.get(e.tail[0])!, b = comp.get(e.head[0])!
+      if (a !== b) for (const [k, c] of comp) if (c === b) comp.set(k, a)
+    }
+    phases.push({ chosen, count: new Set(comp.values()).size })
+  }
+  it('same graph as the running example, 8 vertices and 12 edges', () => {
+    expect([n, m]).toEqual([8, 12])
+    const ex = fig('a01-example-graph')
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+    expect(ws(h)).toEqual(ws(ex))
+  })
+  it('phase 1 chooses ab cf de dg fh and leaves 3 components (8 -> 3 <= 4)', () => {
+    expect([...phases[0].chosen].sort()).toEqual(['ab', 'cf', 'de', 'dg', 'fh'])
+    expect(phases[0].count).toBe(3)
+    expect(phases[0].count).toBeLessThanOrEqual(n / 2)
+  })
+  it('phase 2 chooses ac and ef, leaves 1 component (bound 8/4 = 2); 2 phases, log2 8 = 3', () => {
+    expect([...phases[1].chosen].sort()).toEqual(['ac', 'ef'])
+    expect(phases[1].count).toBe(1)
+    expect(1).toBeLessThanOrEqual(n / 4)
+    expect(phases.length).toBe(2)
+    expect(Math.log2(n)).toBe(3)
+  })
+  it('the figure marks match', () => {
+    expect(new Set(marked(g, 'P1'))).toEqual(new Set(ids(g, ['ab', 'cf', 'de', 'dg', 'fh'])))
+    expect(new Set(marked(g, 'P2'))).toEqual(new Set(ids(g, ['ac', 'ef'])))
+    expect(new Set(marked(h, 'P'))).toEqual(new Set(ids(h, ['ac', 'ef'])))
+  })
+  it('start of phase 2: 5 forest edges, 6 edges inside components, 6 between them, 8 vertices, 12 edges', () => {
+    const forest = ['ab', 'cf', 'de', 'dg', 'fh']
+    const label = new Map<string, string>()
+    const cs = [['a', 'b'], ['c', 'f', 'h'], ['d', 'e', 'g']]
+    cs.forEach((c, i) => c.forEach(v => label.set(v, String(i))))
+    const inside = h.edges.filter(e => label.get(e.tail[0]) === label.get(e.head[0])).map(e => name(h, e.id)).sort()
+    const across = h.edges.filter(e => label.get(e.tail[0]) !== label.get(e.head[0])).map(e => name(h, e.id)).sort()
+    expect(forest.length).toBe(5)
+    expect(inside).toEqual(['ab', 'cf', 'de', 'dg', 'eg', 'fh'])
+    expect(across).toEqual(['ac', 'bc', 'bd', 'ce', 'ef', 'gh'])
+    expect([h.vertices.length, h.edges.length]).toEqual([8, 12])
+    expect(new Set(marked(h, 'I'))).toEqual(new Set(ids(h, inside)))
+    expect(new Set(marked(h, 'X'))).toEqual(new Set(ids(h, across)))
+    expect(new Set(marked(h, 'F'))).toEqual(new Set(ids(h, forest)))
+  })
+  it('components store ac (8), ef (5), ef (5) as lightest leaving edges', () => {
+    const w = (s: string) => num(h.edges.find(e => name(h, e.id) === s)!.data.w)
+    const cross = (c: string[]) => h.edges.filter(e => c.includes(e.tail[0]) !== c.includes(e.head[0]))
+    const lightest = (c: string[]) => { const e = cross(c).sort((x, y) => num(x.data.w) - num(y.data.w))[0]; return name(h, e.id) + num(e.data.w) }
+    expect([lightest(['a', 'b']), lightest(['c', 'f', 'h']), lightest(['d', 'e', 'g'])]).toEqual(['ac8', 'ef5', 'ef5'])
+    expect([w('ac'), w('ef')]).toEqual([8, 5])
+  })
+})
+
+describe('MST verification walkthroughs (a01)', () => {
+  const g = fig('a01-verif-all-heavy')
+  const h = fig('a01-verif-converse')
+  const ex = fig('a01-example-graph')
+  const marked = (x: GraphData, mk: string) => (x.marks?.[mk] ?? []).map(s => s.replace(/^@/, ''))
+  const ids = (x: GraphData, ns: string[]) => ns.map(s => x.edges.find(e => name(x, e.id) === s)!.id)
+  const treeNames = ['ab', 'ac', 'cf', 'de', 'dg', 'ef', 'fh']
+  const outside = ['bc', 'bd', 'ce', 'eg', 'gh']
+  // w_T(e): heaviest edge on the tree path between the ends of e.
+  const wT = (x: GraphData, a: string, b: string) => {
+    const t = x.edges.filter(e => treeNames.includes(name(x, e.id)))
+    const walk = (v: string, seen: string[]): number[] | null => {
+      if (v === b) return []
+      for (const e of t) {
+        const o = e.tail[0] === v ? e.head[0] : e.head[0] === v ? e.tail[0] : null
+        if (o && !seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [num(e.data.w), ...r] }
+      }
+      return null
+    }
+    return Math.max(...walk(a, [a])!)
+  }
+  const w = (x: GraphData, s: string) => num(x.edges.find(e => name(x, e.id) === s)!.data.w)
+  it('same graph as the running example; T is its MST with 7 edges, n = 8, 5 edges outside', () => {
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    expect(ws(g)).toEqual(ws(ex))
+    expect(ws(h)).toEqual(ws(ex))
+    expect(g.vertices.length).toBe(8)
+    expect(new Set(mstEdges(g))).toEqual(new Set(ids(g, treeNames)))
+    expect(treeNames.length).toBe(7)
+    expect(g.edges.length - treeNames.length).toBe(5)
+  })
+  it('w_T of the five outside edges is 8, 8, 5, 6, 6 and each edge is T-heavy', () => {
+    expect(outside.map(s => wT(g, s[0], s[1]))).toEqual([8, 8, 5, 6, 6])
+    expect(outside.map(s => w(g, s))).toEqual([11, 9, 7, 12, 10])
+    for (const s of outside) expect(w(g, s)).toBeGreaterThan(wT(g, s[0], s[1]))
+  })
+  it('bc closes the cycle a b c: 11 against 4 and 8 (and w_T = max(4, 8) = 8)', () => {
+    expect([w(g, 'bc'), w(g, 'ab'), w(g, 'ac')]).toEqual([11, 4, 8])
+    expect(wT(g, 'b', 'c')).toBe(8)
+  })
+  it('ce closes the cycle c f e: 7 against 1 and 5, w_T(ce) = 5', () => {
+    expect([w(h, 'ce'), w(h, 'cf'), w(h, 'ef')]).toEqual([7, 1, 5])
+    expect(wT(h, 'c', 'e')).toBe(5)
+  })
+  it('the marks match', () => {
+    for (const x of [g, h]) {
+      expect(new Set(marked(x, 'T'))).toEqual(new Set(ids(x, treeNames)))
+      expect(new Set(marked(x, 'N'))).toEqual(new Set(ids(x, outside)))
+    }
+    expect(new Set(marked(g, 'e'))).toEqual(new Set(ids(g, ['bc'])))
+    expect(new Set(marked(g, 'C'))).toEqual(new Set(ids(g, ['ab', 'ac', 'bc'])))
+    expect(new Set(marked(h, 'e'))).toEqual(new Set(ids(h, ['ce'])))
+    expect(new Set(marked(h, 'C'))).toEqual(new Set(ids(h, ['ce', 'cf', 'ef'])))
+    expect(new Set(marked(h, 'P'))).toEqual(new Set(ids(h, ['cf', 'ef'])))
+  })
+})
+
+describe('sampling lemma figures (a01)', () => {
+  const ex = fig('a01-example-graph')
+  const s = fig('a01-sampling-example')
+  const pr = fig('a01-sampling-process')
+  const ct = fig('a01-sampling-count')
+  const nm = (x: GraphData, ids: Iterable<string>) => [...ids].map(id => name(x, id)).sort()
+  const cls = (x: GraphData, c: string) => nm(x, x.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  const marked = (x: GraphData, mk: string) => nm(x, (x.marks?.[mk] ?? []).map(t => t.replace(/^@/, '')))
+  const w = (x: GraphData, n: string) => num(x.edges.find(e => name(x, e.id) === n)!.data.w)
+  const order = edgeOrder(s).map(e => name(s, e.id))
+  const sample = new Set(s.edges.filter(e => !e.classes.includes('dashed')).map(e => name(s, e.id)))
+  // The process of the proof: Kruskal on G, an edge enters L when it joins two trees, and F when it is also sampled.
+  const run = (smp: Set<string>, stopAt?: string) => {
+    const p = new Map(s.vertices.map(v => [v.id, v.id]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    const L: string[] = [], F: string[] = []
+    for (const e of order) {
+      if (e === stopAt) return { L, F, joined: find(e[0]) === find(e[1]) }
+      if (find(e[0]) !== find(e[1])) { L.push(e); if (smp.has(e)) { F.push(e); p.set(find(e[0]), find(e[1])) } }
+    }
+    return { L, F, joined: false }
+  }
+  // w_F(e) by the definition: heaviest edge on the F-path, or Infinity.
+  const wF = (F: string[], a: string, b: string): number => {
+    const walk = (v: string, seen: string[]): number[] | null => {
+      if (v === b) return []
+      for (const e of F) {
+        const o = e[0] === v ? e[1] : e[1] === v ? e[0] : null
+        if (o && !seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [w(s, e), ...r] }
+      }
+      return null
+    }
+    const r = walk(a, [a])
+    return r ? Math.max(...r) : Infinity
+  }
+  const { L, F } = run(sample)
+  it('the MSF panel weighs 6 and is the MSF; the other panel is a spanning forest of weight 7', () => {
+    const m = fig('a01-msf', 0), o = fig('a01-msf', 1)
+    const tree = (x: GraphData) => new Set(x.edges.filter(e => e.classes.includes('tree')).map(e => e.id))
+    expect(tree(m)).toEqual(mstEdges(m))
+    expect(weight(m, tree(m))).toBe(6)
+    expect(weight(o, tree(o))).toBe(7)
+    expect(nm(o, tree(o))).toEqual(['ab', 'ac', 'de', 'ef'])
+  })
+  it('same graph as the running example, n = 8; the sample has 8 of 12 edges and leaves a alone', () => {
+    const ws = (x: GraphData) => x.edges.map(e => name(x, e.id) + num(e.data.w)).sort()
+    for (const x of [s, pr, ct]) expect(ws(x)).toEqual(ws(ex))
+    expect(s.vertices.length).toBe(8)
+    expect(sample.size).toBe(8)
+    expect(cls(s, 'dashed')).toEqual(['ab', 'ac', 'bd', 'gh'])
+    expect([...sample].some(e => e.includes('a'))).toBe(false)
+    expect(order[0]).toBe('cf')
+    expect(order.slice(0, 3).map(e => w(s, e))).toEqual([1, 2, 3])
+    expect(order[11]).toBe('eg')
+  })
+  it('F is the MSF of the sample (6 edges); L is the set of F-light edges (9); ce, gh, eg are F-heavy', () => {
+    const H: GraphData = { ...s, edges: s.edges.filter(e => sample.has(name(s, e.id))) }
+    expect(F.slice().sort()).toEqual(nm(s, mstEdges(H)))
+    expect(F.slice().sort()).toEqual(cls(s, 'tree'))
+    expect(F.length).toBe(6)
+    const light = order.filter(e => w(s, e) <= wF(F, e[0], e[1]))
+    expect(L.slice().sort()).toEqual(light.slice().sort())
+    expect(L.length).toBe(9)
+    expect(order.filter(e => !light.includes(e)).sort()).toEqual(['ce', 'eg', 'gh'])
+    expect(cls(s, 'muted')).toEqual(['ce', 'eg', 'gh'])
+  })
+  it('the steps: ab, ce, bc and bd', () => {
+    expect(run(sample, 'ab').F.sort()).toEqual(['cf', 'de', 'fh'])
+    expect(run(sample, 'ab').joined).toBe(false)
+    expect(run(sample, 'ce').joined).toBe(true)
+    expect([w(s, 'ce'), w(s, 'cf'), w(s, 'ef')]).toEqual([7, 1, 5])
+    expect(wF(F, 'c', 'e')).toBe(5)
+    expect(run(sample, 'bc').joined).toBe(false)
+    expect(F).toContain('bc')
+    expect(w(s, 'bc')).toBe(11)
+    const atBd = run(sample, 'bd')
+    expect(atBd.joined).toBe(false)
+    expect(atBd.F.sort()).toEqual(['cf', 'de', 'dg', 'ef', 'fh'])
+    expect(F).not.toContain('bd')
+    expect([w(s, 'bd'), wF(F, 'b', 'd')]).toEqual([9, 11])
+  })
+  it('over all 4096 samples E|L| = 10.79, E|F| = 5.39 = E|L| / 2, below (n - 1)/p = 14 and n/p = 16', () => {
+    let sL = 0, sF = 0
+    const N = 1 << order.length
+    for (let m = 0; m < N; m++) {
+      const r = run(new Set(order.filter((_, i) => (m >> i) & 1)))
+      sL += r.L.length; sF += r.F.length
+    }
+    expect(N).toBe(4096)
+    expect((sL / N).toFixed(2)).toBe('10.79')
+    expect((sF / N).toFixed(2)).toBe('5.39')
+    expect(2 * sF).toBe(sL)
+    expect([(8 - 1) / 0.5, 8 / 0.5]).toEqual([14, 16])
+  })
+  it('the marks match', () => {
+    for (const x of [pr, ct]) {
+      expect(marked(x, 'L')).toEqual(L.slice().sort())
+      expect(marked(x, 'F')).toEqual(F.slice().sort())
+      expect(marked(x, 'bd')).toEqual(['bd'])
+    }
+    expect(marked(pr, 'out')).toEqual(cls(s, 'dashed'))
+    expect(marked(pr, 'heavy')).toEqual(['ce', 'eg', 'gh'])
+    expect(marked(pr, 'Pce')).toEqual(['cf', 'ef'])
+    expect(marked(pr, 'Pbd')).toEqual(['bc', 'cf', 'de', 'ef'])
+    expect(marked(pr, 'first')).toEqual(['cf'])
+    expect(marked(ct, 'before')).toEqual(run(sample, 'bd').F.sort())
+  })
+})
+
+describe('KKT complexity figures (a01)', () => {
+  const g = fig('a01-kkt-recurrence')
+  const doc = (id: string) => { const f = index.figureById.get(id)!; return parseGraph(f.source, f.info).panels[0] }
+  const nm = (ids: Iterable<string>) => [...ids].map(id => name(g, id.replace(/^@/, ''))).sort()
+  const marked = (mk: string) => nm(g.marks?.[mk] ?? [])
+  const w = (id: string) => num(g.edges.find(e => e.id === id)!.data.w)
+  type E = { id: string; u: string; v: string }
+  const edges0: E[] = g.edges.map(e => ({ id: e.id, u: e.tail[0], v: e.head[0] }))
+  // One Boruvka phase with contraction: every vertex with an edge picks its lightest edge; chosen edges are contracted,
+  // loops vanish, of parallel edges only the lightest stays, vertices without edges are deleted.
+  const phase = (vs: string[], es: E[]) => {
+    const chosen = new Set<string>()
+    for (const v of vs) {
+      const inc = es.filter(e => e.u === v || e.v === v)
+      if (inc.length) chosen.add(inc.reduce((a, b) => (w(b.id) < w(a.id) ? b : a)).id)
+    }
+    const p = new Map(vs.map(v => [v, v]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    for (const id of chosen) { const e = es.find(x => x.id === id)!; p.set(find(e.u), find(e.v)) }
+    const rel = es.filter(e => find(e.u) !== find(e.v)).map(e => ({ id: e.id, u: find(e.u), v: find(e.v) }))
+    const best = new Map<string, E>()
+    for (const e of rel) { const k = [e.u, e.v].sort().join(); if (!best.has(k) || w(e.id) < w(best.get(k)!.id)) best.set(k, e) }
+    const kept = [...best.values()]
+    const nv = [...new Set(vs.filter(v => es.some(e => e.u === v || e.v === v)).map(find))]
+    return { chosen: nm(chosen), chosenIds: [...chosen], vs: nv, before: rel, es: kept, removed: rel.filter(e => !kept.includes(e)).map(e => e.id) }
+  }
+  const p1 = phase(g.vertices.map(v => v.id), edges0)
+  const p2 = phase(p1.vs, p1.es)
+  const n = 12, m = 14
+  it('G has n = 12 vertices and m = 14 edges with distinct weights 1 to 14', () => {
+    expect([g.vertices.length, g.edges.length]).toEqual([n, m])
+    expect(g.edges.map(e => w(e.id)).sort((a, b) => a - b)).toEqual(Array.from({ length: 14 }, (_, i) => i + 1))
+  })
+  it('phase 1 chooses six edges (weights 1 to 6); G1 has 6 = n/2 vertices; two parallel edges (ac, cf) are removed, 6 edges stay', () => {
+    expect(p1.chosen).toEqual(marked('F1'))
+    expect(p1.chosenIds.map(w).sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5, 6])
+    expect(p1.vs.length).toBe(n / 2)
+    expect(p1.before.length).toBe(8)
+    expect(nm(p1.removed)).toEqual(marked('D1'))
+    expect(marked('D1')).toEqual(['ac', 'cf'])
+    expect(p1.es.length).toBe(6)
+    // bc (7) beats ac (14) and de (10) beats cf (13)
+    expect([w('bc'), w('ac'), w('de'), w('cf')]).toEqual([7, 14, 10, 13])
+    expect(nm(p1.es.map(e => e.id))).toEqual(['bc', 'cj', 'de', 'fg', 'hi', 'jk'])
+  })
+  it('phase 2 chooses bc, fg, jk (7, 8, 9); G2 has 3 = n/4 vertices and the 3 edges de, hi, cj, no parallel edges', () => {
+    expect(p2.chosen).toEqual(marked('F2'))
+    expect(p2.chosenIds.map(w).sort((a, b) => a - b)).toEqual([7, 8, 9])
+    expect(p2.vs.length).toBe(n / 4)
+    expect(p2.removed.length).toBe(0)
+    expect(p2.es.length).toBe(3)
+    expect(p2.es.length).toBeLessThanOrEqual(m)
+    expect(nm(p2.es.map(e => e.id))).toEqual(marked('G2'))
+    expect(marked('G2')).toEqual(['cj', 'de', 'hi'])
+    expect(marked('G2').map(w).sort((a, b) => a - b)).toEqual([10, 11, 12])
+  })
+  // G2 is a triangle on x, y, z; F' is the MSF of the sample.
+  const tri = p2.es.map(e => ({ id: name(g, e.id), u: e.u, v: e.v })).sort((a, b) => w(a.id) - w(b.id))
+  const msf = (S: string[]) => {
+    const p = new Map(p2.vs.map(v => [v, v]))
+    const find = (x: string): string => (p.get(x) === x ? x : find(p.get(x)!))
+    const F: string[] = []
+    for (const e of tri) if (S.includes(e.id) && find(e.u) !== find(e.v)) { F.push(e.id); p.set(find(e.u), find(e.v)) }
+    return { F, find }
+  }
+  // wF by the definition: heaviest edge on the F-path, Infinity if the ends lie in two trees.
+  const light = (S: string[]) => {
+    const { F, find } = msf(S)
+    const wF = (e: { u: string; v: string }): number => {
+      if (find(e.u) !== find(e.v)) return Infinity
+      // brute force: heaviest edge on the unique path in the forest F
+      const adj = (v: string) => tri.filter(t => F.includes(t.id) && (t.u === v || t.v === v))
+      const walk = (v: string, seen: string[]): number[] | null => {
+        if (v === e.v) return []
+        for (const t of adj(v)) { const o = t.u === v ? t.v : t.u; if (!seen.includes(o)) { const r = walk(o, [...seen, o]); if (r) return [w(t.id), ...r] } }
+        return null
+      }
+      return Math.max(...walk(e.u, [e.u])!)
+    }
+    return { F, light: tri.filter(e => w(e.id) <= wF(e)).map(e => e.id), wF }
+  }
+  it('the sample {de, hi}: F\' = {de, hi} spans x, y, z; cj (12) is F\'-heavy (path weight 11); de and hi are light; H has 2 edges, expected 3/2', () => {
+    const r = light(['de', 'hi'])
+    expect(r.F).toEqual(['de', 'hi'])
+    expect(r.F.length).toBe(p2.vs.length - 1)
+    expect(r.light).toEqual(['de', 'hi'])
+    expect(r.wF(tri.find(e => e.id === 'cj')!)).toBe(11)
+    expect(w('cj')).toBeGreaterThan(11)
+    expect(3 * 0.5).toBe(1.5)
+    expect(marked('Fp')).toEqual(['de', 'hi'])
+    const st = doc('a01-kkt-recurrence').steps
+    const dashed = (i: number) => st[i].graph.edges.filter(e => e.classes.includes('dashed')).map(e => e.id).sort()
+    expect(dashed(7)).toEqual(['cj'])
+  })
+  it('over all 8 samples E|light| = 2.75, below 2|V(G2)| = 6 = n/2; with dummy edges |F\'| + dummies = |V(G2)| - 1', () => {
+    const es = tri.map(e => e.id)
+    let sum = 0
+    for (let mask = 0; mask < 8; mask++) {
+      const S = es.filter((_, i) => (mask >> i) & 1)
+      sum += light(S).light.length
+      // number of trees of F' is |V| - |F'|, so |V| - |F'| - 1 dummy edges make a spanning tree
+      expect(light(S).F.length + (p2.vs.length - light(S).F.length - 1)).toBe(p2.vs.length - 1)
+    }
+    expect(sum / 8).toBe(2.75)
+    expect(2 * p2.vs.length).toBe(6)
+    expect(2 * p2.vs.length).toBe(n / 2)
+    expect(light(['de', 'hi']).light.length).toBe(2)
+  })
+  it('F1, F2 and the MSF of H\' = {de, hi} (both edges) together are the MST of G, weight 66', () => {
+    const F3 = msf(light(['de', 'hi']).light).F
+    expect(F3).toEqual(['de', 'hi'])
+    const all = new Set([...marked('F1'), ...marked('F2'), ...F3])
+    expect(all.size).toBe(n - 1)
+    const T = mstEdges(g)
+    expect(nm(T)).toEqual([...all].sort())
+    expect(weight(g, T)).toBe(66)
+  })
+  it('recursion tree: n = 64, m = 256, sizes 2n + m; the recurrence terms add up to 2c(2n + m); the base calls have sizes 2 and 0', () => {
+    const f = index.figureById.get('a01-kkt-recursion')!
+    const last = parseGraph(f.source, f.info).panels[0].steps.at(-1)!.graph
+    const lab = Object.fromEntries(last.vertices.map(v => [v.id, Number(v.label)]))
+    const size = (a: number, b: number) => 2 * a + b
+    const kids = (a: number, b: number): [number, number][] => [[a / 4, b / 2], [a / 4, a / 2]]
+    const [k1, k2] = kids(64, 256)
+    const [l1, l2] = kids(...k1), [k3, k4] = kids(...k2)
+    expect(lab).toEqual({ r: 384, o: 2, z: 0, l: 160, k: 64, l1: size(...l1), l2: size(...l2), k1: size(...k3), k2: size(...k4) })
+    expect([size(...l1), size(...l2), size(...k3), size(...k4)]).toEqual([72, 16, 24, 16])
+    expect(lab.o).toBe(size(1, 0))
+    // base case: bound 2c(2n + 0) = 4cn, at least 4c for n >= 1
+    expect(2 * size(1, 0)).toBe(4)
+    // empty call: size and bound 0; a caller with an edge has n >= 2, so c(n + m) >= 3c
+    expect(lab.z).toBe(size(0, 0))
+    expect(2 * size(0, 0)).toBe(0)
+    expect(2 + 1).toBe(3)
+    expect(2 * lab.l).toBe(64 + 256)
+    expect(2 * lab.k).toBe(2 * 64)
+    expect(320 + 320 + 128).toBe(768)
+    expect(2 * lab.r).toBe(768)
+    for (const [a, b] of [[64, 256], [100, 7], [3, 50], [1, 1]]) {
+      const [x, y] = kids(a, b)
+      expect(2 * size(...x)).toBe(a + b)
+      expect(2 * size(...y)).toBe(2 * a)
+      expect((a + b) + (a + b) + 2 * a).toBe(2 * size(a, b))
+      // actual sizes: at most n/4 vertices and m edges, so size at most n/2 + m < 2n + m
+      expect(a / 2 + b).toBeLessThan(size(a, b))
+    }
+    const marks = last.marks ?? {}
+    expect(marks.root).toEqual(['r'])
+    expect(marks.base).toEqual(['o'])
+    expect(marks.empty).toEqual(['z'])
+    expect(marks.calls).toEqual(['l', 'k'])
+    expect(marks.below).toEqual(['l1', 'l2', 'k1', 'k2'])
+  })
+})
+
+describe('Ford–Fulkerson analysis (a02-ffa-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const flow = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.f)]))
+  const cap = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.c)]))
+  const value = (g: GraphData) => g.edges.reduce((z, e) => z + (e.tail[0] === 's' ? num(e.data.f) : 0), 0)
+  const isFlow = (g: GraphData) => {
+    for (const e of g.edges) { expect(num(e.data.f)).toBeGreaterThanOrEqual(0); expect(num(e.data.f)).toBeLessThanOrEqual(num(e.data.c)) }
+    for (const v of ['a', 'b', 'c', 'd'])
+      expect(g.edges.filter(e => e.head[0] === v).reduce((z, e) => z + num(e.data.f), 0))
+        .toBe(g.edges.filter(e => e.tail[0] === v).reduce((z, e) => z + num(e.data.f), 0))
+  }
+  // residual capacities of a flow: forward c - f when positive, reverse f when positive
+  const residual = (c: Record<string, number>, f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c)) { if (c[k] > f[k]) r[k] = c[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const augment = (f: Record<string, number>, path: string, d: number) => {
+    const g = { ...f }
+    for (let i = 0; i + 1 < path.length; i++) { const e = path[i] + path[i + 1]; if (e in g) g[e] += d; else g[path[i + 1] + path[i]] -= d }
+    return g
+  }
+  const bottleneck = (r: Record<string, number>, path: string) => Math.min(...[...path].slice(0, -1).map((u, i) => r[u + path[i + 1]]))
+
+  it('integrality figure: integral flows of values 0, 8, 10, 19; bottlenecks 8, 2, 7, 2, each at least 1', () => {
+    const S = steps('a02-ffa-integral')
+    expect(S.length).toBe(5)
+    const c = cap(S[0])
+    expect(Object.keys(c).length).toBe(9)
+    S.forEach(g => { isFlow(g); expect(Object.values(flow(g)).every(Number.isInteger)).toBe(true); expect(cap(g)).toEqual(c) })
+    expect(S.map(value)).toEqual([0, 0, 8, 10, 19])
+    // start: residual capacities are the capacities (all 9 edges)
+    expect(residual(c, flow(S[0]))).toEqual(c)
+    // iteration 1: path s a d t, residual capacities 10, 8, 10
+    const f1 = augment(flow(S[0]), 'sadt', 8)
+    expect([...'sadt'].slice(0, -1).map((u, i) => residual(c, flow(S[0]))[u + 'sadt'[i + 1]])).toEqual([10, 8, 10])
+    expect(bottleneck(residual(c, flow(S[0])), 'sadt')).toBe(8)
+    expect(f1).toEqual(flow(S[2]))
+    // iteration 2: path s a b d t, residual capacities 2, 2, 9, 2 (as on the page augmenting-paths)
+    expect(bottleneck(residual(c, f1), 'sabdt')).toBe(2)
+    const f2 = augment(f1, 'sabdt', 2)
+    expect(f2).toEqual(flow(S[3]))
+    // iteration 3: path s b d c t, bottleneck 7; iteration 4: s b a c t, bottleneck 2 (b -> a cancels a -> b)
+    expect(bottleneck(residual(c, f2), 'sbdct')).toBe(7)
+    const f3 = augment(f2, 'sbdct', 7)
+    expect(bottleneck(residual(c, f3), 'sbact')).toBe(2)
+    const f4 = augment(f3, 'sbact', 2)
+    expect(f4).toEqual(flow(S[4]))
+    expect(f4.ab).toBe(0)
+    expect(maxFlowValue(S[0], 's', 't').value).toBe(19)
+    // every gain is a whole number of at least 1
+    expect([8, 2, 7, 2].every(d => Number.isInteger(d) && d >= 1)).toBe(true)
+    expect(8 + 2 + 7 + 2).toBe(19)
+    expect(S[1].marks.P).toEqual(S[1].edges.filter(e => ['sa', 'ad', 'dt'].includes(name(S[1], e.id))).map(e => '@' + e.id))
+  })
+
+  it('bound figure: cut around s has capacity 20, 2 edges leave s, n = 6, C = 10, (n-1)C = 50, nC = 60, 4 iterations', () => {
+    const S = steps('a02-ffa-bound')
+    expect(S.length).toBe(5)
+    const g = S[0]
+    isFlow(g)
+    const n = g.vertices.length, m = g.edges.length
+    expect([n, m]).toEqual([6, 9])
+    const C = Math.max(...g.edges.map(e => num(e.data.c)))
+    expect(C).toBe(10)
+    expect(cutCapacity(g, new Set(['s']))).toBe(20)
+    expect(g.edges.filter(e => e.tail[0] === 's').map(e => name(g, e.id))).toEqual(['sa', 'sb'])
+    expect(value(g)).toBe(19)
+    expect(19).toBeLessThanOrEqual(20)
+    expect(maxFlowValue(g, 's', 't').value).toBe(19)
+    expect((n - 1) * C).toBe(50)
+    expect(n * C).toBe(60)
+    expect(S[0].vertices.length - 1).toBe(5)
+    expect(S[0].marks.T).toEqual(['a', 'b', 'c', 'd', 't'])
+    expect(S[1].marks.cross.length).toBe(2)
+    expect(cutCapacity(g, new Set(['s']))).toBeLessThanOrEqual((n - 1) * C)
+    // the demo uses 4 iterations, below the bound
+    expect(4).toBeLessThanOrEqual((n - 1) * C)
+    // the final flow is that of the integrality figure
+    expect(flow(g)).toEqual(flow(steps('a02-ffa-integral')[4]))
+  })
+
+  it('time figure: G_f2 has 10 edges (at most 2m = 18), P = s b d c t has 4 edges (at most 5) and bottleneck 7; G_f3 has 12 edges', () => {
+    const S = steps('a02-ffa-time')
+    expect(S.length).toBe(4)
+    const I = steps('a02-ffa-integral')
+    const c = cap(I[0]), f2 = flow(I[3])
+    const res = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data.c)]))
+    expect(res(S[0])).toEqual(residual(c, f2))
+    expect(S[0].edges.length).toBe(10)
+    expect(2 * Object.keys(c).length).toBe(18)
+    expect(S[1].marks.P.length).toBe(4)
+    expect(bottleneck(res(S[0]), 'sbdct')).toBe(7)
+    expect([10, 7, 9, 10]).toEqual([...'sbdct'].slice(0, -1).map((u, i) => res(S[0])[u + 'sbdct'[i + 1]]))
+    expect(4).toBeLessThanOrEqual(6 - 1)
+    const f3 = augment(f2, 'sbdct', 7)
+    expect(res(S[2])).toEqual(residual(c, f3))
+    expect(S[2].edges.length).toBe(12)
+    // only edges of P and their reverses change; b -> d disappears, three reverse edges appear
+    const r2 = residual(c, f2), r3 = residual(c, f3)
+    const onP = new Set(['sb', 'bd', 'dc', 'ct', 'bs', 'db', 'cd', 'tc'])
+    const changed = [...new Set([...Object.keys(r2), ...Object.keys(r3)])].filter(k => r2[k] !== r3[k])
+    expect(changed.every(k => onP.has(k))).toBe(true)
+    expect(Object.keys(r2).filter(k => !(k in r3))).toEqual(['bd'])
+    expect(Object.keys(r3).filter(k => !(k in r2)).sort()).toEqual(['bs', 'cd', 'tc'])
+    // the unchanged edges are the muted ones
+    const unchanged = Object.keys(r3).filter(k => r2[k] === r3[k]).sort()
+    expect(unchanged).toEqual(['ac', 'as', 'ba', 'da', 'td'])
+    expect(S[3].edges.filter(e => e.classes.includes('muted')).map(e => name(S[3], e.id)).sort()).toEqual(unchanged)
+    // total time: at most nC = 60 iterations of O(m)
+    expect(6 * 10).toBe(60)
+  })
+})
+
+describe('Edmonds–Karp analysis (a02-eka-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const nm = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), e]))
+  const cap = (g: GraphData, key: string) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data[key])]))
+  // BFS distances from s in a residual graph given as {uv: capacity}
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of 'sabcdt') if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (c: Record<string, number>, f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c)) { if (c[k] > f[k]) r[k] = c[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const augment = (f: Record<string, number>, path: string) => {
+    const r = residual(c0, f)
+    const d = Math.min(...[...path].slice(0, -1).map((u, i) => r[u + path[i + 1]]))
+    const g = { ...f }
+    for (let i = 0; i + 1 < path.length; i++) { const e = path[i] + path[i + 1]; if (e in g) g[e] += d; else g[path[i + 1] + path[i]] -= d }
+    return { f: g, d }
+  }
+  const M = steps('a02-eka-monotone')
+  const c0 = cap(M[0], 'c')
+  const f0 = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+
+  it('monotone figure: levels 0,1,1,2,2,3; P = sadt has bottleneck 8; distances stay the same; reverse edges fall one level', () => {
+    expect(M.length).toBe(6)
+    expect(Object.keys(c0).length).toBe(9)
+    const d0 = dist(residual(c0, f0))
+    expect(d0).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    // (a,b) stays on level 1: d(b) = 1 <= d(a) + 1 = 2
+    expect(d0.b).toBe(1)
+    const { f: f1, d } = augment(f0, 'sadt')
+    expect(d).toBe(8)
+    const r1 = residual(c0, f1)
+    // a -> d is saturated and gone; s -> a and d -> t drop to 2; reverse edges have capacity 8
+    expect('ad' in r1).toBe(false)
+    expect([r1.sa, r1.dt, r1.as, r1.da, r1.td]).toEqual([2, 2, 8, 8, 8])
+    expect(Object.keys(cap(M[2], 'c')).sort()).toEqual(Object.keys(r1).filter(k => !['as', 'da', 'td'].includes(k)).sort())
+    expect([cap(M[2], 'c').sa, cap(M[2], 'c').dt]).toEqual([2, 2])
+    // new edges fall exactly one level of d_f
+    for (const k of ['as', 'da', 'td']) expect(d0[k[1]]).toBe(d0[k[0]] - 1)
+    // every edge of G_f' satisfies d_f(y) <= d_f(x) + 1
+    for (const k of Object.keys(r1)) expect(d0[k[1]]).toBeLessThanOrEqual(d0[k[0]] + 1)
+    // distances after augmenting: no vertex got closer; here they are unchanged; shortest s-t path is s b d t
+    const d1 = dist(r1)
+    for (const v of 'sabcdt') expect(d1[v]).toBeGreaterThanOrEqual(d0[v])
+    expect(d1).toEqual(d0)
+    expect(['sb', 'bd', 'dt'].every(k => r1[k] > 0)).toBe(true)
+    // figure content
+    expect(M[1].marks.P.length).toBe(3)
+    expect(Object.keys(nm(M[3])).filter(k => !(k in r1)).length).toBe(0)
+    expect(M[3].marks.new.length).toBe(3)
+    expect(M[5].edges.filter(e => e.classes.includes('path')).map(e => name(M[5], e.id)).sort()).toEqual(['bd', 'dt', 'sb'])
+  })
+
+  it('phase figure: L has 7 of 9 edges, three augmentations (8, 2, 2) remove ad, dt, sa; then the shortest path has length 4', () => {
+    const P = steps('a02-eka-phase')
+    expect(P.length).toBe(5)
+    expect(cap(P[0], 'c')).toEqual(c0)
+    const d0 = dist(residual(c0, f0))
+    expect(d0.t).toBe(3)
+    const up = Object.keys(c0).filter(k => d0[k[1]] === d0[k[0]] + 1)
+    expect(up.length).toBe(7)
+    expect(Object.keys(c0).filter(k => !up.includes(k)).sort()).toEqual(['ab', 'dc'])
+    expect(P[0].edges.filter(e => e.classes.includes('muted')).map(e => name(P[0], e.id)).sort()).toEqual(['ab', 'dc'])
+    expect(Object.keys(c0).length).toBe(9)
+    // new reverse edges of the first augmentation all fall one level
+    let st = augment(f0, 'sadt'); expect(st.d).toBe(8)
+    const r1 = residual(c0, st.f)
+    for (const k of ['as', 'da', 'td']) expect(d0[k[1]]).toBe(d0[k[0]] - 1)
+    expect(P[1].marks.new.length).toBe(3)
+    // second path s b d t: bottleneck 2, uses edges of L only
+    expect(['sb', 'bd', 'dt'].every(k => up.includes(k))).toBe(true)
+    expect([r1.sb, r1.bd, r1.dt]).toEqual([10, 9, 2])
+    const s2 = augment(st.f, 'sbdt'); expect(s2.d).toBe(2)
+    // third path s a c t: bottleneck 2, edges of L only
+    expect(['sa', 'ac', 'ct'].every(k => up.includes(k))).toBe(true)
+    const s3 = augment(s2.f, 'sact'); expect(s3.d).toBe(2)
+    // bottleneck edges ad, dt, sa are gone from the residual graph
+    const r3 = residual(c0, s3.f)
+    expect(['ad', 'dt', 'sa'].filter(k => k in r3)).toEqual([])
+    expect(['sb', 'bd', 'ac', 'ct'].every(k => k in r3)).toBe(true)
+    // no path of length 3 is left, the shortest path has length 4: s b d c t
+    const d3 = dist(r3)
+    expect(d3.t).toBe(4)
+    expect(['sb', 'bd', 'dc', 'ct'].every(k => k in r3)).toBe(true)
+    expect(P[4].edges.filter(e => e.classes.includes('path')).map(e => name(P[4], e.id)).sort()).toEqual(['bd', 'ct', 'dc', 'sb'])
+    // L has at most m = 9 edges; 3 augmentations <= 7 <= 9
+    expect(3).toBeLessThanOrEqual(up.length)
+    expect(up.length).toBeLessThanOrEqual(9)
+    // the figure after the removals
+    expect(P[3].edges.map(e => name(P[3], e.id)).sort()).toEqual(['ab', 'ac', 'as', 'bd', 'ct', 'da', 'dc', 'sb', 'td'])
+  })
+
+  it('time figure: m = 9, n = 6, m(n-1) = 45; run has 4 augmentations of lengths 3,3,3,4 and values 12 then 19', () => {
+    const T = steps('a02-eka-time')
+    expect(T.length).toBe(4)
+    expect(T[0].vertices.length).toBe(6)
+    expect(T[0].edges.length).toBe(9)
+    expect(T[3].vertices.filter(v => v.classes.includes('visited')).length).toBe(6)
+    expect(9 * (6 - 1)).toBe(45)
+    let f = f0
+    const lens: number[] = []
+    for (const p of ['sadt', 'sbdt', 'sact', 'sbdct']) {
+      lens.push(dist(residual(c0, f)).t)
+      f = augment(f, p).f
+      if (p === 'sact') expect(cap(T[0], 'f')).toEqual(f)
+    }
+    expect(lens).toEqual([3, 3, 3, 4])
+    expect(cap(T[1], 'f')).toEqual(f)
+    expect(dist(residual(c0, f)).t).toBeUndefined()
+    expect(f.sa + f.sb).toBe(19)
+    expect(maxFlowValue(T[0], 's', 't').value).toBe(19)
+    expect(4).toBeLessThanOrEqual(45)
+    expect(T[0].edges.filter(e => e.classes.includes('path')).length).toBe(7)
+    expect(cap(T[0], 'f').sa + cap(T[0], 'f').sb).toBe(12)
+    expect(T[2].edges.filter(e => e.classes.includes('bold')).length).toBe(8)
+  })
+})
+
+describe('Blocking flows (a02-blk-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (g: GraphData, id: string) => name(g, id)
+  const cap = (g: GraphData, k: string) => Object.fromEntries(g.edges.map(e => [key(g, e.id), num(e.data[k])]))
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  // the lecture network (a02-blocking-flow): capacities, no flow
+  const c0: Record<string, number> = { sp: 9, sq: 4, pr: 5, rq: 9, rt: 3, qx: 5, xt: 9 }
+  const V = 'spqrxt'
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of V) if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c0)) { if (c0[k] > f[k]) r[k] = c0[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const f0 = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+  // the procedure of alg:dinic-blocking on the level graph of residual r; returns the flow and the step counts
+  const blocking = (r: Record<string, number>) => {
+    const d = dist(r)
+    const res = Object.fromEntries(Object.keys(r).filter(k => d[k[1]] === d[k[0]] + 1).map(k => [k, r[k]]))
+    const L = new Set(Object.keys(res))
+    const f: Record<string, number> = {}
+    const cnt = { aug: 0, ret: 0, adv: 0, runs: [] as number[], bottlenecks: [] as number[], deleted: [] as string[] }
+    let v = 's', P: string[] = [], run = 0
+    for (;;) {
+      if (v === 't') {
+        const b = Math.min(...P.map(e => res[e] - (f[e] ?? 0)))
+        for (const e of P) f[e] = (f[e] ?? 0) + b
+        cnt.aug++; cnt.runs.push(run); run = 0; cnt.bottlenecks.push(b)
+        for (const e of [...L]) if ((f[e] ?? 0) === res[e]) { L.delete(e); cnt.deleted.push(e) }
+        v = 's'; P = []
+      } else {
+        const out = [...L].find(e => e[0] === v)
+        if (out) { P.push(out); v = out[1]; cnt.adv++; run++ } else {
+          if (v === 's') break
+          for (const e of [...L]) if (e[0] === v || e[1] === v) { L.delete(e); cnt.deleted.push(e) }
+          cnt.deleted.push(v)
+          cnt.ret++; cnt.runs.push(run); run = 0
+          const last = P.pop()!; v = last[0]
+        }
+      }
+    }
+    return { f, res, d, cnt, L }
+  }
+
+  it('correctness figure: L has 6 edges (levels s0 p1 q1 r2 x2 t3, rq excluded), augmentations 3 and 4 saturate rt and sq, then the loop stops at s', () => {
+    const S = steps('a02-blk-correct')
+    expect(S.length).toBe(6)
+    const d = dist(residual(f0))
+    expect(d).toEqual({ s: 0, p: 1, q: 1, r: 2, x: 2, t: 3 })
+    const b = blocking(residual(f0))
+    expect([...b.L].sort()).toEqual(['qx', 'xt'])  // left in L, but no edge leaves s
+    expect(Object.keys(b.res).sort()).toEqual(['pr', 'qx', 'rt', 'sp', 'sq', 'xt'])
+    expect(Object.keys(c0).filter(k => !(k in b.res))).toEqual(['rq'])
+    expect(cap(S[0], 'c')).toEqual(b.res)
+    expect(b.cnt.bottlenecks).toEqual([3, 4])
+    expect(b.cnt.deleted.slice(0, 1)).toEqual(['rt'])
+    expect(b.f).toEqual({ sp: 3, pr: 3, rt: 3, sq: 4, qx: 4, xt: 4 })
+    expect(cap(S[1], 'f')).toEqual({ sp: 3, sq: 0, pr: 3, rt: 3, qx: 0, xt: 0 })
+    expect(cap(S[4], 'f')).toEqual(b.f)
+    // two open paths at the start, none at the end: every s-t path of L has a saturated edge
+    expect(['sp', 'pr', 'rt'].some(e => b.f[e] === b.res[e])).toBe(true)
+    expect(['sq', 'qx', 'xt'].some(e => b.f[e] === b.res[e])).toBe(true)
+    expect(b.f.sp + b.f.sq).toBe(7)
+    expect(marked(S[0], 'open').length).toBe(6)
+    // deleted: rt (saturated), r with pr, p with sp, sq (saturated)
+    expect(S[1].edges.filter(e => e.classes.includes('muted')).map(e => key(S[1], e.id))).toEqual(['rt'])
+    expect(S[2].vertices.filter(v => v.classes.includes('muted')).map(v => v.id)).toEqual(['r'])
+    expect(S[3].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['p', 'r'])
+    expect(S[4].edges.filter(e => e.classes.includes('muted')).map(e => key(S[4], e.id)).sort()).toEqual(['pr', 'rt', 'sp', 'sq'])
+    expect(S[5].vertices.filter(v => v.classes.includes('current')).map(v => v.id)).toEqual(['s'])
+  })
+
+  it('time figure: 2 augmentations, 2 retreats, 8 advances in runs 3,2,0,3; n = 6, the path s q x t has 3 edges', () => {
+    const S = steps('a02-blk-time')
+    expect(S.length).toBe(5)
+    const b = blocking(residual(f0))
+    expect(b.cnt.aug).toBe(2)
+    expect(b.cnt.ret).toBe(2)
+    expect(b.cnt.adv).toBe(8)
+    expect(b.cnt.runs).toEqual([3, 2, 0, 3])
+    expect(b.cnt.runs.every(r => r <= 6 - 1)).toBe(true)
+    expect(V.length).toBe(6)
+    expect(Object.keys(b.res).length).toBe(6)
+    expect(marked(S[0], 'aug').length).toBe(2)
+    expect(S[0].edges.filter(e => e.classes.includes('muted')).map(e => key(S[0], e.id)).sort()).toEqual(['rt', 'sq'])
+    expect(S[1].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['p', 'r'])
+    expect(marked(S[1], 'dead').length).toBe(2)
+    expect(marked(S[2], 'run').length).toBe(3)
+    expect(marked(S[3], 'P').length).toBe(3)
+    expect(S[4].vertices.filter(v => v.classes.includes('visited')).length).toBe(6)
+  })
+
+  it('dinic figure: phase 1 (distance 3) gives 7, phase 2 (distance 5, path s p r q x t, 1 unit) gives 8 = max flow; then no path; m = 7, n = 6', () => {
+    const S = steps('a02-blk-dinic')
+    expect(S.length).toBe(4)
+    expect(cap(S[0], 'c')).toEqual(c0)
+    expect(Object.keys(c0).length).toBe(7)
+    expect(V.length).toBe(6)
+    const r0 = residual(f0)
+    const d0 = dist(r0)
+    expect(d0.t).toBe(3)
+    // rq does not climb a level of phase 1; the other six edges do
+    expect(Object.keys(c0).filter(k => d0[k[1]] !== d0[k[0]] + 1)).toEqual(['rq'])
+    const b1 = blocking(r0)
+    const f1 = { ...f0 }; for (const k of Object.keys(b1.f)) f1[k] += b1.f[k]
+    expect(f1.sp + f1.sq).toBe(7)
+    expect(cap(S[0], 'f')).toEqual(f1)
+    expect(S[0].edges.filter(e => e.classes.includes('bold')).length).toBe(6)
+    // phase 2
+    const r1 = residual(f1)
+    const d1 = dist(r1)
+    expect(d1.t).toBe(5)
+    const b2 = blocking(r1)
+    expect(b2.cnt.aug).toBe(1)
+    expect(b2.cnt.bottlenecks).toEqual([1])
+    expect(Object.keys(b2.f).sort()).toEqual(['pr', 'qx', 'rq', 'sp', 'xt'])
+    const f2 = { ...f1 }; for (const k of Object.keys(b2.f)) f2[k] += b2.f[k]
+    expect(f2).toEqual({ sp: 4, sq: 4, pr: 4, rq: 1, rt: 3, qx: 5, xt: 5 })
+    expect(cap(S[2], 'f')).toEqual({ ...f2, rt: 3, sq: 4 })
+    expect(f2.sp + f2.sq).toBe(8)
+    expect(dist(residual(f2)).t).toBeUndefined()
+    const g = S[0]
+    expect(maxFlowValue(g, 's', 't').value).toBe(8)
+    // 2 phases of at most n = 6
+    expect(2).toBeLessThanOrEqual(6)
+    expect(marked(S[2], 'P2').length).toBe(5)
+    expect(S[3].edges.filter(e => e.classes.includes('bold')).length).toBe(7)
+  })
+})
+
+describe('MPM proofs (a02-mpm-count, a02-mpm-phases)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (g: GraphData, id: string) => name(g, id)
+  const val = (g: GraphData, k: string) => Object.fromEntries(g.edges.map(e => [key(g, e.id), num(e.data[k])]))
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  // the lecture network (a02-network): capacities
+  const c0: Record<string, number> = { sa: 10, sb: 10, ab: 2, ac: 4, ad: 8, bd: 9, dc: 9, ct: 10, dt: 10 }
+  const V = 'sabcdt'
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of V) if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c0)) { r[k] = (r[k] ?? 0) + c0[k] - f[k]; const b = k[1] + k[0]; r[b] = (r[b] ?? 0) + f[k] }
+    return r
+  }
+  // MPM on the level graph of a residual graph; follows the written algorithm (min vertex capacity, push, pull, erase)
+  const mpm = (r: Record<string, number>) => {
+    const d = dist(r)
+    const L: Record<string, number> = {}
+    for (const k of Object.keys(r)) if (r[k] > 0 && d[k[1]] === d[k[0]] + 1) L[k] = r[k]
+    const flow: Record<string, number> = {}
+    const alive = new Set(V)
+    const log: { v: string; d: number; caps: Record<string, number>; partial: string[]; saturated: string[] }[] = []
+    const live = () => Object.keys(L).filter(k => L[k] > 0 && alive.has(k[0]) && alive.has(k[1]))
+    const prune = () => {
+      for (let ch = true; ch;) {
+        ch = false
+        for (const v of [...alive]) {
+          if (v === 's' || v === 't') continue
+          const E = live()
+          if (!E.some(k => k[1] === v) || !E.some(k => k[0] === v)) { alive.delete(v); ch = true }
+        }
+      }
+    }
+    const capOf = (v: string) => {
+      const E = live()
+      const i = E.filter(k => k[1] === v).reduce((z, k) => z + L[k], 0)
+      const o = E.filter(k => k[0] === v).reduce((z, k) => z + L[k], 0)
+      return v === 's' ? o : v === 't' ? i : Math.min(i, o)
+    }
+    prune()
+    const eraseOrder: string[] = []
+    while (alive.has('s') && alive.has('t') && live().length) {
+      const caps = Object.fromEntries([...alive].map(v => [v, capOf(v)]))
+      const v = [...alive].sort((a, b) => caps[a] - caps[b])[0]
+      const dd = caps[v]
+      const before = { ...L }
+      const move = (dir: 1 | -1) => {
+        const ex: Record<string, number> = { [v]: dd }
+        const order = [...alive].sort((a, b) => dir * (d[a] - d[b]))
+        for (const u of order) {
+          let x = ex[u] ?? 0
+          if (x <= 0 || (dir === 1 && u === 't') || (dir === -1 && u === 's')) continue
+          for (const k of live()) {
+            if (x <= 0) break
+            const from = dir === 1 ? k[0] : k[1], to = dir === 1 ? k[1] : k[0]
+            if (from !== u) continue
+            const a = Math.min(x, L[k])
+            L[k] -= a; x -= a; flow[k] = (flow[k] ?? 0) + a
+            ex[to] = (ex[to] ?? 0) + a
+          }
+        }
+      }
+      move(1); move(-1)
+      const touched = Object.keys(L).filter(k => before[k] !== L[k])
+      log.push({ v, d: dd, caps, partial: touched.filter(k => L[k] > 0), saturated: touched.filter(k => L[k] === 0) })
+      alive.delete(v); eraseOrder.push(v)
+      prune()
+    }
+    return { L, flow, log, eraseOrder, d, value: (flow.sa ?? 0) + (flow.sb ?? 0) }
+  }
+  const zero = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+  const add = (f: Record<string, number>, g: Record<string, number>) => { const h = { ...f }; for (const k of Object.keys(g)) h[k] = (h[k] ?? 0) + g[k]; return h }
+  const p1 = mpm(residual(zero))
+
+  it('count figure: L has 7 edges (ab, dc dropped), 6 vertices, 9 edges in G', () => {
+    const S = steps('a02-mpm-count')
+    expect(S.length).toBe(8)
+    expect(Object.keys(c0).length).toBe(9)
+    expect(p1.d).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    expect(Object.keys(c0).filter(k => p1.d[k[1]] !== p1.d[k[0]] + 1).sort()).toEqual(['ab', 'dc'])
+    expect(S[0].edges.length).toBe(7)
+    expect(marked(S[0], 'L').length).toBe(7)
+    expect(S[0].vertices.length).toBe(6)
+    expect(6 * 6).toBe(36)
+    expect(9).toBeLessThanOrEqual(36)
+  })
+  it('count figure: vertex capacities at the start are c 4, a 10, b 9, d 10, s 20, t 20', () => {
+    expect(p1.log[0].caps).toEqual({ s: 20, a: 10, b: 9, c: 4, d: 10, t: 20 })
+  })
+  it('count figure: three iterations erase c, a, d with capacities 4, 6, 4 (d tied with t); value 14', () => {
+    const S = steps('a02-mpm-count')
+    expect(p1.eraseOrder).toEqual(['c', 'a', 'd'])
+    expect(p1.log.map(l => l.d)).toEqual([4, 6, 4])
+    expect(p1.log[1].caps.a).toBe(6)
+    expect(p1.log[2].caps.d).toBe(4)
+    expect(p1.log[2].caps.t).toBe(4)
+    expect(p1.value).toBe(14)
+    expect(6 - 1).toBeGreaterThanOrEqual(p1.log.length)
+    expect(marked(S[1], 'erased').sort()).toEqual(['a', 'c', 'd'])
+    expect(marked(S[2], 'mins').sort()).toEqual(['a', 'c', 'd'])
+    expect(S[1].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['a', 'c', 'd'])
+  })
+  it('count figure: final flow labels equal the MPM run; sa, ac, dt saturated; sb, ad, bd, ct partly used', () => {
+    const S = steps('a02-mpm-count')
+    expect(p1.flow).toEqual({ ac: 4, ct: 4, sa: 10, ad: 6, dt: 10, bd: 4, sb: 4 })
+    expect(val(S[1], 'f')).toEqual({ sa: 10, sb: 4, ac: 4, ad: 6, bd: 4, ct: 4, dt: 10 })
+    const L0 = { sa: 10, sb: 10, ac: 4, ad: 8, bd: 9, ct: 10, dt: 10 } as Record<string, number>
+    expect(val(S[0], 'c')).toEqual(L0)
+    const sat = Object.keys(L0).filter(k => p1.flow[k] === L0[k]).sort()
+    const part = Object.keys(L0).filter(k => p1.flow[k] > 0 && p1.flow[k] < L0[k]).sort()
+    expect(sat).toEqual(['ac', 'dt', 'sa'])
+    expect(part).toEqual(['ad', 'bd', 'ct', 'sb'])
+    expect(marked(S[3], 'sat').length).toBe(3)
+    expect(marked(S[4], 'part').length).toBe(4)
+    // push from a (iteration 2): a->d is the only partly used edge, 6 of 8; sa is then saturated
+    expect(p1.log[1].v).toBe('a')
+    expect(p1.log[1].partial).toContain('ad')
+    expect(p1.flow.ad).toBe(6)
+    expect(L0.ad).toBe(8)
+    // at most one partly used outgoing edge per vertex at the end
+    for (const v of V) expect(part.filter(k => k[0] === v).length).toBeLessThanOrEqual(1)
+  })
+  it('count figure: capacity of d drops from 10 to 4 in the iteration for a', () => {
+    expect(p1.log[1].caps.d).toBe(10)
+    expect(p1.log[2].caps.d).toBe(4)
+    const S = steps('a02-mpm-count')
+    expect(marked(S[5], 'key')).toEqual(['d'])
+  })
+
+  const f1 = add(zero, p1.flow)
+  const r1 = residual(f1 as any)
+  it('phases figure: phase 1 distance 3 value 14; phase 2 distance 4 along s b d c t adds 5, value 19, then t unreachable', () => {
+    const S = steps('a02-mpm-phases')
+    expect(S.length).toBe(4)
+    expect(val(S[0], 'c')).toEqual(c0)
+    expect(val(S[0], 'f')).toEqual({ sa: 10, sb: 4, ac: 4, ad: 6, bd: 4, ct: 4, dt: 10, ab: 0, dc: 0 })
+    expect(p1.d.t).toBe(3)
+    expect(p1.value).toBe(14)
+    const d1 = dist(r1)
+    expect(d1.t).toBe(4)
+    const p2 = mpm(r1)
+    expect(p2.value).toBe(5)
+    expect(Object.keys(p2.flow).sort()).toEqual(['bd', 'dc', 'ct', 'sb'].sort())
+    expect(marked(S[1], 'L2').length).toBe(4)
+    expect(marked(S[2], 'P2').length).toBe(4)
+    const f2 = add(f1, p2.flow)
+    expect(f2.sa + f2.sb).toBe(19)
+    expect(val(S[2], 'f')).toEqual({ sa: 10, sb: 9, ac: 4, ad: 6, bd: 9, ct: 9, dt: 10, ab: 0, dc: 5 })
+    expect(dist(residual(f2 as any)).t).toBeUndefined()
+    expect(maxFlowValue(fig('a02-network'), 's', 't').value).toBe(19)
+    // L2 also has the dead end d->a (a lies on no s-t path); the s-t path s b d c t is the only one
+    expect(Object.keys(r1).filter(k => r1[k] > 0 && d1[k[1]] === d1[k[0]] + 1).sort()).toEqual(['bd', 'ct', 'da', 'dc', 'sb'])
+    expect(d1).toEqual({ s: 0, b: 1, d: 2, c: 3, a: 3, t: 4 })
+    // 2 phases of at most n = 6; m = 9 <= n^2 = 36
+    expect(2).toBeLessThanOrEqual(6)
+    expect(9).toBeLessThanOrEqual(36)
+    expect(S[1].edges.filter(e => e.classes.includes('path')).length).toBe(4)
+    expect(S[0].edges.filter(e => e.classes.includes('muted')).map(e => key(S[0], e.id)).sort()).toEqual(['ab', 'dc'])
+  })
+})
+
+describe('Unit-capacity networks (a02-unit-levels, a02-unit-phases, a02-unit-residual)', () => {
+  const stepsOf = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  const ek = (g: GraphData, id: string) => name(g, id)
+  const edgesOf = (g: GraphData) => g.edges.map(e => e.tail[0] + e.head[0])
+  const bfsDist = (es: string[], s: string) => {
+    const d: Record<string, number> = { [s]: 0 }, q = [s]
+    while (q.length) { const u = q.shift()!; for (const e of es) if (e[0] === u && !(e[1] in d)) { d[e[1]] = d[u] + 1; q.push(e[1]) } }
+    return d
+  }
+  // Dinic on unit capacities (net flow); returns per phase the distance and the units pushed, and the final flow
+  const dinicRun = (es: string[], V: string, s: string, t: string) => {
+    const f: Record<string, number> = Object.fromEntries(es.map(e => [e, 0]))
+    const resid = () => { const r: string[] = []; for (const e of es) { if (f[e] === 0) r.push(e); else r.push(e[1] + e[0]) } return r }
+    const phases: { dist: number; push: number; edges: string[] }[] = []
+    for (;;) {
+      const R = resid(), d = bfsDist(R, s)
+      if (!(t in d)) break
+      let push = 0; const used: string[] = []
+      const dead = new Set<string>()
+      const dfs = (u: string): string[] | undefined => {
+        if (u === t) return []
+        for (const e of es) {
+          const fwd = f[e] === 0, a = fwd ? e[0] : e[1], b = fwd ? e[1] : e[0]
+          if (a !== u || d[b] !== d[u] + 1 || dead.has(e + (fwd ? 'f' : 'r'))) continue
+          const rest = dfs(b)
+          if (rest) return [e + (fwd ? 'f' : 'r'), ...rest]
+          dead.add(e + (fwd ? 'f' : 'r'))
+        }
+        return undefined
+      }
+      for (let p = dfs(s); p; p = dfs(s)) {
+        for (const x of p) { const e = x.slice(0, 2); f[e] = x[2] === 'f' ? 1 : 0; used.push(e) }
+        push++
+      }
+      phases.push({ dist: d[t], push, edges: used })
+    }
+    return { phases, f, V }
+  }
+
+  it('levels figure: 6 vertices, 9 edges, layers s | a b | c d | t, distance l = 3', () => {
+    const S = stepsOf('a02-unit-levels')
+    expect(S.length).toBe(5)
+    const es = edgesOf(S[0])
+    expect(es.length).toBe(9)
+    expect(S[0].vertices.length).toBe(6)
+    const d = bfsDist(es, 's')
+    expect(d).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    expect(marked(S[0], 'S1').sort()).toEqual(['a', 'b', 's'])
+    expect(marked(S[0], 'L1').sort()).toEqual(['a', 'b'])
+    expect(marked(S[0], 'L2').sort()).toEqual(['c', 'd'])
+    // no antiparallel edges
+    for (const e of es) expect(es).not.toContain(e[1] + e[0])
+  })
+  it('levels figure: edges leaving S_1 are ac, ad, bd (3); cb enters, ab stays inside', () => {
+    const S = stepsOf('a02-unit-levels')
+    const es = edgesOf(S[0]), d = bfsDist(es, 's')
+    const S1 = new Set(['s', 'a', 'b'])
+    const leaving = es.filter(e => S1.has(e[0]) && !S1.has(e[1]))
+    expect(leaving.sort()).toEqual(['ac', 'ad', 'bd'])
+    expect(leaving.every(e => d[e[0]] === 1 && d[e[1]] === 2)).toBe(true)
+    expect(marked(S[0], 'cut1').length).toBe(3)
+    expect(S[1].edges.filter(e => e.classes.includes('cut')).map(e => ek(S[1], e.id)).sort()).toEqual(['ac', 'ad', 'bd'])
+    expect(S[1].edges.filter(e => e.classes.includes('muted')).map(e => ek(S[1], e.id)).sort()).toEqual(['ab', 'cb'])
+    // every edge raises the distance by at most one
+    expect(es.every(e => d[e[1]] <= d[e[0]] + 1)).toBe(true)
+  })
+  it('levels figure: maximum flow 2 along s a c t and s b d t; sets of 2, 3, 2 edges; 3 * 2 = 6 <= 9', () => {
+    const S = stepsOf('a02-unit-levels')
+    const es = edgesOf(S[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    expect(run.phases.reduce((z, p) => z + p.push, 0)).toBe(2)
+    expect(marked(S[0], 'flow').length).toBe(6)
+    expect(S[2].edges.filter(e => e.classes.includes('path')).map(e => ek(S[2], e.id)).sort()).toEqual(['ac', 'bd', 'ct', 'dt', 'sa', 'sb'])
+    const sets = [0, 1, 2].map(i => es.filter(e => bfsDist(es, 's')[e[0]] === i && bfsDist(es, 's')[e[1]] === i + 1))
+    expect(sets.map(x => x.length)).toEqual([2, 3, 2])
+    expect(sets.flat().length).toBe(7)
+    expect(new Set(sets.flat()).size).toBe(7)
+    expect(3 * 2).toBe(6)
+    expect(6).toBeLessThanOrEqual(9)
+    expect(es.filter(e => !sets.flat().includes(e)).sort()).toEqual(['ab', 'cb'])
+    const g = S[3]
+    expect(g.edges.filter(e => e.classes.includes('color5')).length).toBe(2)
+    expect(g.edges.filter(e => e.classes.includes('color6')).length).toBe(3)
+    expect(g.edges.filter(e => e.classes.includes('color7')).length).toBe(2)
+    expect(S[4].edges.filter(e => e.classes.includes('dashed')).map(e => ek(S[4], e.id)).sort()).toEqual(['ab', 'cb'])
+    // maximum flow = minimum cut: the cut out of s has 2 edges
+    expect(es.filter(e => e[0] === 's').length).toBe(2)
+  })
+  it('phases figure: m = 9, sqrt(m) = 3; Dinic needs 3 phases at distances 1, 2, 4 pushing 1, 2, 1; value 4 > 3', () => {
+    const S = stepsOf('a02-unit-phases')
+    expect(S.length).toBe(3)
+    const es = edgesOf(S[0])
+    expect(es.length).toBe(9)
+    expect(Math.sqrt(9)).toBe(3)
+    for (const e of es) expect(es).not.toContain(e[1] + e[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    expect(run.phases.map(p => p.dist)).toEqual([1, 2, 4])
+    expect(run.phases.map(p => p.push)).toEqual([1, 2, 1])
+    expect(run.phases.reduce((z, p) => z + p.push, 0)).toBe(4)
+    expect(4).toBeGreaterThan(3)
+    expect(Object.values(run.f).every(x => x === 1)).toBe(true) // every edge carries a unit at the end
+    expect(marked(S[0], 'ph1').length).toBe(1)
+    expect(marked(S[0], 'ph2').length).toBe(4)
+    expect(marked(S[0], 'ph3').length).toBe(4)
+    expect(marked(S[0], 'fstar').map(id => ek(S[0], id.replace(/^@/, ''))).sort()).toEqual(['sa', 'sb', 'sc', 'st'])
+    expect(es.filter(e => e[0] === 's').length).toBe(4) // value of f* = edges out of s = 4
+    // connected, so n - 1 <= m
+    expect(S[0].vertices.length - 1).toBeLessThanOrEqual(9)
+    // the distance sequence 1, 2, 4 starts at 1 and strictly increases
+    expect(bfsDist(es, 's').t).toBe(1)
+  })
+  it('residual figure: after 2 phases f has value 3, G_f has 9 edges, distance 4 along s b c d t, f\' = 1 = 4 - 3', () => {
+    const S = stepsOf('a02-unit-residual')
+    expect(S.length).toBe(9)
+    const es = edgesOf(S[0])
+    const run = dinicRun(es, 'sabcdt', 's', 't')
+    const f2: Record<string, number> = Object.fromEntries(es.map(e => [e, 0]))
+    for (const p of run.phases.slice(0, 2)) for (const e of p.edges) f2[e] = 1
+    expect(Object.entries(f2).filter(([, v]) => v === 1).map(([k]) => k).sort()).toEqual(['at', 'ct', 'sa', 'sc', 'st'])
+    expect(S[0].edges.filter(e => e.classes.includes('path')).map(e => ek(S[0], e.id)).sort()).toEqual(['at', 'ct', 'sa', 'sc', 'st'])
+    const Gf = es.map(e => (f2[e] === 0 ? e : e[1] + e[0]))
+    expect(Gf.length).toBe(9)
+    expect(new Set(Gf).size).toBe(9)
+    for (const e of Gf) expect(Gf).not.toContain(e[1] + e[0]) // no antiparallel edge in G_f
+    expect(bfsDist(Gf, 's').t).toBe(4)
+    expect(bfsDist(es, 's').t).toBe(1)
+    expect(4).toBeGreaterThan(3)
+    expect(Math.floor(9 / 4)).toBe(2)
+    expect(9 / 3).toBe(3)
+    // flow of value 1 left; f* - f is 1 on sb bc cd dt
+    expect(Object.entries(f2).filter(([, v]) => v === 0).map(([k]) => k).sort()).toEqual(['bc', 'cd', 'dt', 'sb'])
+    expect(4 - 3).toBe(1)
+    // figure after step 2 shows G_f: forward edges sb bc cd dt, reverse edges ts, as, ta, cs, tc
+    expect(S[1].edges.map(e => ek(S[1], e.id)).sort()).toEqual([...Gf].sort())
+    expect(marked(S[1], 'rev').length).toBe(5)
+    expect(marked(S[1], 'fwd').length).toBe(4)
+    // remaining: one phase in G (distance 4), 2 phases done, at most 2 * 3 = 6
+    expect(run.phases.length - 2).toBe(1)
+    expect(2 * 3).toBe(6)
+    expect(Gf.filter(e => (e === 'sb' || e === 'bc' || e === 'cd' || e === 'dt')).length).toBe(4)
+  })
+  it('global-minimum-cuts walkthroughs: f(a, t) = 18, 13, 13, 13, 17 for t = b..f, lambda = 13 reached only by {c, d, e}; U = {a, b} has capacity 17 = f(a, f)', () => {
+    const g = fig('a03-network')
+    const sig = (h: GraphData) => h.edges.map(e => [e.tail[0], e.head[0]].sort().join('') + num(e.data.c)).sort().join()
+    const t = (id: string) => index.figureById.get(id)!
+    for (const id of ['a03-gmc-lower', 'a03-gmc-upper']) expect(sig(fig(id))).toBe(sig(g))
+    // a03-gmc-time: undirected base graph is G; its step 1 replaces af by two arcs of capacity 8
+    expect(sig(fig('a03-gmc-time'))).toBe(sig(g))
+    const steps = (id: string) => parseGraph(t(id).source, t(id).info).panels[0].steps
+    const arcs = steps('a03-gmc-time')[0].graph.edges.filter(e => e.directed)
+    expect(arcs.map(e => e.tail[0] + e.head[0] + num(e.data.c)).sort()).toEqual(['af8', 'fa8'])
+    expect(g.vertices.length).toBe(6)
+    expect(g.vertices.length - 1).toBe(5)
+    const f = (p: string, q: string) => minSTCut(g, p, q).value
+    const vals = ['b', 'c', 'd', 'e', 'f'].map(q => f('a', q))
+    expect(vals).toEqual([18, 13, 13, 13, 17])
+    expect(Math.min(...vals)).toBe(13)
+    expect(globalMinCut(g).value).toBe(13)
+    const V = g.vertices.map(v => v.id)
+    const cap = (S: string[]) => cutCapacity(g, new Set(S))
+    const subsets: string[][] = []
+    for (let m = 1; m < (1 << V.length) - 1; m++) subsets.push(V.filter((_, i) => (m >> i) & 1))
+    // the minimum cut is unique: {c, d, e} against {a, b, f}
+    expect(subsets.filter(S => cap(S) === 13).map(S => S.join('')).sort()).toEqual(['abf', 'cde'])
+    expect(cap(['c', 'd', 'e'])).toBe(13)
+    // U = {a, b}: unique minimum a–f cut, capacity 17; its edges af bf bc be have capacities 8, 3, 4, 2
+    expect(subsets.filter(S => S.includes('a') && !S.includes('f') && cap(S) === 17).map(S => S.join(''))).toEqual(['ab'])
+    expect(cap(['a', 'b'])).toBe(17)
+    expect(8 + 3 + 4 + 2).toBe(17)
+    // thick/cut edges in the figures
+    const cutSum = (id: string, step: number, cls: string) => {
+      const h = steps(id)[step].graph
+      return h.edges.filter(e => e.classes.includes(cls)).reduce((z, e) => z + num(e.data.c), 0)
+    }
+    expect([cutSum('a03-gmc-lower', 1, 'bold'), cutSum('a03-gmc-lower', 2, 'cut'), cutSum('a03-gmc-lower', 3, 'cut')]).toEqual([17, 17, 13])
+    expect([cutSum('a03-gmc-upper', 0, 'cut'), cutSum('a03-gmc-upper', 3, 'bold')]).toEqual([13, 13])
+    // U = {a, b} is not empty and not V; a lies in U and f does not; the far side {c, d, e} is non-empty, d is on it
+    expect(cap(['a', 'b'])).toBeGreaterThanOrEqual(13)
+    // the arc a→f leaves U = {a, b}, f→a does not: 8 of the 17
+    expect(new Set(['a', 'b']).has('a') && !new Set(['a', 'b']).has('f')).toBe(true)
+    // MPM time: 5 runs of O(n^3); (n - 1) < n
+    expect(5).toBeLessThan(6)
+  })
+})
+
+describe('karger-success-probability iteration bounds', () => {
+  it('numbers of the Iterating CONTRACT walkthrough', () => {
+    expect((27 / 28) ** 64).toBeLessThan(0.098)
+    expect((31 / 32) ** 64).toBeLessThan(0.132)
+    expect((31 / 32) ** 64).toBeLessThan(Math.exp(-2))
+    expect(Math.exp(-2)).toBeGreaterThan(0.132)
+  })
+})
+
+describe('multigraphs-and-digraphs page', () => {
+  // the value of epsilon as a string: 'v' for a loop, 'u>v' for an arc, 'u-v' (sorted) for an undirected edge
+  const eps = (e: GraphData['edges'][number]) => e.directed ? `${e.tail[0]}>${e.head[0]}` : e.tail[0] === e.head[0] ? e.tail[0] : [e.tail[0], e.head[0]].sort().join('-')
+  const parallelPairs = (g: GraphData) => g.edges.flatMap((e, i) => g.edges.slice(i + 1).filter(f => eps(f) === eps(e)).map(f => [e.id, f.id]))
+  it('lecture figure: 3 parallel c-d edges, loop at f, arcs g->e twice and e->g once; 4 parallel pairs (quiz)', () => {
+    const g = fig('t01-mixed-multigraph')
+    expect(g.edges.filter(e => eps(e) === 'c-d').length).toBe(3)
+    expect(g.edges.filter(e => eps(e) === 'f').length).toBe(1)
+    expect(g.edges.filter(e => e.directed).map(eps).sort()).toEqual(['e>g', 'g>e', 'g>e'])
+    expect(parallelPairs(g).length).toBe(4)
+  })
+  it('reading-epsilon stepper: values of epsilon, only e1 and e2 parallel', () => {
+    const g = fig('t01-reading-epsilon')
+    expect(Object.fromEntries(g.edges.map(e => [e.id, eps(e)]))).toEqual({ e1: 'u-v', e2: 'u-v', e3: 'x', e4: 'v>w', e5: 'w>v', e6: 'x-y', e7: 'y>w' })
+    expect(parallelPairs(g)).toEqual([['e1', 'e2']])
+  })
+  it('special cases: graph panel simple and undirected, digraph panel only arcs and injective (a->b, b->a), multigraph panel undirected with parallel a-b and loop at c', () => {
+    const [g, d, m] = [0, 1, 2].map(i => fig('t01-special-cases', i))
+    expect(g.edges.every(e => !e.directed && e.tail[0] !== e.head[0]) && parallelPairs(g).length === 0).toBe(true)
+    expect(d.edges.every(e => e.directed) && parallelPairs(d).length === 0).toBe(true)
+    expect(d.edges.map(eps)).toEqual(expect.arrayContaining(['a>b', 'b>a']))
+    expect(m.edges.every(e => !e.directed)).toBe(true)
+    expect(parallelPairs(m).map(p => eps(m.edges.find(e => e.id === p[0])!))).toEqual(['a-b'])
+    expect(m.edges.filter(e => e.tail[0] === e.head[0]).map(eps)).toEqual(['c'])
+  })
+})
+
+describe('isomorphism page', () => {
+  // the value of epsilon after renaming the vertices by f: 'v' for a loop, 'u>v' for an arc, 'u-v' (sorted) for an undirected edge
+  const eps = (e: GraphData['edges'][number], f: (v: string) => string = v => v) => {
+    const [t, h] = [f(e.tail[0]), f(e.head[0])]
+    return e.directed ? `${t}>${h}` : t === h ? t : [t, h].sort().join('-')
+  }
+  const perms = (xs: string[]): string[][] => xs.length ? xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map(p => [x, ...p])) : [[]]
+  const fact = (n: number): number => n <= 1 ? 1 : n * fact(n - 1)
+  // number of edge bijections g that make f an isomorphism together with g (0 if none): matching classes of equal epsilon, m! ways each
+  const edgeMaps = (g: GraphData, h: GraphData, f: (v: string) => string) => {
+    const count = (xs: string[]) => xs.reduce((m, k) => m.set(k, (m.get(k) ?? 0) + 1), new Map<string, number>())
+    const a = count(g.edges.map(e => eps(e, f))), b = count(h.edges.map(e => eps(e)))
+    if (a.size !== b.size || [...a].some(([k, m]) => b.get(k) !== m)) return 0
+    return [...a.values()].reduce((z, m) => z * fact(m), 1)
+  }
+  const isoCount = (g: GraphData, h: GraphData) => {
+    const vs = g.vertices.map(v => v.id), ws = h.vertices.map(v => v.id)
+    return perms(ws).reduce((z, p) => z + edgeMaps(g, h, v => p[vs.indexOf(v)]), 0)
+  }
+  it('lecture C4: f(a)=1, f(b)=2, f(c)=3, f(d)=4 is an isomorphism; 8 of the 24 bijections are (quiz)', () => {
+    const [g, h] = [fig('t01-iso-c4', 0), fig('t01-iso-c4', 1)]
+    const f = (v: string) => ({ a: '1', b: '2', c: '3', d: '4' } as Record<string, string>)[v]
+    expect(edgeMaps(g, h, f)).toBe(1)
+    expect(perms(h.vertices.map(v => v.id)).length).toBe(24)
+    expect(isoCount(g, h)).toBe(8)
+  })
+  it('check stepper: same two graphs; edges ab, bc, cd, da go to 12, 23, 34, 41; non-edges ac, bd go to 13, 24, not edges of H', () => {
+    const s = fig('t01-iso-check')
+    const part = (digits: boolean) => ({ vertices: s.vertices.filter(v => /\d/.test(v.id) === digits), edges: s.edges.filter(e => /\d/.test(e.tail[0]) === digits) }) as GraphData
+    const [g, h] = [part(false), part(true)]
+    const f = (v: string) => ({ a: '1', b: '2', c: '3', d: '4' } as Record<string, string>)[v]
+    expect(g.edges.map(e => eps(e, f))).toEqual(['1-2', '2-3', '3-4', '1-4'])
+    expect(h.edges.map(e => eps(e)).sort()).toEqual(['1-2', '1-4', '2-3', '3-4'])
+    expect(edgeMaps(g, h, f)).toBe(1)
+    expect(edgeMaps(g, fig('t01-iso-c4', 0), v => v)).toBe(1)
+    expect(edgeMaps(h, fig('t01-iso-c4', 1), v => v)).toBe(1)
+  })
+  it('edge-map stepper: f = (u 1, v 2, w 3) is the only vertex map, with 2 edge maps; e3 cannot go to h1', () => {
+    const s = fig('t01-iso-edge-map')
+    const part = (digits: boolean) => ({ vertices: s.vertices.filter(v => /\d/.test(v.id) === digits), edges: s.edges.filter(e => /\d/.test(e.tail[0]) === digits) }) as GraphData
+    const [g, h] = [part(false), part(true)]
+    const f = (v: string) => ({ u: '1', v: '2', w: '3' } as Record<string, string>)[v]
+    expect(edgeMaps(g, h, f)).toBe(2)
+    expect(isoCount(g, h)).toBe(2)
+    const e = (x: GraphData, id: string) => x.edges.find(y => y.id === id)!
+    expect(eps(e(g, 'e3'), f)).toBe(eps(e(h, 'h3')))
+    expect(eps(e(g, 'e3'), f)).not.toBe(eps(e(h, 'h1')))
+  })
+  it('lecture multigraphs: the identity on the labels with 4 edge maps (quiz)', () => {
+    const [g, h] = [fig('t01-iso-multigraph', 0), fig('t01-iso-multigraph', 1)]
+    expect(edgeMaps(g, h, v => v)).toBe(4)
+  })
+})
+
+describe('cliques and independent sets page', () => {
+  const subsets = (xs: string[]): string[][] => xs.reduce<string[][]>((acc, x) => acc.concat(acc.map(s => [...s, x])), [[]])
+  const pairs = (S: string[]) => S.flatMap((u, i) => S.slice(i + 1).map(v => [u, v]))
+  const isClique = (ix: GraphIndex, S: string[]) => pairs(S).every(([u, v]) => ix.adjacent(u, v))
+  const isIndep = (ix: GraphIndex, S: string[]) => pairs(S).every(([u, v]) => !ix.adjacent(u, v))
+  const best = (g: GraphData, ok: (ix: GraphIndex, S: string[]) => boolean) => {
+    const ix = new GraphIndex(g)
+    return Math.max(...subsets(ix.vertexIds).filter(S => ok(ix, S)).map(S => S.length))
+  }
+  it('lecture figure: abcd clique, pqrs independent, a+pqrs independent; largest clique 4, largest independent set 5 (quiz)', () => {
+    const g = fig('t02-clique-independent'), ix = new GraphIndex(g)
+    expect(isClique(ix, ['a', 'b', 'c', 'd'])).toBe(true)
+    expect(isIndep(ix, ['p', 'q', 'r', 's'])).toBe(true)
+    expect(isIndep(ix, ['a', 'p', 'q', 'r', 's'])).toBe(true)
+    expect([...ix.neighbors('a')].sort()).toEqual(['b', 'c', 'd'])
+    expect(ix.adjacent('p', 'b') && ix.adjacent('r', 'c') && ix.adjacent('r', 'd')).toBe(true)
+    expect([best(g, isClique), best(g, isIndep)]).toEqual([4, 5])
+  })
+  it('C5 stepper: {1,2} clique, {1,2,3} not, {1,3} independent, 2,4,5 each adjacent to 1 or 3; largest clique and independent set 2; 5 independent pairs (quiz)', () => {
+    const g = fig('t02-clique-c5'), ix = new GraphIndex(g)
+    expect(ix.vertexIds.every(v => ix.degree(v) === 2)).toBe(true)
+    expect(isClique(ix, ['1', '2'])).toBe(true)
+    expect(isClique(ix, ['1', '2', '3'])).toBe(false)
+    expect(isIndep(ix, ['1', '3'])).toBe(true)
+    expect(['2', '4', '5'].every(v => ix.adjacent(v, '1') || ix.adjacent(v, '3'))).toBe(true)
+    expect([best(g, isClique), best(g, isIndep)]).toEqual([2, 2])
+    expect(subsets(ix.vertexIds).filter(S => S.length === 2 && isIndep(ix, S)).length).toBe(5)
+  })
+  it('K_n: whole vertex set is a clique, independent sets have at most one vertex', () => {
+    for (const n of [1, 2, 4, 6]) {
+      const g = complete(n)
+      expect([best(g, isClique), best(g, isIndep)]).toEqual([n, 1])
+    }
+  })
+})
+
+describe('walks and paths page', () => {
+  const edgeOf = (ix: GraphIndex, u: string, v: string) => ix.edgesBetween(u, v)[0]?.id
+  /** The edge ids of the vertex sequence W, or undefined if some step is not an edge. */
+  const steps = (ix: GraphIndex, W: string[]) => {
+    const es = W.slice(1).map((v, i) => edgeOf(ix, W[i], v))
+    return es.every(Boolean) ? es : undefined
+  }
+  const G = fig('t02-walk-route'), ix = new GraphIndex(G)
+  const edgeSet = (g: GraphData) => g.edges.map(e => [...e.tail, ...e.head].sort().join('')).sort()
+  it('all four figures draw the same graph G', () => {
+    for (const id of ['t02-walk-steps', 't02-path-cycle', 't02-shortcut']) expect(edgeSet(fig(id))).toEqual(edgeSet(G))
+  })
+  it('opening: route a,b,c,d,b,e has length 5, uses every edge once, passes b twice; a,b,e has length 2 and distinct vertices; dist(a,e) = 2', () => {
+    const W = ['a', 'b', 'c', 'd', 'b', 'e'], es = steps(ix, W)!
+    expect(es.length).toBe(5)
+    expect(new Set(es).size).toBe(G.edges.length)
+    expect(W.filter(v => v === 'b').length).toBe(2)
+    expect(steps(ix, ['a', 'b', 'e'])!.length).toBe(2)
+    expect(A.bfsDistances(ix, 'a').get('e')).toBe(2)
+  })
+  it('worked example: (a,b,e,b,a) is a closed walk of length 4, five vertex entries, each of its two edges used twice; a and c are not adjacent', () => {
+    const W = ['a', 'b', 'e', 'b', 'a'], es = steps(new GraphIndex(fig('t02-walk-steps')), W)!
+    expect([W.length, es.length, W[0] === W[4]]).toEqual([5, 4, true])
+    expect(new Set(es).size).toBe(2)
+    expect(es.every(e => es.filter(f => f === e).length === 2)).toBe(true)
+    expect(ix.adjacent('a', 'c')).toBe(false)
+  })
+  it('path-cycle figure: dashed edges ab, be form a path a-b-e (P_2); solid triangle b, c, d is a cycle C_3', () => {
+    const g = fig('t02-path-cycle')
+    const path = new Set(g.edges.filter(e => e.classes.includes('path')).map(e => e.id))
+    const cyc = new Set(g.edges.filter(e => e.classes.includes('cycle')).map(e => e.id))
+    const p = new GraphIndex(A.subgraphOfEdges(g, path))
+    expect(p.vertexIds.slice().sort()).toEqual(['a', 'b', 'e'])
+    expect([p.degree('a'), p.degree('b'), p.degree('e'), path.size]).toEqual([1, 2, 1, 2])
+    expect(A.isCycleEdgeSet(g, cyc) && cyc.size === 3).toBe(true)
+    expect(new GraphIndex(A.subgraphOfEdges(g, cyc)).vertexIds.slice().sort()).toEqual(['b', 'c', 'd'])
+  })
+  it('quiz: 4 walks of length 2 start at a; a shortest a-d walk has length 2 (a,b,d)', () => {
+    const two = [...ix.neighbors('a')].flatMap(u => [...ix.neighbors(u)].map(w => ['a', u, w]))
+    expect(two.length).toBe(4)
+    expect(A.bfsDistances(ix, 'a').get('d')).toBe(2)
+    expect(steps(ix, ['a', 'b', 'd'])!.length).toBe(2)
+  })
+})
+
+describe('breadth-first-search page', () => {
+  const key = (e: { tail: string[]; head: string[] }) => [e.tail[0], e.head[0]].sort().join('')
+  const dist = (g: GraphData) => A.bfsDistances(new GraphIndex(g), 'x')
+  it('question, layers and player: same graph, layers a b c | d e f | g h', () => {
+    const q = fig('t02-bfs-question'), l = fig('t02-bfs-layers'), p = fig('t02-bfs-player')
+    expect(q.edges.map(key)).toEqual(p.edges.map(key))
+    expect(l.edges.map(key)).toEqual(p.edges.map(key))
+    expect(Object.fromEntries(dist(q))).toEqual({ x: 0, a: 1, b: 1, c: 1, d: 2, e: 2, f: 2, g: 3, h: 3 })
+  })
+  it('layers figure: the thick edges are the player\'s BFS tree (8 of 13), the dashed ones the rest', () => {
+    const l = fig('t02-bfs-layers'), p = fig('t02-bfs-player')
+    const { parent } = collect(ALGORITHMS.bfs, p, { source: 'x' }).result as { parent: Map<string, string> }
+    const tree = new Set([...parent].map(([w, u]) => [w, u].sort().join('')))
+    expect(new Set(l.edges.filter(e => e.classes.includes('tree')).map(key))).toEqual(tree)
+    expect(tree.size).toBe(8)
+    expect(l.edges.length).toBe(13)
+    expect(l.edges.filter(e => e.classes.includes('dashed')).map(key).sort()).toEqual(['bd', 'ce', 'ef', 'eg', 'gh'])
+    // tree path g, d, a, x: length 3 = dist(g)
+    expect([parent.get('g'), parent.get('d'), parent.get('a')]).toEqual(['d', 'a', 'x'])
+    expect(dist(l).get('g')).toBe(3)
+  })
+  it('edges inside a layer are ef and gh; bd, ce, eg join neighbouring layers; no edge skips a layer', () => {
+    const l = fig('t02-bfs-layers'), d = dist(l)
+    const gap = (k: string) => { const e = l.edges.find(x => key(x) === k)!; return Math.abs(d.get(e.tail[0])! - d.get(e.head[0])!) }
+    expect(l.edges.filter(e => gap(key(e)) === 0).map(key).sort()).toEqual(['ef', 'gh'])
+    expect(['bd', 'ce', 'eg'].map(gap)).toEqual([1, 1, 1])
+    expect(l.edges.every(e => gap(key(e)) <= 1)).toBe(true)
+  })
+  it('route x, c, f, h is a walk of length 3 = dist(x, h)', () => {
+    const q = fig('t02-bfs-question'), ix = new GraphIndex(q)
+    expect(['cx', 'cf', 'fh'].every(k => q.edges.some(e => key(e) === k))).toBe(true)
+    expect(A.bfsDistances(ix, 'x').get('h')).toBe(3)
+  })
+  it('pitfall: marking on removal from the queue appends d twice', () => {
+    const ix = new GraphIndex(fig('t02-bfs-question')), marked = new Set<string>(), Q = ['x'], appended = new Map<string, number>()
+    while (Q.length) {
+      const u = Q.shift()!
+      if (marked.has(u)) continue
+      marked.add(u)
+      for (const w of ix.neighbors(u)) if (!marked.has(w)) { Q.push(w); appended.set(w, (appended.get(w) ?? 0) + 1) }
+    }
+    expect(appended.get('d')).toBe(2)
+  })
+  it('DFS triangle: depth-first tree x-a-b puts b at depth 2, dist(x, b) = 1', () => {
+    const t = fig('t02-bfs-dfs-triangle')
+    const { steps } = collect(ALGORITHMS.dfs, t, { source: 'x' })
+    const last = steps[steps.length - 1].overlay!
+    const treeIds = Object.entries(last.edgeClasses).filter(([, c]) => (c as string[]).includes('tree')).map(([id]) => id)
+    expect(new Set(t.edges.filter(e => treeIds.includes(e.id)).map(key))).toEqual(new Set(t.edges.filter(e => e.classes.includes('tree')).map(key)))
+    expect(t.edges.filter(e => e.classes.includes('tree')).map(key).sort()).toEqual(['ab', 'ax'])
+    expect(dist(t).get('b')).toBe(1)
+  })
+  it('exercise: BFS discovers c, e, a, f, b, d (alphabetical scan), distances 1, 1, 2, 2, 2, 3', () => {
+    const g = fig('t02-ex-bfs-order'), ix = new GraphIndex(g)
+    const { steps } = collect(ALGORITHMS.bfs, g, { source: 'x' })
+    expect(steps.filter(s => s.action).map(s => s.action!.id)).toEqual(['c', 'e', 'a', 'f', 'b', 'd'])
+    // the same order with neighbours scanned alphabetically, as the prompt says
+    const seen = new Set(['x']), Q = ['x'], order: string[] = []
+    while (Q.length) for (const w of [...ix.neighbors(Q.shift()!)].sort()) if (!seen.has(w)) { seen.add(w); Q.push(w); order.push(w) }
+    expect(order).toEqual(['c', 'e', 'a', 'f', 'b', 'd'])
+    expect(Object.fromEntries(A.bfsDistances(ix, 'x'))).toEqual({ x: 0, c: 1, e: 1, a: 2, f: 2, b: 2, d: 3 })
+  })
+})
+
+describe('havel-hakimi-test page', () => {
+  // the sorted sequence after each round of the test, or the line where it stops
+  const rounds = (seq: number[]) => {
+    const out: number[][] = []
+    let s = [...seq].sort((a, b) => b - a)
+    for (;;) {
+      if (s.every(d => d === 0)) return { out, stop: 'yes' }
+      if (s[0] > s.length - 1) return { out, stop: 'too-big' }
+      const [d, ...rest] = s
+      s = rest.map((x, i) => (i < d ? x - 1 : x))
+      if (s.some(x => x < 0)) return { out: [...out, s], stop: 'negative' }
+      s.sort((a, b) => b - a)
+      out.push(s)
+    }
+  }
+  const key = (e: { tail: string[]; head: string[] }) => [e.tail[0], e.head[0]].sort().join('-')
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const wishes = (g: GraphData) => g.vertices.filter(v => !v.classes.includes('muted')).map(v => num(v.data.d)).sort((a, b) => b - a)
+  it('opening: the lecture example vertices with wishes (4,4,3,3,1,1,0); three rounds, then GRAPHIC', () => {
+    const q = fig('t01-hh-question'), ex = fig('t01-degree-sequence-example')
+    expect(q.vertices.map(v => [v.id, v.x, v.y, num(v.data.d)])).toEqual(ex.vertices.map(v => [v.id, v.x, v.y, num(v.data.d)]))
+    expect(q.edges.length).toBe(0)
+    expect(rounds([4, 4, 3, 3, 1, 1, 0])).toEqual({ out: [[3, 2, 2, 1, 0, 0], [1, 1, 0, 0, 0], [0, 0, 0, 0]], stop: 'yes' })
+  })
+  it('rounds stepper: the numbers follow the test, the edges are the lecture graph', () => {
+    const s = steps('t01-hh-rounds'), r = rounds([4, 4, 3, 3, 1, 1, 0]).out
+    expect(s.map(wishes)).toEqual([[4, 4, 3, 3, 1, 1, 0], ...r, [4, 4, 3, 3, 1, 1, 0]])
+    // round 1 leaves r, mt, mb, p, q, x with 3, 2, 2, 0, 1, 0 (the caption order)
+    expect(['r', 'mt', 'mb', 'p', 'q', 'x'].map(v => num(s[1].vertices.find(x => x.id === v)!.data.d))).toEqual([3, 2, 2, 0, 1, 0])
+    const last = s.at(-1)!, ix = new GraphIndex(last)
+    expect(last.edges.map(key).sort()).toEqual(fig('t01-degree-sequence-example').edges.map(key).sort())
+    expect(last.vertices.every(v => ix.degree(v.id) === num(v.data.d))).toBe(true)
+    expect(A.degreeSequence(ix)).toEqual([4, 4, 3, 3, 1, 1, 0])
+  })
+  it('quizzes: (3,3,3,1) stops at @negative in round 2 via (2,2,0); (3,3,2,2,2) graphic with 6 edges', () => {
+    expect(rounds([3, 3, 3, 1])).toEqual({ out: [[2, 2, 0], [1, -1]], stop: 'negative' })
+    const ok = collect(ALGORITHMS['havel-hakimi'], fig('t01-graph-classes'), { seq: '3,3,2,2,2' }).result as any
+    expect(ok.graphic).toBe(true)
+    expect(ok.graph.edges.length).toBe(6)
+    expect((collect(ALGORITHMS['havel-hakimi'], fig('t01-graph-classes'), { seq: '3,3,3,1' }).result as any).graphic).toBe(false)
+  })
+  it('pitfall and More: (0,2,2) not graphic, (2,2,1,1) graphic; (2,2,2) -> (1,1) -> (0)', () => {
+    expect(rounds([0, 2, 2]).stop).not.toBe('yes')
+    expect(rounds([2, 2, 1, 1]).stop).toBe('yes')
+    expect(rounds([2, 2, 2]).out).toEqual([[1, 1], [0]])
+  })
+})
+
+describe('girth-and-regular-graphs page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const degs = (ix: GraphIndex) => [...new Set(ix.vertexIds.map(v => ix.degree(v)))]
+  const cls = (g: GraphData, c: string) => new Set(g.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  it('opening: prism and K_{3,3} have 6 vertices, are 3-regular, girth 3 and 4; the marked prism edges are a triangle', () => {
+    const prism = fig('t03-girth-question', 0), k33 = fig('t03-girth-question', 1)
+    for (const g of [prism, k33]) { const ix = new GraphIndex(g); expect(ix.vertexIds.length).toBe(6); expect(degs(ix)).toEqual([3]) }
+    expect(A.girth(new GraphIndex(prism))).toBe(3)
+    expect(A.girth(new GraphIndex(k33))).toBe(4)
+    expect(A.isCycleEdgeSet(prism, cls(prism, 'cycle'))).toBe(true)
+    expect(cls(prism, 'cycle').size).toBe(3)
+  })
+  it('stepper: K_{3,3} 3-regular, u1 has neighbours w1 w2 w3; cycles of length 6 and 4; the dashed edge u1u2 is absent; girth 4', () => {
+    const s = steps('t03-girth-k33'), ix = new GraphIndex(s[0])
+    expect(degs(ix)).toEqual([3])
+    expect([...ix.neighbors('u1')].sort()).toEqual(['w1', 'w2', 'w3'])
+    expect(A.isCycleEdgeSet(s[1], cls(s[1], 'cycle'))).toBe(true); expect(cls(s[1], 'cycle').size).toBe(6)
+    expect(A.isCycleEdgeSet(s[2], cls(s[2], 'cycle'))).toBe(true); expect(cls(s[2], 'cycle').size).toBe(4)
+    expect(A.girth(ix)).toBe(4)
+    expect(s[3].edges.filter(e => e.classes.includes('dashed')).map(e => [e.tail[0], e.head[0]])).toEqual([['u1', 'u2']])
+  })
+  it('families: K_n girth 3 (n = 3..6), K_{m,n} girth 4 (m, n = 2..4), C_n girth n; Petersen 0,1,2,3,4 is a 5-cycle', () => {
+    for (let n = 3; n <= 6; n++) expect(A.girth(new GraphIndex(complete(n)))).toBe(3)
+    for (let m = 2; m <= 4; m++) for (let n = 2; n <= 4; n++) expect(A.girth(new GraphIndex(completeBipartite(m, n)))).toBe(4)
+    for (let n = 3; n <= 8; n++) expect(A.girth(new GraphIndex(cycle(n)))).toBe(n)
+    const g = fig('t03-petersen'), five = (g.marks.five ?? []).map(x => x.replace(/^@/, ''))
+    expect(five.length).toBe(5)
+    expect(A.isCycleEdgeSet(g, new Set(five))).toBe(true)
+  })
+  it('quizzes: K_{3,3} + u1u2 has degrees 4,4,3,3,3,3 and girth 3; P_3 is acyclic; C_6 girth 6; K_4 girth 3', () => {
+    const g = fig('t03-girth-k33'), ix = new GraphIndex({ ...g, edges: [...g.edges, { ...g.edges[0], id: 'new', tail: ['u1'], head: ['u2'], classes: [] }] })
+    expect(A.degreeSequence(ix)).toEqual([4, 4, 3, 3, 3, 3])
+    expect(A.girth(ix)).toBe(3)
+    const step4 = steps('t03-girth-k33')[3]
+    expect(A.girth(new GraphIndex(step4))).toBe(3) // the dashed edge drawn in, as the quiz asks
+    expect(A.girth(new GraphIndex(cycle(6)))).toBe(6)
+    expect(A.girth(new GraphIndex(complete(4)))).toBe(3)
+    expect(pathGraph(3).vertices.length).toBe(4); expect(A.girth(new GraphIndex(pathGraph(3)))).toBe(Infinity)
+  })
+})
+
+describe('forests-and-trees page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const comps = (g: GraphData) => A.components(new GraphIndex(g)).map(c => [...c].sort().join(' ')).sort()
+  const cls = (g: GraphData, c: string) => new Set(g.edges.filter(e => e.classes.includes(c)).map(e => e.id))
+  it('opening: two vertices are a forest but not connected; one edge is a tree; the triangle is connected with a cycle', () => {
+    const two = new GraphIndex(fig('t03-tree-question', 0)), one = new GraphIndex(fig('t03-tree-question', 1)), tri = new GraphIndex(fig('t03-tree-question', 2))
+    expect(A.isAcyclic(two)).toBe(true); expect(A.isConnected(two)).toBe(false)
+    expect(A.isTree(one)).toBe(true)
+    expect(A.isConnected(tri)).toBe(true); expect(A.girth(tri)).toBe(3)
+  })
+  it('stepper: cycle a b c, delete ac gives a tree on all 6 vertices, delete cd gives two trees a b c and d e f', () => {
+    const s = steps('t03-forest-steps')
+    const g0 = new GraphIndex(s[0])
+    expect(A.isConnected(g0)).toBe(true); expect(A.isTree(g0)).toBe(false)
+    expect(A.isCycleEdgeSet(s[0], cls(s[0], 'cycle'))).toBe(true); expect(cls(s[0], 'cycle').size).toBe(3)
+    expect(A.girth(g0)).toBe(3) // a b c is the only cycle: 6 vertices, 6 edges, connected
+    expect(s[0].edges.length).toBe(6)
+    expect(A.isTree(new GraphIndex(s[1]))).toBe(true)
+    expect(cls(s[1], 'tree').size).toBe(s[1].edges.length)
+    const g2 = new GraphIndex(s[2])
+    expect(A.isAcyclic(g2)).toBe(true); expect(A.isConnected(g2)).toBe(false)
+    expect(comps(s[2])).toEqual(['a b c', 'd e f'])
+  })
+  it('t03-forest: three components, each a tree; z is isolated', () => {
+    const g = fig('t03-forest'), ix = new GraphIndex(g)
+    expect(A.isAcyclic(ix)).toBe(true)
+    expect(comps(g)).toEqual(['1 2 3 4 5 6', 'a b c d', 'z'])
+  })
+  it('examples: P_n and K_{1,n} are trees, C_3 is connected with a cycle, two disjoint edges are a forest and not a tree', () => {
+    for (let n = 1; n <= 6; n++) { expect(A.isTree(new GraphIndex(pathGraph(n)))).toBe(true); expect(A.isTree(new GraphIndex(completeBipartite(1, n)))).toBe(true) }
+    const c3 = new GraphIndex(cycle(3)); expect(A.isConnected(c3)).toBe(true); expect(A.isAcyclic(c3)).toBe(false)
+    const two = parseGraph('a -- b; c -- d').panels[0].graph, ix = new GraphIndex(two)
+    expect(A.isAcyclic(ix)).toBe(true); expect(A.isConnected(ix)).toBe(false)
+  })
+  it('quizzes: t03-forest + edge 3a is acyclic with two components; u=v parallel plus vw has girth 2 and is not simple', () => {
+    const g = fig('t03-forest'), h = { ...g, edges: [...g.edges, { ...g.edges[0], id: 'new', tail: ['3'], head: ['a'], classes: [] }] }
+    expect(A.isAcyclic(new GraphIndex(h))).toBe(true)
+    expect(comps(h)).toEqual(['1 2 3 4 5 6 a b c d', 'z'])
+    const m = parseGraph('u -- v; u -- v; v -- w').panels[0].graph
+    expect(m.edges.length).toBe(3)
+    expect(A.girth(new GraphIndex(m))).toBe(2)
+    expect(A.isSimple(m)).toBe(false)
+  })
+})
+
+describe('spanning-trees page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const byName = (g: GraphData, names: string[]) => new Set(g.edges.filter(e => names.some(n => (e.tail[0] + e.head[0]) === n || (e.head[0] + e.tail[0]) === n)).map(e => e.id))
+  const isSpanningTree = (g: GraphData, ids: Set<string>) => A.isTree(new GraphIndex(A.spanningSubgraph(g, ids)))
+  const countSpanningTrees = (g: GraphData) => {
+    let c = 0
+    for (let m = 0; m < 1 << g.edges.length; m++) if (isSpanningTree(g, new Set(g.edges.filter((_, i) => m >> i & 1).map(e => e.id)))) c++
+    return c
+  }
+  it('opening: the triangle is a cycle; deleting one edge gives a tree, two edges disconnect; 3 spanning trees', () => {
+    const g = fig('t03-spanning-question')
+    expect(A.isCycleEdgeSet(g, new Set(g.edges.map(e => e.id)))).toBe(true)
+    for (const e of g.edges) expect(isSpanningTree(g, new Set(g.edges.filter(x => x !== e).map(x => x.id)))).toBe(true)
+    for (const e of g.edges) expect(A.isConnected(new GraphIndex(A.spanningSubgraph(g, new Set([e.id]))))).toBe(false)
+    expect(countSpanningTrees(g)).toBe(3)
+    for (let p = 0; p < 3; p++) { const h = fig('t03-spanning-triangle', p); expect(isSpanningTree(h, new Set(h.edges.filter(e => e.classes.includes('tree')).map(e => e.id)))).toBe(true) }
+  })
+  it('stepper: 6 vertices, 7 edges, cycles abc and def; minus ac connected; minus ef a spanning tree with 5 edges; without f not spanning', () => {
+    const s = steps('t03-spanning-steps')
+    expect(s[0].vertices.length).toBe(6); expect(s[0].edges.length).toBe(7)
+    expect(A.isCycleEdgeSet(s[0], byName(s[0], ['ab', 'bc', 'ca']))).toBe(true)
+    expect(A.isCycleEdgeSet(s[0], byName(s[0], ['de', 'df', 'ef']))).toBe(true)
+    expect(A.isConnected(new GraphIndex(s[1]))).toBe(true); expect(A.isAcyclic(new GraphIndex(s[1]))).toBe(false)
+    expect(A.isTree(new GraphIndex(s[2]))).toBe(true); expect(s[2].vertices.length).toBe(6); expect(s[2].edges.length).toBe(5)
+    const four = byName(s[3], ['ab', 'bc', 'cd', 'de'])
+    expect(new Set(s[3].edges.filter(e => e.classes.includes('tree')).map(e => e.id))).toEqual(four)
+    expect(A.isTree(new GraphIndex(A.subgraphOfEdges(s[3], four)))).toBe(true)
+    expect(isSpanningTree(s[3], four)).toBe(false)
+  })
+  it('C_n minus any edge is a spanning path; quiz answer is the only spanning tree; More: K_1..K_4 have 1, 1, 3, 16', () => {
+    for (let n = 3; n <= 7; n++) { const c = cycle(n); for (const e of c.edges) expect(isSpanningTree(c, new Set(c.edges.filter(x => x !== e).map(x => x.id)))).toBe(true) }
+    const g = steps('t03-spanning-steps')[0]
+    expect([['ab', 'bc', 'ca', 'de', 'ef'], ['ab', 'bc', 'cd', 'de'], ['ac', 'bc', 'cd', 'de', 'ef'], ['ab', 'bc', 'cd', 'de', 'df', 'ef']]
+      .map(o => isSpanningTree(g, byName(g, o)))).toEqual([false, false, true, false])
+    expect(A.isTree(new GraphIndex(A.subgraphOfEdges(g, byName(g, ['ab', 'bc', 'cd', 'de']))))).toBe(true)
+    expect([1, 2, 3, 4].map(n => countSpanningTrees(complete(n)))).toEqual([1, 1, 3, 16])
+  })
+})
+
+describe('interval-graphs page', () => {
+  const del = (g: GraphData, X: string[]): GraphData => ({ ...g, vertices: g.vertices.filter(v => !X.includes(v.id)), edges: g.edges.filter(e => !e.tail.concat(e.head).some(x => X.includes(x))) })
+  const chordal = (g: GraphData): boolean => {
+    if (!g.vertices.length) return true
+    const ix = new GraphIndex(g)
+    const s = ix.vertexIds.find(v => A.isSimplicial(ix, v))
+    return s !== undefined && chordal(del(g, [s]))
+  }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const pair = (u: string, v: string) => [u, v].sort().join('')
+  const pairs = (g: GraphData, cls?: string) => g.edges.filter(e => !cls || e.classes.includes(cls)).map(e => pair(e.tail[0], e.head[0])).sort()
+  type Iv = Record<string, [number, number]>
+  const meet = (p: [number, number], q: [number, number]) => Math.max(p[0], q[0]) <= Math.min(p[1], q[1])
+  const intervalPairs = (I: Iv) => { const k = Object.keys(I), out: string[] = []; for (let i = 0; i < k.length; i++) for (let j = i + 1; j < k.length; j++) if (meet(I[k[i]], I[k[j]])) out.push(pair(k[i], k[j])); return out.sort() }
+  const I: Iv = { a: [0, 2], b: [1, 4], c: [3, 5], d: [3.5, 7], e: [6, 8], f: [4.5, 6.5] }
+  it('bars: the six bars are the intervals of the intent; 15 pairs, 8 overlap; b overlaps a, c, d and not f; a only b; graph matches t04-interval-graph', () => {
+    const g = fig('t04-interval-bars'), bars: Iv = {}
+    for (const e of g.edges) bars[e.tail[0][0]] = [g.vertices.find(v => v.id === e.tail[0])!.x! / 1.2, g.vertices.find(v => v.id === e.head[0])!.x! / 1.2]
+    for (const k of Object.keys(I)) { expect(bars[k][0]).toBeCloseTo(I[k][0]); expect(bars[k][1]).toBeCloseTo(I[k][1]) }
+    expect(Object.keys(I).length * (Object.keys(I).length - 1) / 2).toBe(15)
+    expect(intervalPairs(I).length).toBe(8)
+    expect(intervalPairs(I).filter(p => p.includes('a'))).toEqual(['ab'])
+    expect(intervalPairs(I).filter(p => p.includes('b'))).toEqual(['ab', 'bc', 'bd'])
+    expect(intervalPairs(I)).toEqual(pairs(fig('t04-interval-graph')))
+  })
+  it('stepper: same graph, chordal; bcfd a 4-cycle with chord cd (c, d contain 4); bcfed a 5-cycle with chords cd, df; C_4 not chordal', () => {
+    const s = steps('t04-interval-chords')
+    expect(pairs(s[0])).toEqual(intervalPairs(I)); expect(chordal(s[0])).toBe(true)
+    const cyc = (g: GraphData) => new Set(g.edges.filter(e => e.classes.includes('cycle')).map(e => e.id))
+    expect(A.isCycleEdgeSet(s[1], cyc(s[1]))).toBe(true); expect(pairs(s[1], 'cycle')).toEqual(['bc', 'bd', 'cf', 'df'])
+    expect(pairs(s[2], 'highlight')).toEqual(['cd']); expect(I.c[0] <= 4 && 4 <= I.c[1] && I.d[0] <= 4 && 4 <= I.d[1]).toBe(true)
+    expect(A.isCycleEdgeSet(s[3], cyc(s[3]))).toBe(true); expect(pairs(s[3], 'cycle')).toEqual(['bc', 'bd', 'cf', 'de', 'ef'])
+    expect(pairs(s[4], 'highlight')).toEqual(['cd', 'df'])
+    expect(chordal(cycle(4))).toBe(false)
+  })
+  it('quizzes and More: g = [2, 3.2] has neighbours a, b, c; K_4, K_3, P_3 from intervals; b ends first on bcfd, at 4', () => {
+    expect(intervalPairs({ ...I, g: [2, 3.2] }).filter(p => p.includes('g'))).toEqual(['ag', 'bg', 'cg'])
+    expect(intervalPairs({ p: [0, 1], q: [0, 1], r: [0, 1], s: [0, 1] }).length).toBe(6)
+    expect(intervalPairs({ p: [0, 1], q: [0, 1], r: [0, 1] }).length).toBe(3)
+    expect(intervalPairs({ p: [0, 1], q: [1, 2], r: [2, 3], s: [3, 4] })).toEqual(['pq', 'qr', 'rs'])
+    expect(Math.min(...['b', 'c', 'f', 'd'].map(k => I[k][1]))).toBe(I.b[1]); expect(I.b[1]).toBe(4)
+  })
+})
+
+describe('proving-the-edge-version page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const arc = (e: GraphData['edges'][number]) => e.tail[0] + e.head[0]
+  const withClass = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(arc)
+  // vertices (other than s, t) whose in- and out-degree in the arc set differ; size = out-degree of s, or null if s has an in-arc or t an out-arc
+  const balance = (arcs: string[]) => {
+    const d = new Map<string, number>()
+    for (const [x, y] of arcs) { d.set(x, (d.get(x) ?? 0) + 1); d.set(y, (d.get(y) ?? 0) - 1) }
+    const bad = [...d].filter(([v, n]) => n !== 0 && v !== 's' && v !== 't').map(([v]) => v).sort()
+    const ok = !arcs.some(a => a[1] === 's' || a[0] === 't') && bad.length === 0
+    return { bad, size: ok ? arcs.filter(a => a[0] === 's').length : null, intoT: arcs.filter(a => a[1] === 't').length }
+  }
+  const isPath = (arcs: string[]) => arcs.every((a, i) => i === 0 ? a[0] === 's' : a[0] === arcs[i - 1][1]) && arcs.at(-1)![1] === 't'
+  const F = ['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'de', 'et', 'ct']
+  it('opening: the bold arcs are a d-flow of size 3 with 9 arcs, 3 into t, d has 2 in and 2 out', () => {
+    const g = fig('t05-d-flow')
+    expect(withClass(g, 'path').sort()).toEqual([...F].sort())
+    expect(balance(F)).toEqual({ bad: [], size: 3, intoT: 3 })
+    expect([F.filter(a => a[1] === 'd').length, F.filter(a => a[0] === 'd').length]).toEqual([2, 2])
+  })
+  it('worked example: d-flow of size 3; adding ab unbalances a and b; adding fg, gf keeps size 3 and no s-t path uses them', () => {
+    const s = steps('t05-d-flow-check')
+    for (let i = 0; i < 4; i++) expect(balance(withClass(s[i], 'path'))).toEqual({ bad: [], size: 3, intoT: 3 })
+    expect(withClass(s[4], 'path').sort()).toEqual([...F, 'ab'].sort())
+    expect(balance(withClass(s[4], 'path')).bad).toEqual(['a', 'b'])
+    const F6 = withClass(s[5], 'path')
+    expect(F6.sort()).toEqual([...F, 'fg', 'gf'].sort())
+    expect(balance(F6).size).toBe(3)
+    // vertices reachable from s along arcs of F6: f and g are not, so fg and gf lie on no s-t path and F6 is no union of s-t paths
+    const reach = new Set(['s'])
+    for (let grew = true; grew;) { grew = false; for (const [x, y] of F6) if (reach.has(x) && !reach.has(y)) { reach.add(y); grew = true } }
+    expect(reach.has('f') || reach.has('g')).toBe(false)
+  })
+  it('claim example: three edge-disjoint s-t paths cover the 9 arcs of F; P1 and P2 share d', () => {
+    const s = steps('t05-d-flow-paths')
+    const P = ['color1', 'color2', 'color3'].map(c => withClass(s[3], c))
+    expect(P).toEqual([['sa', 'ad', 'dt'], ['sb', 'bd', 'de', 'et'], ['sc', 'ct']])
+    for (const p of P) expect(isPath(p)).toBe(true)
+    expect(P.flat().sort()).toEqual([...F].sort())
+    expect(withClass(s[0], 'bold').sort()).toEqual([...F].sort())
+  })
+  it('quizzes: removing de unbalances 2 vertices; only option 2 is a d-flow of size 2 (option 3 has size 1)', () => {
+    expect(balance(F.filter(a => a !== 'de')).bad).toEqual(['d', 'e'])
+    const opts = [['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'ct'], ['sa', 'ab', 'bd', 'dt', 'sc', 'ct'], ['sb', 'bd', 'de', 'ec', 'ct'], ['sa', 'ad', 'dt', 'ce', 'et']]
+    const g = fig('t05-d-flow')
+    for (const o of opts) for (const a of o) expect(g.edges.some(e => arc(e) === a)).toBe(true)
+    expect(opts.map(o => balance(o).size)).toEqual([null, 2, 1, null])
+    expect(balance(opts[0]).bad).toEqual(['d']); expect(balance(opts[3]).bad).toEqual(['c'])
   })
 })

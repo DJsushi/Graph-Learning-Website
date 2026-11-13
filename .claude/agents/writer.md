@@ -94,6 +94,12 @@ Rules:
   (about 3 × 1.3 units or flatter); a near-square layout is limited by the height. Do not
   use `group` hulls in walkthrough figures: their label padding shrinks the figure. Use
   `color1` to `color8` and the caption instead. Check the size with `viewbox.ts`.
+- Captions and step texts describe a marking (thick, dashed, filled, ringed, muted), never
+  a colour name: class colours come from CSS variables and differ from what you expect,
+  and between light and dark mode. Keep vertex labels short (an id or a number): a long
+  label such as `a: 3` makes the renderer draw small dots instead of circles. Name panels
+  by their titles, not by position, because a wide figure wraps to two rows. DSL attribute
+  lists are separated by spaces; a comma becomes part of the value.
 - Change nothing else on the page. Never touch the statement or the proof.
 - Compute every number you state with `graph-core` (a short script under `$TMPDIR`, run with
   `node --import tsx`) and add a test for it to
