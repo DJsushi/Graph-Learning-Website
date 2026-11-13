@@ -58,7 +58,7 @@ intent: New figure. It uses the network of the lecture example of a blocking flo
 type: directed
 layout: fixed
 edge-label: "{f}/{c}"
-s [class=source] @(0, 0); p @(1, 1); q @(1, 0); r @(2, 1); x @(2, 0); t [class=sink] @(3, 0)
+s [class=source] @(0, 0); p @(1, 1.6); q @(1, 0); r @(2, 1.6); x @(2, 0); t [class=sink] @(3, 0)
 s -> p [f=0 c=9]; s -> q [f=0 c=4]; p -> r [f=0 c=5]; r -> t [f=0 c=3]; q -> x [f=0 c=5]; x -> t [f=0 c=9]
 mark open: s->p p->r r->t s->q q->x x->t
 step: $L$ has two paths from $s$ to $t$.
@@ -122,7 +122,7 @@ intent: New figure. It uses the lecture network of the blocking flow example (al
 type: directed
 layout: fixed
 edge-label: "{c}"
-s [class=source] @(0, 0); p @(1, 1); q @(1, 0); r @(2, 1); x @(2, 0); t [class=sink] @(3, 0)
+s [class=source] @(0, 0); p @(1, 1.6); q @(1, 0); r @(2, 1.6); x @(2, 0); t [class=sink] @(3, 0)
 s -> p [c=9]; s -> q [c=4]; p -> r [c=5]; r -> t [c=3]; q -> x [c=5]; x -> t [c=9]
 step: Each augmentation deletes an edge.
 class muted: r->t s->q
@@ -193,7 +193,7 @@ intent: New figure. It uses the network of the lecture example of a blocking flo
 type: directed
 layout: fixed
 edge-label: "{f}/{c}"
-s [class=source] @(0, 0); p @(1, 1); q @(1, 0); r @(2, 1); x @(2, 0); t [class=sink] @(3, 0)
+s [class=source] @(0, 0); p @(1, 1.6); q @(1, 0); r @(2, 1.6); x @(2, 0); t [class=sink] @(3, 0)
 s -> p [f=0 c=9]; s -> q [f=0 c=4]; p -> r [f=0 c=5]; r -> q [f=0 c=9 class=muted]; r -> t [f=0 c=3]; q -> x [f=0 c=5]; x -> t [f=0 c=9]
 step: Phase 1 finds a blocking flow in $L$.
 set s->p [f=3]
