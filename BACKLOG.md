@@ -255,7 +255,7 @@ Cut on 2026-11-10 to fit the usage limit. None is needed for the split or the wa
 
 | ID | Item | When |
 |----|------|------|
-| D1 | Budget checks for taught pages: measuring functions (reading path, words, light and heavy math spans) in `packages/content` with unit tests, and rules E1 to E11 of `CONTENT_CONVENTIONS.md` §10 in the validator. | Before more than a few pages are rewritten |
+| D1 | Budget checks for taught pages: measuring functions (reading path, words, light and heavy math spans) in `packages/content` with unit tests, and rules E1 to E11 of `CONTENT_CONVENTIONS.md` §10 in the validator. | Done: T4.33 a9b449b |
 | D2 | Notation: `content/notation.yaml`, the "Symbols on this page" strip, `/reference/notation` (`CONTENT_CONVENTIONS.md` §3.1). | Decide |
 | D3 | Techniques: `content/techniques.yaml`, the `technique=` attribute, `/techniques/<id>` (`CONTENT_CONVENTIONS.md` §7.4). | Decide |
 | D4 | Proof tasks in exam format: `exercise` with `kind=proof given=`, hints one at a time, an "I solved it" button; about three per chapter, each checked by the math checker (`CONTENT_CONVENTIONS.md` §7.4, §13). The owner's exams ask for exactly this kind of task. | Decide |
