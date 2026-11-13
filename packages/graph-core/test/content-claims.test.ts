@@ -149,6 +149,43 @@ describe('minimum cuts lesson', () => {
     expect(cutCapacity(r, new Set(['p', 'q', 'o', 's']))).toBe(cutCapacity(r, new Set(['r'])))
     expect(c('p', 'q') + c('q', 'r') - c('p', 'q', 'r') - c('q')).toBe(2)
   })
+  it('Gomory–Hu lemma walkthroughs: delta(S) costs 4, X and both candidates cost 5, union and X minus S cost 4', () => {
+    const set = (...S: string[]) => new Set(S)
+    // setup: S = {s, v, w}, X = {s, v, p, q} (or its complement {w, r}), v–w cut
+    const g = fig('a03-gh-setup')
+    const c = (...S: string[]) => cutCapacity(g, set(...S))
+    expect([c('s', 'v', 'w'), c('w', 'r'), c('s', 'v', 'p', 'q'), c('s', 'v'), c('w')]).toEqual([4, 5, 5, 5, 5])
+    expect(minSTCut(g, 'v', 'w').value).toBe(5)
+    expect(minSTCut(g, 's', 'r').value).toBe(4)
+    expect(minSTCut(g, 's', 'q').value).toBe(4)
+    // case t not in X (t = r of the setup figure): union cut 4, 4 + 5 <= 4 + 5
+    const h = fig('a03-gh-case1')
+    const ch = (...S: string[]) => cutCapacity(h, set(...S))
+    expect([ch('s', 'v', 'w'), ch('s', 'v', 'w', 'p', 'q'), ch('s', 'v'), ch('s', 'v', 'p', 'q')]).toEqual([4, 4, 5, 5])
+    expect(minSTCut(h, 's', 't').value).toBe(4)
+    expect(minSTCut(h, 'v', 'w').value).toBe(5)
+    // case t in X (t = q of the setup figure): cut of X minus S is 4, 4 + 5 <= 4 + 5
+    const k = fig('a03-gh-case2')
+    const ck = (...S: string[]) => cutCapacity(k, set(...S))
+    expect([ck('s', 'v', 'w'), ck('p', 't'), ck('w'), ck('s', 'v', 'p', 't')]).toEqual([4, 4, 5, 5])
+    expect(minSTCut(k, 's', 't').value).toBe(4)
+    expect(minSTCut(k, 'v', 'w').value).toBe(5)
+    // the dashed cut of each figure is delta(S)
+    for (const [fg, ids] of [[g, ['vq', 'sq', 'wr']], [h, ['vq', 'sq', 'wt']], [k, ['vt', 'st', 'wr']]] as const) {
+      const dashed = fg.edges.filter(e => e.classes.includes('cut')).map(e => e.tail[0] + e.head[0]).map(x => [...x].sort().join('')).sort()
+      expect(dashed).toEqual(ids.map(x => [...x].sort().join('')).sort())
+    }
+  })
+  it('contracting {a,b,c} in the lecture network raises f(e,f) from 13 to 16 and {a,b,c} is no side of a minimum cut', () => {
+    const g = fig('a03-network')
+    const X = new Set(['a', 'b', 'c'])
+    expect(minSTCut(g, 'e', 'f').value).toBe(13)
+    // contracted graph: X-f 8+3+2, X-e 2+4, X-d 5, f-e 3, f-d 2, e-d 7
+    expect(Math.min(13 + 3 + 2, 6 + 3 + 7, 6 + 5 + 3 + 2)).toBe(16)
+    const c = cutCapacity(g, X)
+    const sides = [X, new Set(['d', 'e', 'f'])]
+    for (const S of sides) for (const p of S) for (const q of g.vertices.map(v => v.id).filter(v => !S.has(v))) expect(minSTCut(g, p, q).value).toBeLessThan(c)
+  })
   it('Karger players: seed 5 finds the minimum cut 2, seed 1 returns 4', () => {
     expect((collect(ALGORITHMS.karger, fig('a03-karger-good'), { seed: '5' }).result as any).value).toBe(2)
     expect((collect(ALGORITHMS.karger, fig('a03-karger-bad'), { seed: '1' }).result as any).value).toBe(4)
