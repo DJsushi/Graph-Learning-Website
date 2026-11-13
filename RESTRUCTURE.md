@@ -249,7 +249,7 @@ After Gate C. Same pipeline.
 | T5.19 | `algorithms/fast-flows/blocking-flows.md` | 6, 1 | e6d68f7 |
 | T5.20 | `algorithms/fast-flows/mpm.md` | 4, 1 | dbb44a1 |
 | T5.21 | `algorithms/flows/matchings-as-flows.md` | 4, not in the notes (02 p57 is a picture of the network only) | skip |
-| T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | |
+| T5.22 | `algorithms/fast-flows/unit-capacity-networks.md` | 4, 8 | 5e436f9 |
 | T5.23 | `algorithms/gomory-hu/node-identification.md` | 6, not in the notes (03 p32 states the observation only) | skip |
 | T5.24 | `algorithms/gomory-hu/gomory-hu-trees.md` | 3, 4, not in the notes (03 p4 and p6 state only) | skip |
 | T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 (03 p17: "proof by picture") | |
