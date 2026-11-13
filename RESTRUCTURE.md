@@ -255,7 +255,7 @@ After Gate C. Same pipeline.
 | T5.25 | `algorithms/gomory-hu/uncrossing-cuts.md` | 9 (03 p17: "proof by picture") | 7f98e2e |
 | T5.26 | `algorithms/gomory-hu/gomory-hu-lemma.md` | 16; skip the 4 of `cor:gomory-hu-contraction` (stated only, 03 p14) | abd9525 |
 | T5.27 | `algorithms/gomory-hu/triangle-inequality.md` | 3, not in the notes (03 p19 states Lemmas A and B only) | skip |
-| T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | |
+| T5.28 | `algorithms/gomory-hu/correctness.md` | 33, 14 | 156ce7a |
 | T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | |
 | T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | |
