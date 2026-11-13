@@ -2153,3 +2153,125 @@ describe('Ford–Fulkerson analysis (a02-ffa-*)', () => {
     expect(6 * 10).toBe(60)
   })
 })
+
+describe('Edmonds–Karp analysis (a02-eka-*)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const nm = (g: GraphData) => Object.fromEntries(g.edges.map(e => [name(g, e.id), e]))
+  const cap = (g: GraphData, key: string) => Object.fromEntries(g.edges.map(e => [name(g, e.id), num(e.data[key])]))
+  // BFS distances from s in a residual graph given as {uv: capacity}
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of 'sabcdt') if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (c: Record<string, number>, f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c)) { if (c[k] > f[k]) r[k] = c[k] - f[k]; if (f[k] > 0) r[k[1] + k[0]] = f[k] }
+    return r
+  }
+  const augment = (f: Record<string, number>, path: string) => {
+    const r = residual(c0, f)
+    const d = Math.min(...[...path].slice(0, -1).map((u, i) => r[u + path[i + 1]]))
+    const g = { ...f }
+    for (let i = 0; i + 1 < path.length; i++) { const e = path[i] + path[i + 1]; if (e in g) g[e] += d; else g[path[i + 1] + path[i]] -= d }
+    return { f: g, d }
+  }
+  const M = steps('a02-eka-monotone')
+  const c0 = cap(M[0], 'c')
+  const f0 = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+
+  it('monotone figure: levels 0,1,1,2,2,3; P = sadt has bottleneck 8; distances stay the same; reverse edges fall one level', () => {
+    expect(M.length).toBe(6)
+    expect(Object.keys(c0).length).toBe(9)
+    const d0 = dist(residual(c0, f0))
+    expect(d0).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    // (a,b) stays on level 1: d(b) = 1 <= d(a) + 1 = 2
+    expect(d0.b).toBe(1)
+    const { f: f1, d } = augment(f0, 'sadt')
+    expect(d).toBe(8)
+    const r1 = residual(c0, f1)
+    // a -> d is saturated and gone; s -> a and d -> t drop to 2; reverse edges have capacity 8
+    expect('ad' in r1).toBe(false)
+    expect([r1.sa, r1.dt, r1.as, r1.da, r1.td]).toEqual([2, 2, 8, 8, 8])
+    expect(Object.keys(cap(M[2], 'c')).sort()).toEqual(Object.keys(r1).filter(k => !['as', 'da', 'td'].includes(k)).sort())
+    expect([cap(M[2], 'c').sa, cap(M[2], 'c').dt]).toEqual([2, 2])
+    // new edges fall exactly one level of d_f
+    for (const k of ['as', 'da', 'td']) expect(d0[k[1]]).toBe(d0[k[0]] - 1)
+    // every edge of G_f' satisfies d_f(y) <= d_f(x) + 1
+    for (const k of Object.keys(r1)) expect(d0[k[1]]).toBeLessThanOrEqual(d0[k[0]] + 1)
+    // distances after augmenting: no vertex got closer; here they are unchanged; shortest s-t path is s b d t
+    const d1 = dist(r1)
+    for (const v of 'sabcdt') expect(d1[v]).toBeGreaterThanOrEqual(d0[v])
+    expect(d1).toEqual(d0)
+    expect(['sb', 'bd', 'dt'].every(k => r1[k] > 0)).toBe(true)
+    // figure content
+    expect(M[1].marks.P.length).toBe(3)
+    expect(Object.keys(nm(M[3])).filter(k => !(k in r1)).length).toBe(0)
+    expect(M[3].marks.new.length).toBe(3)
+    expect(M[5].edges.filter(e => e.classes.includes('path')).map(e => name(M[5], e.id)).sort()).toEqual(['bd', 'dt', 'sb'])
+  })
+
+  it('phase figure: L has 7 of 9 edges, three augmentations (8, 2, 2) remove ad, dt, sa; then the shortest path has length 4', () => {
+    const P = steps('a02-eka-phase')
+    expect(P.length).toBe(5)
+    expect(cap(P[0], 'c')).toEqual(c0)
+    const d0 = dist(residual(c0, f0))
+    expect(d0.t).toBe(3)
+    const up = Object.keys(c0).filter(k => d0[k[1]] === d0[k[0]] + 1)
+    expect(up.length).toBe(7)
+    expect(Object.keys(c0).filter(k => !up.includes(k)).sort()).toEqual(['ab', 'dc'])
+    expect(P[0].edges.filter(e => e.classes.includes('muted')).map(e => name(P[0], e.id)).sort()).toEqual(['ab', 'dc'])
+    expect(Object.keys(c0).length).toBe(9)
+    // new reverse edges of the first augmentation all fall one level
+    let st = augment(f0, 'sadt'); expect(st.d).toBe(8)
+    const r1 = residual(c0, st.f)
+    for (const k of ['as', 'da', 'td']) expect(d0[k[1]]).toBe(d0[k[0]] - 1)
+    expect(P[1].marks.new.length).toBe(3)
+    // second path s b d t: bottleneck 2, uses edges of L only
+    expect(['sb', 'bd', 'dt'].every(k => up.includes(k))).toBe(true)
+    expect([r1.sb, r1.bd, r1.dt]).toEqual([10, 9, 2])
+    const s2 = augment(st.f, 'sbdt'); expect(s2.d).toBe(2)
+    // third path s a c t: bottleneck 2, edges of L only
+    expect(['sa', 'ac', 'ct'].every(k => up.includes(k))).toBe(true)
+    const s3 = augment(s2.f, 'sact'); expect(s3.d).toBe(2)
+    // bottleneck edges ad, dt, sa are gone from the residual graph
+    const r3 = residual(c0, s3.f)
+    expect(['ad', 'dt', 'sa'].filter(k => k in r3)).toEqual([])
+    expect(['sb', 'bd', 'ac', 'ct'].every(k => k in r3)).toBe(true)
+    // no path of length 3 is left, the shortest path has length 4: s b d c t
+    const d3 = dist(r3)
+    expect(d3.t).toBe(4)
+    expect(['sb', 'bd', 'dc', 'ct'].every(k => k in r3)).toBe(true)
+    expect(P[4].edges.filter(e => e.classes.includes('path')).map(e => name(P[4], e.id)).sort()).toEqual(['bd', 'ct', 'dc', 'sb'])
+    // L has at most m = 9 edges; 3 augmentations <= 7 <= 9
+    expect(3).toBeLessThanOrEqual(up.length)
+    expect(up.length).toBeLessThanOrEqual(9)
+    // the figure after the removals
+    expect(P[3].edges.map(e => name(P[3], e.id)).sort()).toEqual(['ab', 'ac', 'as', 'bd', 'ct', 'da', 'dc', 'sb', 'td'])
+  })
+
+  it('time figure: m = 9, n = 6, m(n-1) = 45; run has 4 augmentations of lengths 3,3,3,4 and values 12 then 19', () => {
+    const T = steps('a02-eka-time')
+    expect(T.length).toBe(4)
+    expect(T[0].vertices.length).toBe(6)
+    expect(T[0].edges.length).toBe(9)
+    expect(T[3].vertices.filter(v => v.classes.includes('visited')).length).toBe(6)
+    expect(9 * (6 - 1)).toBe(45)
+    let f = f0
+    const lens: number[] = []
+    for (const p of ['sadt', 'sbdt', 'sact', 'sbdct']) {
+      lens.push(dist(residual(c0, f)).t)
+      f = augment(f, p).f
+      if (p === 'sact') expect(cap(T[0], 'f')).toEqual(f)
+    }
+    expect(lens).toEqual([3, 3, 3, 4])
+    expect(cap(T[1], 'f')).toEqual(f)
+    expect(dist(residual(c0, f)).t).toBeUndefined()
+    expect(f.sa + f.sb).toBe(19)
+    expect(maxFlowValue(T[0], 's', 't').value).toBe(19)
+    expect(4).toBeLessThanOrEqual(45)
+    expect(T[0].edges.filter(e => e.classes.includes('path')).length).toBe(7)
+    expect(cap(T[0], 'f').sa + cap(T[0], 'f').sb).toBe(12)
+    expect(T[2].edges.filter(e => e.classes.includes('bold')).length).toBe(8)
+  })
+})
