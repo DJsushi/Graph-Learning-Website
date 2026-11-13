@@ -232,7 +232,7 @@ After Gate C. Same pipeline.
 | T5.2 | `algorithms/mst/distinct-weights.md` | 7, 3, not in the notes (01 p5 states only); `cor:mst-unique` removed in T4.0 | skip |
 | T5.3 | `algorithms/mst/generalized-greedy.md` | 15, not in the notes; entry removed in T4.0 | skip |
 | T5.4 | `algorithms/mst/union-find.md` | 3 | f94a22a |
-| T5.5 | `algorithms/mst/boruvka.md` | 4 | |
+| T5.5 | `algorithms/mst/boruvka.md` | 4 | 0d8e01d |
 | T5.6 | `algorithms/mst/contractions.md` | 8, not in the notes (01 p20 states the lemma only) | skip |
 | T5.7 | `algorithms/mst/f-heavy-edges.md` | 2, not in the notes (01 p37 states the lemma only) | skip |
 | T5.8 | `algorithms/mst/verification.md` | 3 | |
