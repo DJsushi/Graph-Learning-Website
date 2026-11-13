@@ -219,6 +219,18 @@ the rows at any time.
 | T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | 548b857 |
 | T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches; t02: 1 mismatch, 5 additions; t03: 0 mismatches; t04: 1 mismatch; t05: 1 mismatch, 5 marked REVIEW (§6, Audit). | | 5e4e314 |
 | T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | |
+| T4.33 | `BACKLOG.md` D1 (budget checks for taught pages), needed before the rewrites below. Agent: `coder`. Added by the owner, 2026-11-13. | | |
+| T4.34 | Taught rewrite of `theory/basics/multigraphs-and-digraphs.md`. Rows T4.34 to T4.44: the theory pages that no writer touched (no proof in the notes, enough figures), owner 2026-11-13. Prompt §1.2 "Full rewrite", pipeline §1.4, writer Opus. | | |
+| T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | |
+| T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | |
+| T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | |
+| T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | |
+| T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | |
+| T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | |
+| T4.41 | Taught rewrite of `theory/trees/forests-and-trees.md` | | |
+| T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | |
+| T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | |
+| T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | |
 
 **Gate C.** See §6.
 
@@ -259,7 +271,7 @@ After Gate C. Same pipeline.
 | T5.29 | `algorithms/global-min-cut/global-minimum-cuts.md` | 3 | aab45b0 |
 | T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | 4fca56a |
-| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | |
+| T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | ada79d0 |
 | T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
 | T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | |
 
@@ -558,6 +570,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - Visual-qa on the T4.29 pages (2026-11-13): fixed after review: dots instead of circles from long `{id}: {d}` labels (degree-sequences, dirac-and-ore), a vertex on an edge (degree-sequences, mengers-theorem), a caption naming Left/Middle/Right on a wrapping figure (paths-and-cuts), and captions naming colours that render differently (hamiltonian-graphs, dirac-and-ore, distance, graphs, vertex-version-from-edge-version, hamiltonian-completion). Proposed writer rule for the owner: captions describe a marking (thick, dashed, filled, ringed), never a colour name, and vertex labels stay short. Added to `.claude/agents/writer.md` (owner, 2026-11-13).
 
 - **Gate C (2026-11-13, owner).** T4.32 (the audit mismatches) is put off; the owner decides it later. No merge into `main` was asked for, so none is done. Go on with Phase 5 until Gate D. The `thm:menger` REVIEW comment (an HTML comment readers do not see) stays as it is.
+- **Old theory pages (2026-11-13, owner).** 11 theory pages kept their old text and "Not checked yet": no proof in the notes, enough figures, so no task touched them. The owner chose a taught rewrite of all 11 (T4.33 to T4.44), done after T5.32 and before T5.33. Same question for the ~36 algorithms pages: left until Gate D.
 
 - T5.10 `mst/karger-klein-tarjan` (2026-11-13): the written proof applies `thm:mst-verification` to the forest F′ (the theorem states spanning trees). Not edited (locked); the walkthrough supplies the dummy-edge argument and a REVIEW comment sits before the proof. The Sonnet writer failed the checker twice (the second error came from the main agent's incomplete base-case instruction); an Opus writer took over the remaining fixes, and the page passed on the fourth check. Exception to §1.4's stop rule, as for degree-sequences.
 - T5.4 `mst/union-find`: the lecture slide 10 gives Galler–Fischer as 1954 (it is 1964) and slide 11 gives O(n log n) for the loop (O(m log n) is right). Both marked REVIEW on the page.
