@@ -103,7 +103,7 @@ Part 3, the product: we multiply these bounds over all contractions.
 
 :::: walkthrough {for=lem:karger-success}
 ```graph id=a03-ks-product widget=stepper
-caption: The graph of part 1 with the six edges that one run contracts, numbered in the order of contraction (when a contraction joins merged vertices, one of the parallel edges it stands for is drawn). The dashed edges are $C$. Step 2 marks the first contraction, step 3 all six, and step 4 recolours the six thick edges. Step 5 fades them, step 6 thickens $C$.
+caption: The graph of part 1 with the six contracted edges numbered in order (between merged vertices, one parallel edge is drawn). Dashed: $C$. Step 2 marks the first contraction, step 3 all six, step 4 recolours them, step 5 fades them, step 6 thickens $C$.
 intent: Proof walkthrough, part 3 of the lemma (the product). New (the proof on algorithms/03 p43 has no example); the contractions are those of the run in the player of a03-karger-good (seed 5, algorithms/03 p41).
 layout: fixed
 2 @(0, 0.65); 1 @(1.2, 0.65); 3 @(0, -0.65); 4 @(1.2, -0.65); 5 @(2.6, 0.65); 6 @(3.8, 0.65); 8 @(2.6, -0.65); 7 @(3.8, -0.65)
