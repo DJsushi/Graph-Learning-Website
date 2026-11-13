@@ -559,6 +559,9 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - **Gate C (2026-11-13, owner).** T4.32 (the audit mismatches) is put off; the owner decides it later. No merge into `main` was asked for, so none is done. Go on with Phase 5 until Gate D. The `thm:menger` REVIEW comment (an HTML comment readers do not see) stays as it is.
 
+- T5.10 `mst/karger-klein-tarjan` (2026-11-13): the written proof applies `thm:mst-verification` to the forest F′ (the theorem states spanning trees). Not edited (locked); the walkthrough supplies the dummy-edge argument and a REVIEW comment sits before the proof. The Sonnet writer failed the checker twice (the second error came from the main agent's incomplete base-case instruction); an Opus writer took over the remaining fixes, and the page passed on the fourth check. Exception to §1.4's stop rule, as for degree-sequences.
+- T5.4 `mst/union-find`: the lecture slide 10 gives Galler–Fischer as 1954 (it is 1964) and slide 11 gives O(n log n) for the loop (O(m log n) is right). Both marked REVIEW on the page.
+
 ### Needs reported by writers
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
