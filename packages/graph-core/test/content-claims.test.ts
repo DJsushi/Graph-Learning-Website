@@ -3281,3 +3281,42 @@ describe('forests-and-trees page', () => {
     expect(A.isSimple(m)).toBe(false)
   })
 })
+
+describe('spanning-trees page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const byName = (g: GraphData, names: string[]) => new Set(g.edges.filter(e => names.some(n => (e.tail[0] + e.head[0]) === n || (e.head[0] + e.tail[0]) === n)).map(e => e.id))
+  const isSpanningTree = (g: GraphData, ids: Set<string>) => A.isTree(new GraphIndex(A.spanningSubgraph(g, ids)))
+  const countSpanningTrees = (g: GraphData) => {
+    let c = 0
+    for (let m = 0; m < 1 << g.edges.length; m++) if (isSpanningTree(g, new Set(g.edges.filter((_, i) => m >> i & 1).map(e => e.id)))) c++
+    return c
+  }
+  it('opening: the triangle is a cycle; deleting one edge gives a tree, two edges disconnect; 3 spanning trees', () => {
+    const g = fig('t03-spanning-question')
+    expect(A.isCycleEdgeSet(g, new Set(g.edges.map(e => e.id)))).toBe(true)
+    for (const e of g.edges) expect(isSpanningTree(g, new Set(g.edges.filter(x => x !== e).map(x => x.id)))).toBe(true)
+    for (const e of g.edges) expect(A.isConnected(new GraphIndex(A.spanningSubgraph(g, new Set([e.id]))))).toBe(false)
+    expect(countSpanningTrees(g)).toBe(3)
+    for (let p = 0; p < 3; p++) { const h = fig('t03-spanning-triangle', p); expect(isSpanningTree(h, new Set(h.edges.filter(e => e.classes.includes('tree')).map(e => e.id)))).toBe(true) }
+  })
+  it('stepper: 6 vertices, 7 edges, cycles abc and def; minus ac connected; minus ef a spanning tree with 5 edges; without f not spanning', () => {
+    const s = steps('t03-spanning-steps')
+    expect(s[0].vertices.length).toBe(6); expect(s[0].edges.length).toBe(7)
+    expect(A.isCycleEdgeSet(s[0], byName(s[0], ['ab', 'bc', 'ca']))).toBe(true)
+    expect(A.isCycleEdgeSet(s[0], byName(s[0], ['de', 'df', 'ef']))).toBe(true)
+    expect(A.isConnected(new GraphIndex(s[1]))).toBe(true); expect(A.isAcyclic(new GraphIndex(s[1]))).toBe(false)
+    expect(A.isTree(new GraphIndex(s[2]))).toBe(true); expect(s[2].vertices.length).toBe(6); expect(s[2].edges.length).toBe(5)
+    const four = byName(s[3], ['ab', 'bc', 'cd', 'de'])
+    expect(new Set(s[3].edges.filter(e => e.classes.includes('tree')).map(e => e.id))).toEqual(four)
+    expect(A.isTree(new GraphIndex(A.subgraphOfEdges(s[3], four)))).toBe(true)
+    expect(isSpanningTree(s[3], four)).toBe(false)
+  })
+  it('C_n minus any edge is a spanning path; quiz answer is the only spanning tree; More: K_1..K_4 have 1, 1, 3, 16', () => {
+    for (let n = 3; n <= 7; n++) { const c = cycle(n); for (const e of c.edges) expect(isSpanningTree(c, new Set(c.edges.filter(x => x !== e).map(x => x.id)))).toBe(true) }
+    const g = steps('t03-spanning-steps')[0]
+    expect([['ab', 'bc', 'ca', 'de', 'ef'], ['ab', 'bc', 'cd', 'de'], ['ac', 'bc', 'cd', 'de', 'ef'], ['ab', 'bc', 'cd', 'de', 'df', 'ef']]
+      .map(o => isSpanningTree(g, byName(g, o)))).toEqual([false, false, true, false])
+    expect(A.isTree(new GraphIndex(A.subgraphOfEdges(g, byName(g, ['ab', 'bc', 'cd', 'de']))))).toBe(true)
+    expect([1, 2, 3, 4].map(n => countSpanningTrees(complete(n)))).toEqual([1, 1, 3, 16])
+  })
+})
