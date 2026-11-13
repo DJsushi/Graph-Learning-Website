@@ -224,6 +224,7 @@ the rows at any time.
 | T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | 961bd17 |
 | T4.36 | Taught rewrite of `theory/basics/cliques-and-independent-sets.md` | | b9689e6 |
 | T4.37 | Taught rewrite of `theory/walks-connectivity/walks-and-paths.md` | | 4f06c34 |
+| T4.46 | Walkthrough sticky figure at 390px: the figure box (`.ga-figure-anchor`, 341px) is shorter than figure plus caption, so the caption overflows by 12–81px and the scrolling step text runs over it (visual-qa 2026-11-13: `gomory-hu/correctness` 5 of 9 walkthroughs, `stoer-wagner-correctness`, `karger-success-probability`). Fix in the framework, not by shortening captions. Re-check those three pages at 390 with visual-qa. Agent: `coder`. | | |
 | T4.38 | Taught rewrite of `theory/walks-connectivity/breadth-first-search.md` | | |
 | T4.39 | Taught rewrite of `theory/degrees/havel-hakimi-test.md` | | |
 | T4.40 | Taught rewrite of `theory/degrees/girth-and-regular-graphs.md` | | |
@@ -573,6 +574,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - **Gate C (2026-11-13, owner).** T4.32 (the audit mismatches) is put off; the owner decides it later. No merge into `main` was asked for, so none is done. Go on with Phase 5 until Gate D. The `thm:menger` REVIEW comment (an HTML comment readers do not see) stays as it is.
 - T4.33 (coder): rules E1–E11 run only on `stage: taught` pages. E11 reads frontmatter `needs`: a taught page lists every concept page it links to. Not done: `symbols` resolving (needs D2). The "term not linked" lint is skipped on concept pages (§10). 30 split-page steps exceed 2 heavy spans; that only matters once a page is taught.
+- Visual-qa on T5.28, T5.29, T5.31, T5.32, T4.34 (2026-11-13): passed at 1366 on every page; at 390, the caption overflow of T4.46 on three pages. `karger-success-probability` walkthroughs 4 and 5 have no figure (proofs of 2 lines, allowed by E7). 390 measured in an iframe (the window minimum is 412px).
 - **Old theory pages (2026-11-13, owner).** 11 theory pages kept their old text and "Not checked yet": no proof in the notes, enough figures, so no task touched them. The owner chose a taught rewrite of all 11 (T4.33 to T4.44), done after T5.32 and before T5.33. Same question for the ~36 algorithms pages: left until Gate D.
 
 - T5.10 `mst/karger-klein-tarjan` (2026-11-13): the written proof applies `thm:mst-verification` to the forest F′ (the theorem states spanning trees). Not edited (locked); the walkthrough supplies the dummy-edge argument and a REVIEW comment sits before the proof. The Sonnet writer failed the checker twice (the second error came from the main agent's incomplete base-case instruction); an Opus writer took over the remaining fixes, and the page passed on the fourth check. Exception to §1.4's stop rule, as for degree-sequences.
