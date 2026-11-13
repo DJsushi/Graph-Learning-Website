@@ -2409,3 +2409,168 @@ describe('Blocking flows (a02-blk-*)', () => {
     expect(S[3].edges.filter(e => e.classes.includes('bold')).length).toBe(7)
   })
 })
+
+describe('MPM proofs (a02-mpm-count, a02-mpm-phases)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (g: GraphData, id: string) => name(g, id)
+  const val = (g: GraphData, k: string) => Object.fromEntries(g.edges.map(e => [key(g, e.id), num(e.data[k])]))
+  const marked = (g: GraphData, m: string) => (g.marks[m] ?? []).map(String)
+  // the lecture network (a02-network): capacities
+  const c0: Record<string, number> = { sa: 10, sb: 10, ab: 2, ac: 4, ad: 8, bd: 9, dc: 9, ct: 10, dt: 10 }
+  const V = 'sabcdt'
+  const dist = (r: Record<string, number>) => {
+    const d: Record<string, number> = { s: 0 }, q = ['s']
+    while (q.length) { const u = q.shift()!; for (const v of V) if (r[u + v] > 0 && !(v in d)) { d[v] = d[u] + 1; q.push(v) } }
+    return d
+  }
+  const residual = (f: Record<string, number>) => {
+    const r: Record<string, number> = {}
+    for (const k of Object.keys(c0)) { r[k] = (r[k] ?? 0) + c0[k] - f[k]; const b = k[1] + k[0]; r[b] = (r[b] ?? 0) + f[k] }
+    return r
+  }
+  // MPM on the level graph of a residual graph; follows the written algorithm (min vertex capacity, push, pull, erase)
+  const mpm = (r: Record<string, number>) => {
+    const d = dist(r)
+    const L: Record<string, number> = {}
+    for (const k of Object.keys(r)) if (r[k] > 0 && d[k[1]] === d[k[0]] + 1) L[k] = r[k]
+    const flow: Record<string, number> = {}
+    const alive = new Set(V)
+    const log: { v: string; d: number; caps: Record<string, number>; partial: string[]; saturated: string[] }[] = []
+    const live = () => Object.keys(L).filter(k => L[k] > 0 && alive.has(k[0]) && alive.has(k[1]))
+    const prune = () => {
+      for (let ch = true; ch;) {
+        ch = false
+        for (const v of [...alive]) {
+          if (v === 's' || v === 't') continue
+          const E = live()
+          if (!E.some(k => k[1] === v) || !E.some(k => k[0] === v)) { alive.delete(v); ch = true }
+        }
+      }
+    }
+    const capOf = (v: string) => {
+      const E = live()
+      const i = E.filter(k => k[1] === v).reduce((z, k) => z + L[k], 0)
+      const o = E.filter(k => k[0] === v).reduce((z, k) => z + L[k], 0)
+      return v === 's' ? o : v === 't' ? i : Math.min(i, o)
+    }
+    prune()
+    const eraseOrder: string[] = []
+    while (alive.has('s') && alive.has('t') && live().length) {
+      const caps = Object.fromEntries([...alive].map(v => [v, capOf(v)]))
+      const v = [...alive].sort((a, b) => caps[a] - caps[b])[0]
+      const dd = caps[v]
+      const before = { ...L }
+      const move = (dir: 1 | -1) => {
+        const ex: Record<string, number> = { [v]: dd }
+        const order = [...alive].sort((a, b) => dir * (d[a] - d[b]))
+        for (const u of order) {
+          let x = ex[u] ?? 0
+          if (x <= 0 || (dir === 1 && u === 't') || (dir === -1 && u === 's')) continue
+          for (const k of live()) {
+            if (x <= 0) break
+            const from = dir === 1 ? k[0] : k[1], to = dir === 1 ? k[1] : k[0]
+            if (from !== u) continue
+            const a = Math.min(x, L[k])
+            L[k] -= a; x -= a; flow[k] = (flow[k] ?? 0) + a
+            ex[to] = (ex[to] ?? 0) + a
+          }
+        }
+      }
+      move(1); move(-1)
+      const touched = Object.keys(L).filter(k => before[k] !== L[k])
+      log.push({ v, d: dd, caps, partial: touched.filter(k => L[k] > 0), saturated: touched.filter(k => L[k] === 0) })
+      alive.delete(v); eraseOrder.push(v)
+      prune()
+    }
+    return { L, flow, log, eraseOrder, d, value: (flow.sa ?? 0) + (flow.sb ?? 0) }
+  }
+  const zero = Object.fromEntries(Object.keys(c0).map(k => [k, 0]))
+  const add = (f: Record<string, number>, g: Record<string, number>) => { const h = { ...f }; for (const k of Object.keys(g)) h[k] = (h[k] ?? 0) + g[k]; return h }
+  const p1 = mpm(residual(zero))
+
+  it('count figure: L has 7 edges (ab, dc dropped), 6 vertices, 9 edges in G', () => {
+    const S = steps('a02-mpm-count')
+    expect(S.length).toBe(8)
+    expect(Object.keys(c0).length).toBe(9)
+    expect(p1.d).toEqual({ s: 0, a: 1, b: 1, c: 2, d: 2, t: 3 })
+    expect(Object.keys(c0).filter(k => p1.d[k[1]] !== p1.d[k[0]] + 1).sort()).toEqual(['ab', 'dc'])
+    expect(S[0].edges.length).toBe(7)
+    expect(marked(S[0], 'L').length).toBe(7)
+    expect(S[0].vertices.length).toBe(6)
+    expect(6 * 6).toBe(36)
+    expect(9).toBeLessThanOrEqual(36)
+  })
+  it('count figure: vertex capacities at the start are c 4, a 10, b 9, d 10, s 20, t 20', () => {
+    expect(p1.log[0].caps).toEqual({ s: 20, a: 10, b: 9, c: 4, d: 10, t: 20 })
+  })
+  it('count figure: three iterations erase c, a, d with capacities 4, 6, 4 (d tied with t); value 14', () => {
+    const S = steps('a02-mpm-count')
+    expect(p1.eraseOrder).toEqual(['c', 'a', 'd'])
+    expect(p1.log.map(l => l.d)).toEqual([4, 6, 4])
+    expect(p1.log[1].caps.a).toBe(6)
+    expect(p1.log[2].caps.d).toBe(4)
+    expect(p1.log[2].caps.t).toBe(4)
+    expect(p1.value).toBe(14)
+    expect(6 - 1).toBeGreaterThanOrEqual(p1.log.length)
+    expect(marked(S[1], 'erased').sort()).toEqual(['a', 'c', 'd'])
+    expect(marked(S[2], 'mins').sort()).toEqual(['a', 'c', 'd'])
+    expect(S[1].vertices.filter(v => v.classes.includes('muted')).map(v => v.id).sort()).toEqual(['a', 'c', 'd'])
+  })
+  it('count figure: final flow labels equal the MPM run; sa, ac, dt saturated; sb, ad, bd, ct partly used', () => {
+    const S = steps('a02-mpm-count')
+    expect(p1.flow).toEqual({ ac: 4, ct: 4, sa: 10, ad: 6, dt: 10, bd: 4, sb: 4 })
+    expect(val(S[1], 'f')).toEqual({ sa: 10, sb: 4, ac: 4, ad: 6, bd: 4, ct: 4, dt: 10 })
+    const L0 = { sa: 10, sb: 10, ac: 4, ad: 8, bd: 9, ct: 10, dt: 10 } as Record<string, number>
+    expect(val(S[0], 'c')).toEqual(L0)
+    const sat = Object.keys(L0).filter(k => p1.flow[k] === L0[k]).sort()
+    const part = Object.keys(L0).filter(k => p1.flow[k] > 0 && p1.flow[k] < L0[k]).sort()
+    expect(sat).toEqual(['ac', 'dt', 'sa'])
+    expect(part).toEqual(['ad', 'bd', 'ct', 'sb'])
+    expect(marked(S[3], 'sat').length).toBe(3)
+    expect(marked(S[4], 'part').length).toBe(4)
+    // push from a (iteration 2): a->d is the only partly used edge, 6 of 8; sa is then saturated
+    expect(p1.log[1].v).toBe('a')
+    expect(p1.log[1].partial).toContain('ad')
+    expect(p1.flow.ad).toBe(6)
+    expect(L0.ad).toBe(8)
+    // at most one partly used outgoing edge per vertex at the end
+    for (const v of V) expect(part.filter(k => k[0] === v).length).toBeLessThanOrEqual(1)
+  })
+  it('count figure: capacity of d drops from 10 to 4 in the iteration for a', () => {
+    expect(p1.log[1].caps.d).toBe(10)
+    expect(p1.log[2].caps.d).toBe(4)
+    const S = steps('a02-mpm-count')
+    expect(marked(S[5], 'key')).toEqual(['d'])
+  })
+
+  const f1 = add(zero, p1.flow)
+  const r1 = residual(f1 as any)
+  it('phases figure: phase 1 distance 3 value 14; phase 2 distance 4 along s b d c t adds 5, value 19, then t unreachable', () => {
+    const S = steps('a02-mpm-phases')
+    expect(S.length).toBe(4)
+    expect(val(S[0], 'c')).toEqual(c0)
+    expect(val(S[0], 'f')).toEqual({ sa: 10, sb: 4, ac: 4, ad: 6, bd: 4, ct: 4, dt: 10, ab: 0, dc: 0 })
+    expect(p1.d.t).toBe(3)
+    expect(p1.value).toBe(14)
+    const d1 = dist(r1)
+    expect(d1.t).toBe(4)
+    const p2 = mpm(r1)
+    expect(p2.value).toBe(5)
+    expect(Object.keys(p2.flow).sort()).toEqual(['bd', 'dc', 'ct', 'sb'].sort())
+    expect(marked(S[1], 'L2').length).toBe(4)
+    expect(marked(S[2], 'P2').length).toBe(4)
+    const f2 = add(f1, p2.flow)
+    expect(f2.sa + f2.sb).toBe(19)
+    expect(val(S[2], 'f')).toEqual({ sa: 10, sb: 9, ac: 4, ad: 6, bd: 9, ct: 9, dt: 10, ab: 0, dc: 5 })
+    expect(dist(residual(f2 as any)).t).toBeUndefined()
+    expect(maxFlowValue(fig('a02-network'), 's', 't').value).toBe(19)
+    // L2 also has the dead end d->a (a lies on no s-t path); the s-t path s b d c t is the only one
+    expect(Object.keys(r1).filter(k => r1[k] > 0 && d1[k[1]] === d1[k[0]] + 1).sort()).toEqual(['bd', 'ct', 'da', 'dc', 'sb'])
+    expect(d1).toEqual({ s: 0, b: 1, d: 2, c: 3, a: 3, t: 4 })
+    // 2 phases of at most n = 6; m = 9 <= n^2 = 36
+    expect(2).toBeLessThanOrEqual(6)
+    expect(9).toBeLessThanOrEqual(36)
+    expect(S[1].edges.filter(e => e.classes.includes('path')).length).toBe(4)
+    expect(S[0].edges.filter(e => e.classes.includes('muted')).map(e => key(S[0], e.id)).sort()).toEqual(['ab', 'dc'])
+  })
+})

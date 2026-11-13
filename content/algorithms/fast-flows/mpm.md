@@ -5,7 +5,7 @@ chapter: fast-flows
 order: 6
 lectures: [a02]
 stage: split
-status: draft
+status: reviewed
 ---
 
 ::: theorem {#thm:mpm title="MPM" source="algorithms/02 p47"}
@@ -83,6 +83,86 @@ per iteration is at most one partially used edge per vertex, $\O(n)$ per iterati
 again for every augmentation, which is where its extra factor comes from.
 :::
 
+Proof by counting: we bound the number of iterations, then the cost of each kind of operation over all iterations, and add the costs.
+
+:::: walkthrough {for=prop:mpm-time}
+```graph id=a02-mpm-count widget=stepper
+caption: The level graph $L$ of the lecture network at $f = 0$, labels $f/c$. After the run, faded vertices are the erased ones, thick edges are saturated and dashed edges are used only partly.
+intent: New figure. It uses the lecture network (algorithms/02 p15–21) and its level graph at f = 0 from the intuition above; the lecture draws no example of MPM on p52.
+type: directed
+layout: fixed
+edge-label: "{f}/{c}"
+s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, 0); c @(3, 1); d @(3, 0); t [class=sink] @(4.5, 0)
+s -> a [f=0 c=10]; s -> b [f=0 c=10]; a -> c [f=0 c=4]; a -> d [f=0 c=8]; b -> d [f=0 c=9]; c -> t [f=0 c=10]; d -> t [f=0 c=10]
+mark L: s->a s->b a->c a->d b->d c->t d->t
+step: Initialization: one pass over $L$.
+step: At most $n - 1$ iterations: each erases a vertex.
+set s->a [f=10]
+set s->b [f=4]
+set a->c [f=4]
+set a->d [f=6]
+set b->d [f=4]
+set c->t [f=4]
+set d->t [f=10]
+class muted: c a d
+mark erased: c a d
+step: One EXTRACT-MIN per iteration.
+unclass muted: c a d
+class current: c a d
+mark mins: c a d
+step: A saturated edge is deleted once.
+unclass current: c a d
+class bold: s->a a->c d->t
+mark sat: s->a a->c d->t
+step: At most one partly used edge per vertex.
+unclass bold: s->a a->c d->t
+class dashed: s->b a->d b->d c->t
+mark part: s->b a->d b->d c->t
+step: Each partial edge costs $\O(1)$ key updates.
+unclass dashed: s->b a->d b->d c->t
+class current: d
+mark key: d
+step: Two of the four costs are $\O(m)$, and $m \le n^2$.
+unclass current: d
+class highlight: s->a s->b a->c a->d b->d c->t d->t
+step: All four costs are at most quadratic.
+unclass highlight: s->a s->b a->c a->d b->d c->t d->t
+class visited: s a b c d t
+```
+
+::: step
+Before the loop we remove the vertices on no $s$–$t$ path by two searches, then sum capacities at each remaining vertex and fill the heap. $L$ has at most $m$ edges (of an edge and its reverse in $G_f$, at most one climbs a level), and $n = \O(m)$ by [[algorithms/flows/flow-networks|convention]]. So this costs $\O(m)$. Here: [[fig:a02-mpm-count#L|7 edges]], 6 vertices.
+:::
+
+::: step
+The amount $d$ is the smaller of the two sums at $v$, so after the push and the pull all incoming or all outgoing edges of $v$ are saturated. We erase $v$. With one vertex left, no $s$–$t$ path remains, so at most $n - 1$ iterations. Here: three, erasing [[fig:a02-mpm-count#erased|$c$, $a$, $d$]]; labels show the final flow, 14.
+:::
+
+::: step
+Finding the vertex of minimal capacity is one `EXTRACT-MIN` on the Fibonacci heap, $\O(\log n)$ amortised ([[algorithms/mst/jarnik-with-a-heap|table of heap costs]]). We do it once per iteration, so at most $n - 1$ times, and the minima cost $\O(n \log n)$ in all. Here: [[fig:a02-mpm-count#mins|the minima]] were $c$ with 4, $a$ with 6 and $d$ with 4 (tied with $t$).
+:::
+
+::: step
+Whenever a push or pull saturates an edge, we delete it, and a deleted edge never comes back. Erasing a vertex deletes its remaining edges, again each only once. Updating the two ends of a deleted edge is $\O(1)$. So all deletions together cost $\O(m)$. Here: [[fig:a02-mpm-count#sat|three edges]] end saturated: $s \to a$, $a \to c$ and $d \to t$.
+:::
+
+::: step
+A push saturates a vertex's outgoing edges in order, so only the last can stay partly used. A pull does the same with incoming edges. So each vertex has $\O(1)$ work per iteration, $\O(n^2)$ over at most $n - 1$ iterations. Here: in the push from $a$, the edge $a \to d$ stays partly used, 6 of 8 units.
+:::
+
+::: step
+A partly used edge lowers the capacity of its two ends, and we record each change with one `DECREASE-KEY`, $\O(1)$ amortised in a Fibonacci heap. Each vertex has a constant number of such changes per iteration, so this adds nothing to the $\O(n^2)$ bound. Here: after the iteration for $a$, [[fig:a02-mpm-count#key|$d$]] drops from capacity 10 to 4, one key update.
+:::
+
+::: step
+Initialization and edge deletions cost $\O(m)$ each. The network has no parallel edges ([[algorithms/flows/flow-networks|convention]]), so at most one edge leaves $u$ for each other vertex $v$. Hence $m \le n^2$, and these two costs are at most quadratic. Here: the 7 edges of $L$ shown (9 in $G$) against $n^2 = 36$.
+:::
+
+::: step
+The minima cost $\O(n \log n)$, which is less than quadratic, and the partial saturations cost $\O(n^2)$. So all four costs are at most quadratic, and so is their sum. This is the claim. Here: the run on 6 vertices ends after 3 iterations, with no $s$–$t$ path left.
+:::
+::::
+
 ::: proof
 Initialization (vertex capacities etc.) takes $\O(m)$. Each iteration deletes at least one vertex, so there are at most $n - 1$ iterations. Over all iterations: finding and deleting
 vertices of minimum capacity takes $\O(n \log n)$ (`EXTRACT-MIN` in $\O(\log n)$); deleting fully saturated edges takes $\O(m)$ in total (each edge is deleted once); handling the
@@ -98,6 +178,62 @@ The MPM algorithm runs in time $\O(n^3)$.
 The same count as for Dinic ([[thm:dinic]]) with a cheaper inner step: at most $n$ phases, each a blocking flow in $\O(n^2)$ instead of $\O(mn)$.
 This proves [[thm:mpm]].
 :::
+
+Proof by counting: the number of phases times the cost of one phase.
+
+:::: walkthrough {for=thm:mpm-time}
+```graph id=a02-mpm-phases widget=stepper
+caption: MPM on the lecture network, labels $f/c$. Faded edges do not belong to the level graph of the phase, thick edges carry the blocking flow of the phase. Phase 1 reaches value 14, phase 2 value 19.
+intent: New figure. It runs MPM on the lecture network (algorithms/02 p15–21; two phases with values 14 and 19, as on the Dinic page); the lecture draws no example of MPM on p53.
+type: directed
+layout: fixed
+edge-label: "{f}/{c}"
+s [class=source] @(0, 0); a @(1.5, 1); b @(1.5, 0); c @(3, 1); d @(3, 0); t [class=sink] @(4.5, 0)
+s -> a [f=0 c=10]; s -> b [f=0 c=10]; a -> b [f=0 c=2 class=muted]; a -> c [f=0 c=4]; a -> d [f=0 c=8]; b -> d [f=0 c=9]; d -> c [f=0 c=9 class=muted]; c -> t [f=0 c=10]; d -> t [f=0 c=10]
+mark L1: s->a s->b a->c a->d b->d c->t d->t
+step: One phase: a blocking flow in $L$.
+set s->a [f=10]
+set s->b [f=4]
+set a->c [f=4]
+set a->d [f=6]
+set b->d [f=4]
+set c->t [f=4]
+set d->t [f=10]
+class bold: s->a s->b a->c a->d b->d c->t d->t
+step: The other operations of a phase.
+unclass bold: s->a s->b a->c a->d b->d c->t d->t
+unclass muted: d->c
+class muted: s->a a->c a->d d->t
+class path: s->b b->d d->c c->t
+mark L2: s->b b->d d->c c->t
+step: At most $n$ phases.
+unclass path: s->b b->d d->c c->t
+set s->b [f=9]
+set b->d [f=9]
+set d->c [f=5]
+set c->t [f=9]
+class bold: s->b b->d d->c c->t
+mark P2: s->b b->d d->c c->t
+step: Multiply.
+class visited: s a b c d t
+```
+
+::: step
+In one phase we find a blocking flow in the level graph $L$, and by [[prop:mpm-time]] this takes $\O(n^2)$. Here: phase 1 works on [[fig:a02-mpm-phases#L1|the level graph]] at $f = 0$, where $t$ is at distance 3; the edges $a \to b$ and $d \to c$ stay out. MPM finds a blocking flow of value 14.
+:::
+
+::: step
+The other operations of a phase each take $\O(m)$. The BFS that builds $L$ takes $\O(n + m)$ ([[alg:bfs]]), which is $\O(m)$ as $n = \O(m)$ ([[algorithms/flows/flow-networks|convention]]). Adding the blocking flow to $f$ and updating $G_f$ change each edge once. Here: the next BFS in $G_f$ reaches $t$ at distance 4, along [[fig:a02-mpm-phases#L2|$s, b, d, c, t$]].
+:::
+
+::: step
+By [[lem:dinic-phases]] the distance from $s$ to $t$ grows in every phase, and it is at most $n - 1$. So there are at most $n$ phases, as for Dinic. Here: the distance is 3, then 4; phase 2 adds 5 units along [[fig:a02-mpm-phases#P2|that path]], value 19. Then $t$ is unreachable: 2 phases, out of up to 6.
+:::
+
+::: step
+A phase costs $\O(n^2)$ for the blocking flow plus $\O(m)$ for the rest. We have $m \le n^2$ (the network has no parallel edges, [[algorithms/flows/flow-networks|convention]]), so a phase costs $\O(n^2)$. With at most $n$ phases the total is $\O(n^3)$, which is the claim. Here: $n^2 = 36$ against $m = 9$.
+:::
+::::
 
 ::: proof
 A blocking flow takes $\O(n^2)$, the other operations of a phase $\O(m) \subseteq \O(n^2)$, and there are at most $n$ phases, as for Dinic.
