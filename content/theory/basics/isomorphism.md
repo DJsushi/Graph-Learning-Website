@@ -155,10 +155,14 @@ class rejected: @e3 @h1
 ```
 
 The lecture drew a larger example: a pentagon and a pentagram, each with two doubled edges.
+On the board, $H$ doubles $34$ and $45$. Then vertex 4 has four edges in $H$, while no vertex of
+$G$ has more than three, so that $H$ is not isomorphic to $G$. The figure doubles $23$ and $45$.
+
+<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->
 
 ```graph id=t01-iso-multigraph widget=figure
 caption: Two isomorphic multigraphs. In both, the edges $23$ and $45$ are doubled; the identity map on the labels (together with a matching of the parallel edges) is an isomorphism.
-intent: Show that drawings of the same multigraph can look completely different (a pentagon versus a pentagram). Parallel edges must be matched to parallel edges.
+intent: From the lecture (theory/2026-09-15 p4): the board's pentagon $G$ and pentagram $H$, same labels and positions. The board's $H$ doubles $34$ instead of $23$ and is then not isomorphic to $G$; corrected here. Shows that drawings of the same multigraph can look completely different, and that parallel edges must be matched to parallel edges.
 layout: fixed
 panel: $G$
 1 @(-0.59, -0.81); 2 @(0.59, -0.81); 3 @(0.95, 0.31); 4 @(0, 1); 5 @(-0.95, 0.31)

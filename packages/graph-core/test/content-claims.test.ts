@@ -3001,6 +3001,13 @@ describe('isomorphism page', () => {
     const [g, h] = [fig('t01-iso-multigraph', 0), fig('t01-iso-multigraph', 1)]
     expect(edgeMaps(g, h, v => v)).toBe(4)
   })
+  it('board H (scan p4) doubles 34 and 45: vertex 4 has degree 4, G has max degree 3, so not isomorphic', () => {
+    const board = new GraphIndex(parseGraph('1 -- 5; 1 -- 2; 2 -- 3; 3 -- 4; 3 -- 4; 4 -- 5; 4 -- 5').panels[0].graph)
+    const g = new GraphIndex(fig('t01-iso-multigraph', 0))
+    expect(board.degree('4')).toBe(4)
+    expect(Math.max(...g.vertexIds.map(v => g.degree(v)))).toBe(3)
+    expect(A.degreeSequence(board)).not.toEqual(A.degreeSequence(g))
+  })
 })
 
 describe('cliques and independent sets page', () => {
