@@ -2926,12 +2926,12 @@ describe('multigraphs-and-digraphs page', () => {
   // the value of epsilon as a string: 'v' for a loop, 'u>v' for an arc, 'u-v' (sorted) for an undirected edge
   const eps = (e: GraphData['edges'][number]) => e.directed ? `${e.tail[0]}>${e.head[0]}` : e.tail[0] === e.head[0] ? e.tail[0] : [e.tail[0], e.head[0]].sort().join('-')
   const parallelPairs = (g: GraphData) => g.edges.flatMap((e, i) => g.edges.slice(i + 1).filter(f => eps(f) === eps(e)).map(f => [e.id, f.id]))
-  it('lecture figure: 3 parallel c-d edges, loop at f, arcs g->e twice and e->g once; 4 parallel pairs (quiz)', () => {
+  it('lecture figure: 4 parallel c-d edges, 2 loops at f, arcs g->e twice and e->g once; 8 parallel pairs (quiz)', () => {
     const g = fig('t01-mixed-multigraph')
-    expect(g.edges.filter(e => eps(e) === 'c-d').length).toBe(3)
-    expect(g.edges.filter(e => eps(e) === 'f').length).toBe(1)
+    expect(g.edges.filter(e => eps(e) === 'c-d').length).toBe(4)
+    expect(g.edges.filter(e => eps(e) === 'f').length).toBe(2)
     expect(g.edges.filter(e => e.directed).map(eps).sort()).toEqual(['e>g', 'g>e', 'g>e'])
-    expect(parallelPairs(g).length).toBe(4)
+    expect(parallelPairs(g).length).toBe(8)
   })
   it('reading-epsilon stepper: values of epsilon, only e1 and e2 parallel', () => {
     const g = fig('t01-reading-epsilon')

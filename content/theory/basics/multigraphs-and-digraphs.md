@@ -14,24 +14,24 @@ The lecture drew the picture below. Some of its edges have no place in a
 [[def:graph|graph]] as we defined it. Which ones, and what must change so that they fit?
 
 ```graph id=t01-mixed-multigraph widget=figure
-caption: A mixed multigraph: three parallel edges between $c$ and $d$, a loop at $f$, and three arcs between $e$ and $g$ (two from $g$ to $e$, one from $e$ to $g$).
-intent: Transcription of the lecture drawing. Show at a glance all the features a simple graph forbids: loops, parallel edges, directed edges, mixed together with ordinary edges.
+caption: A mixed multigraph: four parallel edges between $c$ and $d$, two loops at $f$, and three arcs between $e$ and $g$ (two from $g$ to $e$, one from $e$ to $g$).
+intent: Transcription of the lecture drawing (2026-09-15 p2–3, left; the red edges are the highlighted ones). Show at a glance all the features a simple graph forbids: loops, parallel edges, directed edges, mixed together with ordinary edges.
 type: mixed
 layout: fixed
 a @(0, 3); b @(2, 3); c @(1, 2); d @(-1, 1.5); e @(2.6, 1.5); f @(0.7, 0.3); g @(2.2, 0.3)
 a -- b; a -- c; b -- c
-c -- d [class=highlight]; c -- d [class=highlight]; c -- d
+c -- d [class=highlight]; c -- d [class=highlight]; c -- d [class=highlight]; c -- d
 d -- e; c -- e; c -- g; c -- f; f -- g
-f -- f [class=highlight side=bottom]
+f -- f [class=highlight side=bottom]; f -- f [class=highlight side=bottom]
 g -> e [class=highlight]; g -> e [class=highlight]; e -> g [class=highlight]
-mark parallel: c--d c--d#2 c--d#3
-mark loop: f--f
+mark parallel: c--d c--d#2 c--d#3 c--d#4
+mark loop: f--f f--f#2
 mark arcs: g->e g->e#2 e->g
 ```
 
 Point at the words to find them in the picture:
-[[fig:t01-mixed-multigraph#parallel|three different edges between $c$ and $d$]],
-[[fig:t01-mixed-multigraph#loop|an edge from $f$ back to $f$]] and
+[[fig:t01-mixed-multigraph#parallel|four different edges between $c$ and $d$]],
+[[fig:t01-mixed-multigraph#loop|two edges from $f$ back to $f$]] and
 [[fig:t01-mixed-multigraph#arcs|three edges with arrows between $e$ and $g$]].
 
 In a graph, an edge *is* its set of two endpoints, and that rules out all three. A loop would
@@ -136,13 +136,15 @@ the vertex itself.
 :::: quiz {#q:t01-parallel-pairs}
 In the lecture's picture at the top of the page, how many pairs of different edges are parallel?
 
-answer: 4
+answer: 8
 
 ::: explanation
-The three edges between $c$ and $d$ give three pairs. Of the arcs between $e$ and $g$, the two
-from $g$ to $e$ have the same ordered pair: one more pair. The arc from $e$ to $g$ has a
-different ordered pair, so it is parallel to neither. All other edges have endpoints of their
-own. Total: $3 + 1 = 4$.
+The four edges between $c$ and $d$ give six pairs: each of the four pairs up with each of the
+other three, and that counts every pair twice, so $4 \cdot 3 / 2 = 6$. The two loops at $f$ both
+have the single endpoint $f$: one more pair. Of the arcs between $e$ and $g$, the two from $g$
+to $e$ have the same ordered pair: one more pair. The arc from $e$ to $g$ has a different
+ordered pair, so it is parallel to neither. All other edges have endpoints of their own. Total:
+$6 + 1 + 1 = 8$.
 :::
 ::::
 
