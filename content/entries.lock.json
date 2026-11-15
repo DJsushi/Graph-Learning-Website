@@ -79,6 +79,8 @@
   "def:mst": "1d0ffcb1791956000c78eec2ac4bd2f76c8ef52a90cf3cc48d309e67026fa193",
   "def:node-identification": "9a7867ad8a2eade0e90d7168dbd9e34e37d4b9cb95425776e60a3db43f2bd0bc",
   "def:path-graph": "afd6b25a82d17d0a0b38778d6b6607fce4b69fae833ef09539b30e29e33b158f",
+  "def:planar-drawing": "c51a668d95e99e8b2b2314e342c074e1fdc9194518ff827549b34f9c35c882ff",
+  "def:planar-graph": "4387b295f697434df320c8d7ff6b0ca0102e03cd93b5c467f3de6668b51d2e5d",
   "def:reduced-weights": "4b6861d8d51ada7ef9535462c4d439eba2ed4a8842077aadbc4289d7daedc2c1",
   "def:residual-network": "7784f6de93c7d8593c3845638a169b7d9b98472aa57d9f47ba54d27b22a19da1",
   "def:simplicial": "9e2f3f7ace749dfe5edc37f8fe12f452b97f63f87bd71d6e76ea5544901b7db2",

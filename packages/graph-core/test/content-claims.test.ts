@@ -7,9 +7,10 @@ import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
+import { isPlanar } from '../src/planar'
 import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
 import { computeBox } from '../../graph-vue/src/viewbox'
-import { toScreen } from '../../graph-vue/src/geometry'
+import { centerline, defaultBends, R, toScreen } from '../../graph-vue/src/geometry'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -3593,5 +3594,68 @@ describe('karger-stein page', () => {
     const s = steps('a03-ks-all')
     expect(s.length).toBe(11)
     expect(edgeIds(s[0], 'cut')).toEqual(['e12', 'e45'])
+  })
+})
+
+describe('planar-drawings page', () => {
+  type P = { x: number; y: number }
+  const all = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels }
+  const cut = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return undefined
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 0 && t < 1 && u > 0 && u < 1 ? { x: p.x + t * (q.x - p.x), y: p.y + t * (q.y - p.y) } : undefined
+  }
+  const toSeg = (c: P, p: P, q: P) => {
+    const dx = q.x - p.x, dy = q.y - p.y, t = Math.max(0, Math.min(1, ((c.x - p.x) * dx + (c.y - p.y) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p.x + t * dx - c.x, p.y + t * dy - c.y)
+  }
+  // The edges as the renderer draws them: pairs of edges whose curves meet away from a vertex, and edges whose curve comes within a vertex radius of a vertex that is not an end.
+  const drawn = (g: GraphData) => {
+    const pos = new Map(g.vertices.map(v => [v.id, toScreen(v.x ?? 0, v.y ?? 0)])), b = defaultBends(g)
+    const L = g.edges.map(e => { const [u, v] = ends(e); return { e, u, v, pts: centerline(e, pos.get(u)!, pos.get(v)!, b.get(e.id) ?? 0) } })
+    const crossings: string[] = [], through: string[] = []
+    L.forEach((A, i) => L.slice(i + 1).forEach(B => {
+      const hit = A.pts.slice(1).some((a, k) => B.pts.slice(1).some((c, l) => {
+        const x = cut(A.pts[k], a, B.pts[l], c)
+        return x && ![...pos.values()].some(p => Math.hypot(p.x - x.x, p.y - x.y) < 1)
+      }))
+      if (hit) crossings.push(A.u + A.v + '/' + B.u + B.v)
+    }))
+    for (const A of L) for (const [id, p] of pos) if (id !== A.u && id !== A.v && A.pts.slice(1).some((a, k) => toSeg(p, A.pts[k], a) < R)) through.push(A.u + A.v + '@' + id)
+    return { crossings, through }
+  }
+  it('board drawing: 5 vertices, 7 edges, two parallel edges 1-3, five edges at 1, no crossing, planar', () => {
+    const g = fig('t06-board-drawing')
+    expect([g.vertices.length, g.edges.length]).toEqual([5, 7])
+    expect(g.edges.filter(e => [...ends(e)].sort().join('') === '13').length).toBe(2)
+    expect(g.edges.filter(e => ends(e).includes('1')).length).toBe(5)
+    expect(drawn(g)).toEqual({ crossings: [], through: [] })
+    expect(isPlanar(g)).toBe(true)
+  })
+  it('open arcs: an edge uv and a loop', () => {
+    const [arc, loop] = all('t06-open-arcs').map(p => p.graph)
+    expect(ends(arc.edges[0]).sort()).toEqual(['u', 'v'])
+    expect(ends(loop.edges[0])).toEqual(['u', 'u'])
+  })
+  it('arc through a vertex: straight ac passes through x, the bent ac does not; no crossings', () => {
+    const [bad, good] = all('t06-arc-through-vertex').map(p => p.graph)
+    expect(drawn(bad)).toEqual({ crossings: [], through: ['ac@x'] })
+    expect(drawn(good)).toEqual({ crossings: [], through: [] })
+  })
+  it('K4 stepper: steps 2-3 no crossing, step 4 exactly ac/bd, step 5 a planar drawing of K4 with 6 edges', () => {
+    const s = all('t06-drawing-k4')[0].steps.map(x => x.graph)
+    expect(s.map(g => g.edges.length)).toEqual([0, 4, 5, 6, 6])
+    expect(drawn(s[1]).crossings).toEqual([]); expect(drawn(s[2]).crossings).toEqual([])
+    expect(drawn(s[3])).toEqual({ crossings: ['ac/bd'], through: [] })
+    expect(drawn(s[4])).toEqual({ crossings: [], through: [] })
+    expect(A.isSimple(s[4]) && s[4].vertices.length === 4 && s[4].edges.length === 6).toBe(true)
+  })
+  it('untangle: the triangular prism, planar, drawn with 3 crossings', () => {
+    const g = fig('t06-untangle')
+    expect([g.vertices.length, g.edges.length]).toEqual([6, 9])
+    expect(new GraphIndex(g).vertexIds.every(v => g.edges.filter(e => ends(e).includes(v)).length === 3)).toBe(true)
+    expect(isPlanar(g)).toBe(true)
+    expect(drawn(g).crossings.length).toBe(3); expect(drawn(g).through).toEqual([])
   })
 })
