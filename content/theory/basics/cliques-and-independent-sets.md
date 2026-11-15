@@ -10,29 +10,29 @@ stage: taught
 status: reviewed
 ---
 
-The lecture drew the graph below. Look at the four vertices $a, b, c, d$ on the left, and then
-at the four vertices $p, q, r, s$ on the right. What is special about each group?
+The lecture drew the graph below. Look at the four vertices $a, b, c, d$ at the top, and then
+at the four vertices $p, q, r, s$ below them. What is special about each group?
 
 ```graph id=t02-clique-independent widget=figure
-caption: The highlighted vertices form a clique $K_4$; the four vertices on the right form an independent set.
-intent: Transcription of the lecture picture: a dense blob and a set of pairwise non-adjacent vertices.
+caption: One graph $G$ (the outline). The highlighted vertices at the top form a clique $K_4$; the four vertices below them form an independent set.
+intent: Transcription of the lecture picture (theory/2026-09-22 p3, right margin): a $K_4$ above four isolated vertices, all inside one outline for $G$. Vertex names added.
 layout: fixed
-a @(0, 1) [class=highlight]; b @(1, 1) [class=highlight]; c @(1, 0) [class=highlight]; d @(0, 0) [class=highlight]
-p @(2.4, 1) [class=color2]; q @(3.2, 1) [class=color2]; r @(2.4, 0) [class=color2]; s @(3.2, 0) [class=color2]
+a @(0.2, 2.7) [class=highlight]; b @(1.1, 2.5) [class=highlight]; c @(0.9, 1.6) [class=highlight]; d @(0, 1.8) [class=highlight]
+p @(0.3, 0.8) [class=color2]; q @(1.0, 0.8) [class=color2]; r @(0.3, 0) [class=color2]; s @(1.0, 0) [class=color2]
 a -- b -- c -- d -- a [class=highlight]; a -- c [class=highlight]; b -- d [class=highlight]
-c -- r; b -- p; d -- r; c -- s
+group G: a b c d p q r s [label="$G$" class=muted]
 ```
 
-On the left, every two vertices are joined by an edge: $a$ and $b$, $a$ and $c$, and so on,
-six pairs in all. Such a group is a clique. On the right, no two vertices are joined: none of
+At the top, every two vertices are joined by an edge: $a$ and $b$, $a$ and $c$, and so on,
+six pairs in all. Such a group is a clique. Below, no two vertices are joined: none of
 the six pairs is an edge. Such a group is an independent set.
 
 To check a set of vertices, we go through all pairs in it. For a clique, every pair must be
 an edge. For an independent set, no pair may be an edge. Edges that leave the set do not
-matter: $p$ is [[def:adjacent|adjacent]] to $b$, and the right group is still independent.
+matter: only a pair inside the set can break the rule.
 
 The lecture writes a clique as a [[def:subgraph|subgraph]]: the vertices of the group together
-with the edges between them. On the left, this subgraph is a complete graph on four vertices.
+with the edges between them. At the top, this subgraph is a complete graph on four vertices.
 
 ::: definition {#def:clique title="Clique, independent set" defines="clique, independent set" source="theory/2026-09-22 p3"}
 A **clique** in $G$ is a subgraph of $G$ [[def:isomorphism|isomorphic]] to a [[def:complete-graph|complete graph]] $K_m$. (Equivalently, a set
@@ -81,9 +81,9 @@ the whole vertex set is a clique. For the same reason, every independent set has
 vertex.
 
 ::: pitfall
-An independent set may have edges to the rest of the graph. In the lecture's figure, $p$ is
-adjacent to $b$, and $r$ is adjacent to $c$ and $d$. Only an edge with both ends in the set is
-forbidden.
+An independent set may have edges to the rest of the graph. In $C_5$, $\set{1, 3}$ is
+independent, although $1$ is [[def:adjacent|adjacent]] to $2$ and $5$, and $3$ to $2$ and $4$.
+Only an edge with both ends in the set is forbidden.
 :::
 
 ## Check yourself

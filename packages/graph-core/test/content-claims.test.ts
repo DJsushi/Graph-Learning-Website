@@ -3012,13 +3012,14 @@ describe('cliques and independent sets page', () => {
     const ix = new GraphIndex(g)
     return Math.max(...subsets(ix.vertexIds).filter(S => ok(ix, S)).map(S => S.length))
   }
-  it('lecture figure: abcd clique, pqrs independent, a+pqrs independent; largest clique 4, largest independent set 5 (quiz)', () => {
+  it('lecture figure (scan p3): K4 on abcd, pqrs isolated; a+pqrs independent; largest clique 4, largest independent set 5 (quiz)', () => {
     const g = fig('t02-clique-independent'), ix = new GraphIndex(g)
+    expect(g.edges.length).toBe(6)
     expect(isClique(ix, ['a', 'b', 'c', 'd'])).toBe(true)
+    expect(['p', 'q', 'r', 's'].every(v => ix.degree(v) === 0)).toBe(true)
     expect(isIndep(ix, ['p', 'q', 'r', 's'])).toBe(true)
     expect(isIndep(ix, ['a', 'p', 'q', 'r', 's'])).toBe(true)
     expect([...ix.neighbors('a')].sort()).toEqual(['b', 'c', 'd'])
-    expect(ix.adjacent('p', 'b') && ix.adjacent('r', 'c') && ix.adjacent('r', 'd')).toBe(true)
     expect([best(g, isClique), best(g, isIndep)]).toEqual([4, 5])
   })
   it('C5 stepper: {1,2} clique, {1,2,3} not, {1,3} independent, 2,4,5 each adjacent to 1 or 3; largest clique and independent set 2; 5 independent pairs (quiz)', () => {
@@ -3028,6 +3029,7 @@ describe('cliques and independent sets page', () => {
     expect(isClique(ix, ['1', '2', '3'])).toBe(false)
     expect(isIndep(ix, ['1', '3'])).toBe(true)
     expect(['2', '4', '5'].every(v => ix.adjacent(v, '1') || ix.adjacent(v, '3'))).toBe(true)
+    expect([[...ix.neighbors('1')].sort(), [...ix.neighbors('3')].sort()]).toEqual([['2', '5'], ['2', '4']]) // pitfall
     expect([best(g, isClique), best(g, isIndep)]).toEqual([2, 2])
     expect(subsets(ix.vertexIds).filter(S => S.length === 2 && isIndep(ix, S)).length).toBe(5)
   })
