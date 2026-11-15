@@ -232,7 +232,7 @@ the rows at any time.
 | T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | 25a2ffa |
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
-| T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
+| T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | PENDING |
 
 **Gate C.** See §6.
 
@@ -651,3 +651,28 @@ or keep and say so on the page. None changes a result.
   - Hypotheses that differ from the board but carry a REVIEW comment (deliberate): `mengers-theorem.md:12` ("undirected simple graph with ≥ 2 vertices"; board: "undirected multigraph"), `:51` (A adds "no arc from s to t"); `set-version.md:12` ("at least k + 1 vertices"); `two-connected-graphs.md:13,16` ("at least 3 vertices"; in b) "no isolated vertex"); `ear-decompositions.md:12` (ears join distinct ends and have new inner vertices; board: "new paths between some two existing vertices").
   - Additions, same meaning: `k-connectivity.md:13–14`; `paths-and-cuts.md:16–17` (internally disjoint, edge-disjoint); `mengers-theorem.md:49` (k ≥ 1); `set-version.md:166` (full ⇒ argument; the board has a picture, and no ⇐); `two-connected-graphs.md:275` (details of b); the board: "Menger k=2", "Total Menger k=2"); `ear-decompositions.md:214` (case analysis for ⇐); `vertex-version-from-edge-version.md:173` (lifting and translating back; the board gives the construction and □).
   - No mismatch: `k-connectivity.md`, `paths-and-cuts.md`, `proving-the-edge-version.md`.
+
+### Audit mismatches (T4.45, taught rewrites T4.34–T4.44), for the owner
+
+Same format as T4.31. Main finding: four figures whose intent says "transcription of the
+lecture picture" differ from the scan. Fixing one means redrawing it and redoing the text and
+quizzes that use it, or relabelling it as an adapted example.
+
+- t01 (scan 2026-09-15 p1–6):
+  1. `basics/multigraphs-and-digraphs.md:23,25` (figure `t01-mixed-multigraph`, caption :17, marks :27–28, text :33–34): the site draws 3 parallel c–d edges and 1 loop at f; the auditor reads 4 c–d edges (1 blue, 3 red) and 2 loops at f. Then quiz `q:t01-parallel-pairs` (:139–145) would be 8 (6 + 1 + 1), not 4. The auditor asks for a check by eye: `/tmp/claude-1000/scan/cd.png`, `/tmp/claude-1000/scan/loop.png`.
+  2. `basics/isomorphism.md:166–168` (figure `t01-iso-multigraph`, panel H): the site doubles 23 and 45; the scan (p4) doubles 34 and 45, and as drawn H is not isomorphic to G (degree sequences differ). The site's version is a correction without a REVIEW mark (already `BACKLOG.md:217`, old path). Caption :160 and quiz `q:t01-iso-multigraph-edge-maps` (:188–200) depend on it.
+  - Additions, same meaning: `multigraphs-and-digraphs.md:47–48` (disjoint V, E; named loop, arc, parallel edges), `:107–108` (third special case; T4.31 t01 items 1–2 again).
+  - No mismatch: `degrees/havel-hakimi-test.md`.
+- t02 (scan 2026-09-22 p3–5):
+  1. `basics/cliques-and-independent-sets.md:13–14,18,23` (figure intent "Transcription of the lecture picture"): the notes draw K4 with four isolated dots below it; the site puts the dots beside it and adds edges c–r, b–p, d–r, c–s. Text :32 and the pitfall :84–85 use those edges; quiz :92 says "the lecture's figure" (its answer 5 also holds for the notes' figure).
+  - No mismatch: `walks-connectivity/walks-and-paths.md`, `walks-connectivity/breadth-first-search.md`. Side note: the `<!-- REVIEW -->` at `breadth-first-search.md:183` refers to "the theorem proof below", which the page no longer has.
+- t03 (scan 2026-09-29 p1, p6, p8):
+  1. `trees/forests-and-trees.md:13–36` (figure `t03-tree-question`, caption :17–18, prose :30–36): the third board sketch is a triangle with its bottom edge crossed out (a path, so a tree); the site draws an intact triangle, "only one of them is connected and has no cycle", "not even a forest". Line :52 mentions the crossing-out.
+  2. `degrees/girth-and-regular-graphs.md:39` (`def:girth`): the site adds "($\infty$ if $G$ is acyclic)" inside the definition; the notes do not.
+  3. `trees/spanning-trees.md:13`: "Next to the definition, the lecturer drew a triangle"; on p6 it sits beside the line "K₃ ↦ 3¹ = 3" of the Cayley table (the intent at :18 says so correctly).
+- t04 (scan 2026-10-06 p1):
+  1. `chordal/interval-graphs.md:41–43` (`ex:interval-graphs`): "finitely many closed intervals", "model, e.g., scheduling" are added; the notes have only the heading and a sketch. The closed-interval pitfall (:94–98) rests on "closed".
+- t05 (scan 2026-10-13 p6):
+  1. `menger/proving-the-edge-version.md:13–33` (figure `t05-d-flow`, intent "Transcription of the lecture example"): the site's d-flow has 7 vertices, 9 flow arcs and 3 muted non-flow arcs; the board's has 11 connected vertices plus 3 isolated dots, 14 arcs, all in F, two vertices with 2 in / 2 out. Text :13, :51, :116, :120, :152 and ":163–164 has 9 arcs" call it the lecturer's. Figures `t05-d-flow-check`, `t05-d-flow-paths` and the quizzes :169–197 depend on it. Auditor's crop: `/tmp/claude-1000/-home-djsushi-School-graph-learning-website/eebb11e1-0d67-4eb0-a42c-e8f2e47eaf59/scratchpad/t05z-6.png`.
+  2. `proving-the-edge-version.md:41–43` (`def:d-flow`): adds "of a directed multigraph" and drops the notes' "(= indeg. of t)" (given in prose at :102–105, :207).
+  3. `proving-the-edge-version.md:150–151`: "of size at most k − 1"; the notes: "of size (k−1)".
