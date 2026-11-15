@@ -3378,41 +3378,49 @@ describe('proving-the-edge-version page', () => {
     return { bad, size: ok ? arcs.filter(a => a[0] === 's').length : null, intoT: arcs.filter(a => a[1] === 't').length }
   }
   const isPath = (arcs: string[]) => arcs.every((a, i) => i === 0 ? a[0] === 's' : a[0] === arcs[i - 1][1]) && arcs.at(-1)![1] === 't'
-  const F = ['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'de', 'et', 'ct']
-  it('opening: the bold arcs are a d-flow of size 3 with 9 arcs, 3 into t, d has 2 in and 2 out', () => {
+  const F = ['sa', 'sb', 'sc', 'ad', 'bd', 'ce', 'df', 'dg', 'eg', 'gh', 'gi', 'ft', 'ht', 'it']
+  it('opening: the scan has 14 vertices (3 isolated), 14 arcs, all bold; a d-flow of size 3, 3 into t; d and g have 2 in and 2 out, the other 7 inner ones 1 and 1', () => {
     const g = fig('t05-d-flow')
+    expect(g.vertices.length).toBe(14)
+    expect(g.edges.map(arc).sort()).toEqual([...F].sort())
     expect(withClass(g, 'path').sort()).toEqual([...F].sort())
     expect(balance(F)).toEqual({ bad: [], size: 3, intoT: 3 })
-    expect([F.filter(a => a[1] === 'd').length, F.filter(a => a[0] === 'd').length]).toEqual([2, 2])
+    const deg = (v: string) => [F.filter(a => a[1] === v).length, F.filter(a => a[0] === v).length]
+    expect(['d', 'g'].map(deg)).toEqual([[2, 2], [2, 2]])
+    expect([...'abcefhi'].map(deg)).toEqual(Array(7).fill([1, 1]))
+    expect([...'xyz'].map(deg)).toEqual(Array(3).fill([0, 0]))
   })
-  it('worked example: d-flow of size 3; adding ab unbalances a and b; adding fg, gf keeps size 3 and no s-t path uses them', () => {
+  it('worked example: d-flow of size 3; adding ab unbalances a and b; adding yz, zy keeps size 3 and no s-t path uses them', () => {
     const s = steps('t05-d-flow-check')
     for (let i = 0; i < 4; i++) expect(balance(withClass(s[i], 'path'))).toEqual({ bad: [], size: 3, intoT: 3 })
     expect(withClass(s[4], 'path').sort()).toEqual([...F, 'ab'].sort())
     expect(balance(withClass(s[4], 'path')).bad).toEqual(['a', 'b'])
     const F6 = withClass(s[5], 'path')
-    expect(F6.sort()).toEqual([...F, 'fg', 'gf'].sort())
+    expect(F6.sort()).toEqual([...F, 'yz', 'zy'].sort())
     expect(balance(F6).size).toBe(3)
-    // vertices reachable from s along arcs of F6: f and g are not, so fg and gf lie on no s-t path and F6 is no union of s-t paths
+    // vertices reachable from s along arcs of F6: y and z are not, so yz and zy lie on no s-t path and F6 is no union of s-t paths
     const reach = new Set(['s'])
     for (let grew = true; grew;) { grew = false; for (const [x, y] of F6) if (reach.has(x) && !reach.has(y)) { reach.add(y); grew = true } }
-    expect(reach.has('f') || reach.has('g')).toBe(false)
+    expect(reach.has('y') || reach.has('z')).toBe(false)
   })
-  it('claim example: three edge-disjoint s-t paths cover the 9 arcs of F; P1 and P2 share d', () => {
+  it('claim example: three edge-disjoint s-t paths cover the 14 arcs of F; P1, P2 share d and P2, P3 share g', () => {
     const s = steps('t05-d-flow-paths')
     const P = ['color1', 'color2', 'color3'].map(c => withClass(s[3], c))
-    expect(P).toEqual([['sa', 'ad', 'dt'], ['sb', 'bd', 'de', 'et'], ['sc', 'ct']])
+    expect(P).toEqual([['sa', 'ad', 'df', 'ft'], ['sb', 'bd', 'dg', 'gh', 'ht'], ['sc', 'ce', 'eg', 'gi', 'it']])
     for (const p of P) expect(isPath(p)).toBe(true)
     expect(P.flat().sort()).toEqual([...F].sort())
     expect(withClass(s[0], 'bold').sort()).toEqual([...F].sort())
+    const verts = (p: string[]) => new Set(p.map(a => a[1]))
+    expect([...verts(P[0])].filter(v => verts(P[1]).has(v))).toEqual(['d', 't'])
+    expect([...verts(P[1])].filter(v => verts(P[2]).has(v))).toEqual(['g', 't'])
   })
-  it('quizzes: removing de unbalances 2 vertices; only option 2 is a d-flow of size 2 (option 3 has size 1)', () => {
-    expect(balance(F.filter(a => a !== 'de')).bad).toEqual(['d', 'e'])
-    const opts = [['sa', 'sb', 'sc', 'ad', 'bd', 'dt', 'ct'], ['sa', 'ab', 'bd', 'dt', 'sc', 'ct'], ['sb', 'bd', 'de', 'ec', 'ct'], ['sa', 'ad', 'dt', 'ce', 'et']]
+  it('quizzes: removing dg unbalances d and g; only option 2 is a d-flow of size 2 (option 3 has size 1)', () => {
+    expect(balance(F.filter(a => a !== 'dg')).bad).toEqual(['d', 'g'])
+    const opts = [['sa', 'sb', 'ad', 'bd', 'df', 'ft'], ['sa', 'sb', 'ad', 'bd', 'df', 'dg', 'ft', 'gh', 'ht'], ['sb', 'bd', 'dg', 'gi', 'it'], ['sa', 'ad', 'df', 'ft', 'eg', 'gh', 'ht']]
     const g = fig('t05-d-flow')
     for (const o of opts) for (const a of o) expect(g.edges.some(e => arc(e) === a)).toBe(true)
     expect(opts.map(o => balance(o).size)).toEqual([null, 2, 1, null])
-    expect(balance(opts[0]).bad).toEqual(['d']); expect(balance(opts[3]).bad).toEqual(['c'])
+    expect(balance(opts[0]).bad).toEqual(['d']); expect(balance(opts[3]).bad).toEqual(['e'])
   })
 })
 

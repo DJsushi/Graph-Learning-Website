@@ -10,27 +10,32 @@ stage: taught
 status: reviewed
 ---
 
-The lecturer drew this picture next to the definition below. Count, at every vertex, how many
-thick arcs come in and how many go out. What do you notice, and how many thick arcs reach $t$?
+The lecturer drew this picture next to the definition below. All its arcs belong to $F$. Count,
+at every vertex, how many arcs come in and how many go out. What do you notice, and how many arcs
+reach $t$?
 
 ```graph id=t05-d-flow widget=figure
-caption: A d-flow $F$ of size 3 (bold arcs): balanced at every vertex except $s$ (3 out) and $t$ (3 in).
-intent: Transcription of the lecture example of a d-flow; non-flow arcs muted.
+caption: A d-flow $F$ of size 3 with 14 arcs (thick): balanced at every vertex except $s$ (3 out) and $t$ (3 in); the three dots at the top touch no arc.
+intent: Transcription of the lecture picture of a d-flow (theory/2026-10-13 p6): the same 11 joined vertices, 14 arcs and 3 isolated dots, at about the board's positions. The board names only s and t; the other names are new.
 type: directed
-layout: layered
-s [class=source]; t [class=sink]
-s -> a [class=path]; s -> b [class=path]; s -> c [class=path]
-a -> d [class=path]; b -> d [class=path]; d -> t [class=path]; d -> e [class=path]; c -> e [class=muted]
-e -> t [class=path]; c -> t [class=path]; a -> b [class=muted]; e -> c [class=muted]
-mark F: s->a s->b s->c a->d b->d d->t d->e e->t c->t
-mark inner: a b c d e
-mark d: d
+layout: fixed
+s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
+f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
+x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s -> a [class=path]; s -> b [class=path]; s -> c [class=path]; a -> d [class=path]; b -> d [class=path]; c -> e [class=path]
+d -> f [class=path]; d -> g [class=path]; e -> g [class=path]; g -> h [class=path]; g -> i [class=path]
+f -> t [class=path]; h -> t [class=path]; i -> t [class=path]
+mark F: s->a s->b s->c a->d b->d c->e d->f d->g e->g g->h g->i f->t h->t i->t
+mark inner: a b c d e f g h i
+mark two: d g
+mark dots: x y z
 ```
 
 Three [[fig:t05-d-flow#F|thick arcs]] leave $s$, and none come in. At
-[[fig:t05-d-flow#inner|each of the vertices in between]], as many thick arcs come in as go out:
-two and two at [[fig:t05-d-flow#d|the vertex $d$]], one and one at the other four.
-Three thick arcs arrive at $t$, and none leave it.
+[[fig:t05-d-flow#inner|each of the vertices in between]], as many arcs come in as go out:
+two and two at [[fig:t05-d-flow#two|the vertices $d$ and $g$]], one and one at the other seven.
+[[fig:t05-d-flow#dots|The three dots]] have no arc at all: zero in and zero out, so they are
+balanced too. Three arcs arrive at $t$, and none leave it.
 
 Think of one unit of water on each thick arc. It starts at $s$, never piles up on the way, and
 ends at $t$. Such a set of arcs is a d-flow. The lecture plans to prove the edge version of
@@ -53,38 +58,39 @@ once so that it breaks, and once so that it stays a d-flow.
 
 ```graph id=t05-d-flow-check widget=stepper
 caption: Checking the definition at every vertex, then adding one arc (breaks it) or a separate cycle (keeps it).
-intent: New worked example on the lecture's d-flow (t05-d-flow, theory/2026-10-13 p6), same vertex names, fixed positions close to its layered drawing. The vertices f, g and their two arcs are new: a cycle that no s-t path can use.
+intent: New worked example on the lecture's d-flow (t05-d-flow, theory/2026-10-13 p6), same vertex names and positions. The arc a→b and the arcs between the dots y and z are new.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.6); a @(0.9, 1.2); b @(0.9, 0.6); c @(0.9, 0); d @(1.8, 1.1); e @(1.8, 0.55); t [class=sink] @(2.7, 0.45)
-s -> a [class=path]; s -> b [class=path]; s -> c [class=path]
-a -> d [class=path]; b -> d [class=path]; d -> t [class=path]; d -> e [class=path]; c -> e [class=muted]
-e -> t [class=path]; c -> t [class=path]; a -> b [class=muted]; e -> c [class=muted]
-f @(1.6, -0.2); g @(2.4, -0.2)
-f -> g [class=muted]; g -> f [class=muted]
+s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
+f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
+x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s -> a [class=path]; s -> b [class=path]; s -> c [class=path]; a -> d [class=path]; b -> d [class=path]; c -> e [class=path]
+d -> f [class=path]; d -> g [class=path]; e -> g [class=path]; g -> h [class=path]; g -> i [class=path]
+f -> t [class=path]; h -> t [class=path]; i -> t [class=path]
+a -> b [class=hidden]; y -> z [class=hidden]; z -> y [class=hidden]
 mark ab: a->b
-mark cycle: f->g g->f
-step: The arcs of F are thick and dashed, the other arcs are muted.
+mark cycle: y->z z->y
+step: The 14 arcs of F are thick.
 step: At s: 0 arcs in, 3 out. At t: 3 in, 0 out.
 class current: s t
-step: At a, b and c: one arc in, one arc out.
+step: At a, b, c, e, f, h and i: one arc in, one arc out.
 unclass current: s t
-class current: a b c
-step: At d: two in, two out. At e: one in, one out. F is a d-flow of size 3.
-unclass current: a b c
-class current: d e
+class current: a b c e f h i
+step: At d and g: two in, two out. At x, y and z: none. F is a d-flow of size 3.
+unclass current: a b c e f h i
+class current: d g x y z
 step: Add the arc a→b to F. Now a sends 2 and b receives 2: not a d-flow.
-unclass current: d e
-unclass muted: a->b
+unclass current: d g x y z
+unclass hidden: a->b
 class path: a->b
 class rejected: a b
-step: Remove a→b again and add the two arcs f→g and g→f. Still a d-flow of size 3.
+step: Remove a→b again and add the two arcs y→z and z→y. Still a d-flow of size 3.
 unclass path: a->b
-class muted: a->b
+class hidden: a->b
 unclass rejected: a b
-unclass muted: f->g g->f
-class path: f->g g->f
-class current: f g
+unclass hidden: y->z z->y
+class path: y->z z->y
+class current: y z
 ```
 
 The first four steps go through the vertices. No arc of $F$ enters $s$, no arc of $F$ leaves
@@ -95,7 +101,7 @@ In step 5 we add [[fig:t05-d-flow-check#ab|the arc from $a$ to $b$]]. Now two ar
 but only one comes in, and $b$ has the opposite problem. One extra arc is enough to break the
 balance at both of its ends.
 
-In step 6 we add [[fig:t05-d-flow-check#cycle|the arcs from $f$ to $g$ and back]] instead.
+In step 6 we add [[fig:t05-d-flow-check#cycle|the arcs from $y$ to $z$ and back]] instead.
 Both vertices get one arc in and one arc out, so both are balanced. Nothing changes
 at the start vertex, so the size is still 3.
 
@@ -117,33 +123,35 @@ The lecture states this without proof. We check it on the lecturer's d-flow, whi
 
 ```graph id=t05-d-flow-paths widget=stepper
 caption: The d-flow of size 3 from the lecture contains 3 directed paths from s to t that share no arc.
-intent: New figure. The d-flow of t05-d-flow (theory/2026-10-13 p6) with the positions of t05-d-flow-check; it shows the claim on that example.
+intent: New figure. The d-flow of t05-d-flow (theory/2026-10-13 p6) with the same positions; it shows the claim on that example.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.6); a @(0.9, 1.2); b @(0.9, 0.6); c @(0.9, 0); d @(1.8, 1.1); e @(1.8, 0.55); t [class=sink] @(2.7, 0.45)
-s -> a [class=bold]; s -> b [class=bold]; s -> c [class=bold]
-a -> d [class=bold]; b -> d [class=bold]; d -> t [class=bold]; d -> e [class=bold]; c -> e [class=muted]
-e -> t [class=bold]; c -> t [class=bold]; a -> b [class=muted]; e -> c [class=muted]
-mark P1: s->a a->d d->t
-mark P2: s->b b->d d->e e->t
-mark P3: s->c c->t
-step: The d-flow F of size 3: its 9 arcs are thick.
-step: The first path s, a, d, t.
-class color1: s->a a->d d->t
-step: The second path s, b, d, e, t, drawn dashed.
-class color2: s->b b->d d->e e->t
-class dashed: s->b b->d d->e e->t
-step: The third path s, c, t.
-class color3: s->c c->t
+s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
+f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
+x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s -> a [class=bold]; s -> b [class=bold]; s -> c [class=bold]; a -> d [class=bold]; b -> d [class=bold]; c -> e [class=bold]
+d -> f [class=bold]; d -> g [class=bold]; e -> g [class=bold]; g -> h [class=bold]; g -> i [class=bold]
+f -> t [class=bold]; h -> t [class=bold]; i -> t [class=bold]
+mark P1: s->a a->d d->f f->t
+mark P2: s->b b->d d->g g->h h->t
+mark P3: s->c c->e e->g g->i i->t
+step: The d-flow F of size 3: its 14 arcs are thick.
+step: The first path s, a, d, f, t.
+class color1: s->a a->d d->f f->t
+step: The second path s, b, d, g, h, t, drawn dashed.
+class color2: s->b b->d d->g g->h h->t
+class dashed: s->b b->d d->g g->h h->t
+step: The third path s, c, e, g, i, t.
+class color3: s->c c->e e->g g->i i->t
 ```
 
-The [[fig:t05-d-flow-paths#P1|first path]] is $s\,a\,d\,t$, the
-[[fig:t05-d-flow-paths#P2|second path]] is $s\,b\,d\,e\,t$, and the
-[[fig:t05-d-flow-paths#P3|third path]] is $s\,c\,t$. Each of the 9 arcs of $F$ lies on
+The [[fig:t05-d-flow-paths#P1|first path]] is $s\,a\,d\,f\,t$, the
+[[fig:t05-d-flow-paths#P2|second path]] is $s\,b\,d\,g\,h\,t$, and the
+[[fig:t05-d-flow-paths#P3|third path]] is $s\,c\,e\,g\,i\,t$. Each of the 14 arcs of $F$ lies on
 exactly one of them. So the 3 paths are edge-disjoint, as the claim says for size 3.
 
-The first two paths both pass through the vertex $d$. That is allowed: edge-disjoint paths may share
-vertices, they only may not share arcs.
+The first two paths both pass through the vertex $d$, and the last two through $g$. That is
+allowed: edge-disjoint paths may share vertices, they only may not share arcs.
 
 Why the lecture needs the claim: the edge version of
 [[thm:menger-directed|Menger's theorem]] (part B) asks for $k$ edge-disjoint directed paths
@@ -154,28 +162,28 @@ question mark: the lecture states the edge version (B) without proof either.
 
 ::: pitfall
 A d-flow need not be made of paths only. In step 6 of the worked example, the d-flow also
-contains the cycle through $f$ and $g$. No arc of the d-flow leads from $s$ into this cycle, so
+contains the cycle through $y$ and $z$. No arc of the d-flow leads from $s$ into this cycle, so
 no path from $s$ to $t$ uses it. That is why the claim says that $F$ **contains** $k$ paths, and
 not that it is the union of them.
 :::
 
 ::: pitfall
 The size is the number of arcs of $F$ that leave $s$, not the number of all arcs of $F$. The
-lecturer's d-flow has 9 arcs and size 3.
+lecturer's d-flow has 14 arcs and size 3.
 :::
 
 ## Check yourself
 
 :::: quiz {#q:t05-d-flow-remove}
-Take the d-flow $F$ of the first figure and remove the arc from $d$ to $e$. How many vertices
+Take the d-flow $F$ of the first figure and remove the arc from $d$ to $g$. How many vertices
 other than $s$ and $t$ are now unbalanced?
 
 answer: 2
 
 ::: explanation
-$d$ still receives two arcs, from $a$ and $b$, but now sends only one, to $t$. $e$ receives no
-arc and still sends one, to $t$. The vertices $a$, $b$ and $c$ do not touch the removed arc and
-stay balanced.
+$d$ still receives two arcs, from $a$ and $b$, but now sends only one, to $f$. $g$ now receives
+only one arc, from $e$, and still sends two, to $h$ and $i$. The other vertices do not touch the
+removed arc and stay balanced.
 :::
 ::::
 
@@ -183,16 +191,16 @@ stay balanced.
 Which set of arcs of the first figure is an $s$–$t$ d-flow of size 2? Write $xy$ for the arc
 from $x$ to $y$.
 
-- [ ] $sa, sb, sc, ad, bd, dt, ct$
-- [x] $sa, ab, bd, dt, sc, ct$
-- [ ] $sb, bd, de, ec, ct$
-- [ ] $sa, ad, dt, ce, et$
+- [ ] $sa, sb, ad, bd, df, ft$
+- [x] $sa, sb, ad, bd, df, dg, ft, gh, ht$
+- [ ] $sb, bd, dg, gi, it$
+- [ ] $sa, ad, df, ft, eg, gh, ht$
 
 ::: explanation
-In the second set, $s$ sends two arcs and receives none, $t$ receives two and sends none, and
-$a$, $b$, $c$, $d$ each have one arc in and one arc out. The first set is not balanced at $d$:
-two in, one out. The third set is a d-flow, but of size 1. In the fourth set, $c$ sends an arc
-but receives none.
+In the second set, $s$ sends two arcs and receives none, and $t$ receives two and sends none.
+$d$ has two arcs in and two out; $a$, $b$, $f$, $g$, $h$ each have one in and one out. The first
+set is not balanced at $d$: two in, one out. The third set is a d-flow, but of size 1. In the
+fourth set, $e$ sends an arc but receives none.
 :::
 ::::
 
