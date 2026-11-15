@@ -234,7 +234,7 @@ the rows at any time.
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
 | T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | 8171a99 |
 | T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | 1eca68c |
-| T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | |
+| T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | e1b78dc |
 | T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | |
 | T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | |
 | T4.51 | Same, `theory/basics/isomorphism.md`, figure `t01-iso-multigraph` (t01 item 2). The scan's H is not isomorphic to G, so the writer keeps the corrected H and marks it `<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->`, or, if the scan reads otherwise, follows the scan. | | |
@@ -592,6 +592,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - Visual-qa on T5.16–T5.26 (2026-11-13): passed after layout fixes (ddb8050, a2067c4, 5295677, a942c65). Left open, minor: `fig-a01-kkt-recurrence` steps 1–2 (the 12-vertex graph) render edge labels at 13.7px at 1366, below the 14px rule; two layout rounds did not fix it, the labels are legible. Writers built their own clearance scripts on the real parser and `routeEdges` (label–label, label–edge, edge–vertex); a shared check in `viewbox.ts` would save visual-qa rounds (coder task if the owner wants it).
 
 ### Needs reported by writers
+
+- T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
 
