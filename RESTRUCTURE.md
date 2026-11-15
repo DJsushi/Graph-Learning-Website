@@ -298,7 +298,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 
 | ID | Task | Agent | Notes | Done |
 |----|------|-------|-------|------|
-| T6.1 | Planarity in the framework: `BACKLOG.md` FS1, FS2, FS12, FL7, FL8, C12. | coder (opus) | | |
+| T6.1 | Planarity in the framework: `BACKLOG.md` FS1, FS2, FS12, FL7, FL8, C12. | coder (opus) | | 75f9a06 |
 | T6.2 | Colouring in the framework: `BACKLOG.md` C13 and `is-proper-coloring` (FS11). | coder | | |
 | T6.3 | Lecture files `content/theory/06-planarity.md`, `07-planarity-combinatorial.md`, `08-colouring.md` (lectures 6 to 8, slugs t06 to t08, their `sources`), chapters `planarity` and `colouring` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only; no lesson text. | coder | | |
 | T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | |
@@ -598,6 +598,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - Visual-qa on T5.33, T4.47–T4.50 (2026-11-15): passed after the layout fix f317437 (overlapping vertices in the three `t05-d-flow` figures). `t03-tree-question` shows the crossed-out edge as a dashed line, no cross mark. 390 and 1366 measured in iframes; Escape on the Enlarge dialog only with a synthetic event.
 
 - T4.53 `global-min-cut/karger-stein` (2026-11-15): with tied minimum cuts, plain FASTMINCUT can miss a specific cut C for ever (checker: C_7 with an unlucky tie rule), so the locked "returns C" statements were wrong. The Sonnet writer failed the checker twice; an Opus writer took over and, under the owner's rule (correct before faithful), changed the statements and proofs minimally with REVIEW marks and `--accept` for exactly thm:fast-mincut-probability, thm:karger-stein and their #proof1, and thm:karger-stein-all#proof1. The proofs now use "C survives every contraction on some root–leaf path"; listing every minimum cut needs leaves that list all their minimum cuts (the list may repeat a cut; the bound holds). Passed on the fourth check, as for karger-klein-tarjan.
+
+- T6.1 (75f9a06): `dual()` refuses multigraphs, so (G*)* in T6.7 is drawn by hand. A dual loop only clears a pendant bridge end. TikZ export ignores `via` (F8). Not seen in a browser; the first planarity page checks it.
 
 ### Needs reported by writers
 
