@@ -601,6 +601,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.1 (75f9a06): `dual()` refuses multigraphs, so (G*)* in T6.7 is drawn by hand. A dual loop only clears a pendant bridge end. TikZ export ignores `via` (F8). Not seen in a browser; the first planarity page checks it.
 
+- **T6.4 in progress (2026-11-15, usage limit).** Page committed as draft (380d1bb); row not ticked. Next session: send the math-checker findings to a writer (Opus), re-check, set `status: reviewed`, then visual-qa (stopped before it reported; first page with `via` curves, a loop `via`, `set via` in a stepper and `live: planar`). Findings: lines 74–75, 147–148 and 178 say the ends are off the arc "because the arc is open"; false under the page's definition (injective on (0,1) allows α(1) = α(1/2)); the reason is that an arc avoids every vertex, its own ends included. Line 41: the caption states it for every open arc, true only in a drawing. Line 33: "touches no other curve" needs "except at a common end". The arc definition (continuous on [0,1], injective on (0,1), SOURCE UNCLEAR) is correct and keeps loops; keep it.
+
 ### Needs reported by writers
 
 - T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
