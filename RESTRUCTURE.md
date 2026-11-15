@@ -233,7 +233,7 @@ the rows at any time.
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
 | T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | 8171a99 |
-| T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | |
+| T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | 1eca68c |
 | T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | |
 | T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | |
 | T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | |
@@ -611,6 +611,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
 
 - T5.33 (`global-min-cut/karger-stein.md`, writer): a branch "returns C" is loose, since min(C1, C2) may return another minimum cut of equal capacity; the same gap is in the "keep the best cut" step of `thm:karger-stein`. The page says "is a minimum cut"; the proof text is unchanged. The time proof does not cost the base case (MINIMUMCUT on at most 6 vertices, about n² leaves, O(n²)), so the result stands.
+
+- T4.47 (`menger/proving-the-edge-version.md`): `t05-augmenting-player` under More still uses the old 7-vertex graph (not in the audit, left). Vertex names a–i, x, y, z are the site's; the board names only s and t. Reading path 720 words (was 695, limit 600).
 
 ### Open questions for the owner
 
