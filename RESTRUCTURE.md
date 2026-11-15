@@ -591,6 +591,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T5.16–T5.26 (2026-11-13): passed after layout fixes (ddb8050, a2067c4, 5295677, a942c65). Left open, minor: `fig-a01-kkt-recurrence` steps 1–2 (the 12-vertex graph) render edge labels at 13.7px at 1366, below the 14px rule; two layout rounds did not fix it, the labels are legible. Writers built their own clearance scripts on the real parser and `routeEdges` (label–label, label–edge, edge–vertex); a shared check in `viewbox.ts` would save visual-qa rounds (coder task if the owner wants it).
 
+- Visual-qa on T5.33, T4.47–T4.50 (2026-11-15): passed after the layout fix f317437 (overlapping vertices in the three `t05-d-flow` figures). `t03-tree-question` shows the crossed-out edge as a dashed line, no cross mark. 390 and 1366 measured in iframes; Escape on the Enlarge dialog only with a synthetic event.
+
 ### Needs reported by writers
 
 - T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
