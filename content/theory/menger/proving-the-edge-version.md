@@ -19,9 +19,9 @@ caption: A d-flow $F$ of size 3 with 14 arcs (thick): balanced at every vertex e
 intent: Transcription of the lecture picture of a d-flow (theory/2026-10-13 p6): the same 11 joined vertices, 14 arcs and 3 isolated dots, at about the board's positions. The board names only s and t; the other names are new.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
-f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
-x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s [class=source] @(0, 1.1); a @(1.21, 1.87); b @(1.21, 1.06); c @(1.21, 0.26); d @(2.53, 1.63); e @(2.64, 0.48)
+f @(4.18, 2.2); g @(3.74, 1.21); h @(5.06, 1.25); i @(4.51, 0.31); t [class=sink] @(6.6, 1.32)
+x @(2.42, 2.95); y @(4.51, 3.12); z @(5.94, 2.95)
 s -> a [class=path]; s -> b [class=path]; s -> c [class=path]; a -> d [class=path]; b -> d [class=path]; c -> e [class=path]
 d -> f [class=path]; d -> g [class=path]; e -> g [class=path]; g -> h [class=path]; g -> i [class=path]
 f -> t [class=path]; h -> t [class=path]; i -> t [class=path]
@@ -61,9 +61,9 @@ caption: Checking the definition at every vertex, then adding one arc (breaks it
 intent: New worked example on the lecture's d-flow (t05-d-flow, theory/2026-10-13 p6), same vertex names and positions. The arc a→b and the arcs between the dots y and z are new.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
-f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
-x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s [class=source] @(0, 1.1); a @(1.21, 1.87); b @(1.21, 1.06); c @(1.21, 0.26); d @(2.53, 1.63); e @(2.64, 0.48)
+f @(4.18, 2.2); g @(3.74, 1.21); h @(5.06, 1.25); i @(4.51, 0.31); t [class=sink] @(6.6, 1.32)
+x @(2.42, 2.95); y @(4.51, 3.12); z @(5.94, 2.95)
 s -> a [class=path]; s -> b [class=path]; s -> c [class=path]; a -> d [class=path]; b -> d [class=path]; c -> e [class=path]
 d -> f [class=path]; d -> g [class=path]; e -> g [class=path]; g -> h [class=path]; g -> i [class=path]
 f -> t [class=path]; h -> t [class=path]; i -> t [class=path]
@@ -126,9 +126,9 @@ caption: The d-flow of size 3 from the lecture contains 3 directed paths from s 
 intent: New figure. The d-flow of t05-d-flow (theory/2026-10-13 p6) with the same positions; it shows the claim on that example.
 type: directed
 layout: fixed
-s [class=source] @(0, 0.5); a @(0.55, 0.78); b @(0.55, 0.48); c @(0.55, 0.18); d @(1.15, 0.72); e @(1.2, 0.25)
-f @(1.85, 0.97); g @(1.7, 0.55); h @(2.25, 0.57); i @(2, 0.17); t [class=sink] @(3, 0.62)
-x @(1.1, 1.3); y @(2.05, 1.38); z @(2.7, 1.3)
+s [class=source] @(0, 1.1); a @(1.21, 1.87); b @(1.21, 1.06); c @(1.21, 0.26); d @(2.53, 1.63); e @(2.64, 0.48)
+f @(4.18, 2.2); g @(3.74, 1.21); h @(5.06, 1.25); i @(4.51, 0.31); t [class=sink] @(6.6, 1.32)
+x @(2.42, 2.95); y @(4.51, 3.12); z @(5.94, 2.95)
 s -> a [class=bold]; s -> b [class=bold]; s -> c [class=bold]; a -> d [class=bold]; b -> d [class=bold]; c -> e [class=bold]
 d -> f [class=bold]; d -> g [class=bold]; e -> g [class=bold]; g -> h [class=bold]; g -> i [class=bold]
 f -> t [class=bold]; h -> t [class=bold]; i -> t [class=bold]
