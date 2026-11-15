@@ -3241,11 +3241,15 @@ describe('forests-and-trees page', () => {
   const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
   const comps = (g: GraphData) => A.components(new GraphIndex(g)).map(c => [...c].sort().join(' ')).sort()
   const cls = (g: GraphData, c: string) => new Set(g.edges.filter(e => e.classes.includes(c)).map(e => e.id))
-  it('opening: two vertices are a forest but not connected; one edge is a tree; the triangle is connected with a cycle', () => {
-    const two = new GraphIndex(fig('t03-tree-question', 0)), one = new GraphIndex(fig('t03-tree-question', 1)), tri = new GraphIndex(fig('t03-tree-question', 2))
+  it('opening: two vertices are a forest but not connected; one edge is a tree; the triangle without its crossed-out edge xz is the tree x y z, with xz a cycle', () => {
+    const two = new GraphIndex(fig('t03-tree-question', 0)), one = new GraphIndex(fig('t03-tree-question', 1)), triG = fig('t03-tree-question', 2), tri = new GraphIndex(triG)
     expect(A.isAcyclic(two)).toBe(true); expect(A.isConnected(two)).toBe(false)
     expect(A.isTree(one)).toBe(true)
-    expect(A.isConnected(tri)).toBe(true); expect(A.girth(tri)).toBe(3)
+    expect(A.isConnected(tri)).toBe(true); expect(A.girth(tri)).toBe(3) // whole triangle: a cycle, not a forest
+    const crossed = cls(triG, 'rejected'); expect(crossed.size).toBe(1)
+    const path = { ...triG, edges: triG.edges.filter(e => !crossed.has(e.id)) }
+    expect(path.edges.map(e => [...e.tail, ...e.head].sort().join(''))).toEqual(['xy', 'yz'])
+    expect(A.isTree(new GraphIndex(path))).toBe(true)
   })
   it('stepper: cycle a b c, delete ac gives a tree on all 6 vertices, delete cd gives two trees a b c and d e f', () => {
     const s = steps('t03-forest-steps')
