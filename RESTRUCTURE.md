@@ -236,7 +236,7 @@ the rows at any time.
 | T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | 1eca68c |
 | T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | e1b78dc |
 | T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | 70997b8 |
-| T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | |
+| T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | 5cb2dde |
 | T4.51 | Same, `theory/basics/isomorphism.md`, figure `t01-iso-multigraph` (t01 item 2). The scan's H is not isomorphic to G, so the writer keeps the corrected H and marks it `<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->`, or, if the scan reads otherwise, follows the scan. | | |
 
 **Gate C.** See §6.
