@@ -8,6 +8,8 @@ import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
 import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
+import { computeBox } from '../../graph-vue/src/viewbox'
+import { toScreen } from '../../graph-vue/src/geometry'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -3496,16 +3498,39 @@ describe('karger-stein page', () => {
     expect(g.vertices.length).toBe(7)
     expect(g.edges.length).toBe(6)
     const s = steps('a03-fm-levels')
-    expect(s.length).toBe(7)
+    expect(s.length).toBe(8)
     expect(s[2].vertices.filter(v => v.classes.includes('color3')).length).toBe(2 ** 2)
     expect(s[2].vertices.filter(v => v.classes.includes('color2')).length).toBe(2)
     expect((1000 / 2) ** 2).toBe(250000)
     expect(4 * 250000).toBe(1000 ** 2)
+    // base cases: the last level (19) has 2^19 calls on 6 vertices each; that is about n^2 / 2, so O(n^2) in total
+    expect(sizes.at(-1)).toBe(6)
+    expect(2 ** 19).toBe(524288)
+    expect(2 ** 19 / 1000 ** 2).toBeCloseTo(0.52, 2)
+    // every n >= 7 ends on exactly 6 vertices (t(m) >= 6 for m >= 7), so the 2^L leaves number at most n^2
+    for (const n0 of [7, 50, 1000, 12345, 1e6]) {
+      const z = [n0]
+      while (z.at(-1)! > 6) z.push(tOf(z.at(-1)!))
+      expect(z.at(-1)!).toBe(6)
+      expect(2 ** (z.length - 1)).toBeLessThanOrEqual(n0 ** 2)
+    }
+    // step 7 adds four calls of the last level (6 vertices each), not the level-2 calls (503 vertices)
+    expect(s[5].vertices.length).toBe(7)
+    expect(s[6].vertices.length).toBe(11)
+    expect(s[6].vertices.filter(v => v.classes.includes('bold')).map(v => v.id).sort()).toEqual(['1', '2', '3', '4'])
+    // the four vertices added in step 7 sit below c, d, e, f and keep the figure at least 26px circles in a 314x195 box
+    const at = (id: string) => s[6].vertices.find(v => v.id === id)!
+    expect(['1', '2', '3', '4'].map(id => [at(id).x, at(id).y])).toEqual(['c', 'd', 'e', 'f'].map(id => [at(id).x, -1.2]))
+    for (const st of [g, ...s]) {
+      const b = computeBox(st.vertices.map(v => toScreen(v.x ?? 0, v.y ?? 0)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+      expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+    }
   })
-  it('recurrence: n = 7 gives t = 6 (solved exactly), lemma bound 30/42 = 5/7, and 1 - (1 - 1/2)^2 = 3/4', () => {
+  it('recurrence: n = 7 gives t = 6 (a leaf, C survives), lemma bound 30/42 = 5/7, and 1 - (1 - 1/2)^2 = 3/4', () => {
     const g = fig('a03-fm-branch')
     expect(g.vertices.length).toBe(5)
-    expect(steps('a03-fm-branch').length).toBe(6)
+    expect(steps('a03-fm-branch').length).toBe(8)
+    expect(steps('a03-fm-branch')[4].vertices.filter(v => v.classes.includes('current')).map(v => v.id)).toEqual(['C1'])
     expect(tOf(7)).toBe(6)
     expect(6 * 5 / (7 * 6)).toBeCloseTo(5 / 7, 12)
     expect(1 - (1 - 1 / 2) ** 2).toBe(0.75)
@@ -3539,7 +3564,7 @@ describe('karger-stein page', () => {
     expect((1 - P) ** r).toBeCloseTo(0.0008, 4)
     expect(Math.exp(-r * P)).toBeCloseTo(0.00096, 5)
     expect(Math.exp(-r * P)).toBeLessThanOrEqual(1 / n)
-    expect(steps('a03-ks-runs').length).toBe(7)
+    expect(steps('a03-ks-runs').length).toBe(8)
     expect(fig('a03-ks-runs').vertices.length).toBe(7)
   })
   it('all minimum cuts: C_6 has 15 minimum cuts of 2 edges; {e12,e45}, {e23,e56}, {e34,e61} are three of them; 15/1296 = 0.0116', () => {
@@ -3563,8 +3588,10 @@ describe('karger-stein page', () => {
     }
     expect([['e12', 'e45'], ['e23', 'e56'], ['e34', 'e61']].map(cutOf)).toEqual([2, 2, 2])
     expect(15 / 6 ** 4).toBeCloseTo(0.0116, 4)
+    // a run on 1000 vertices has levels 0 to 19, so 2^20 - 1 calls
+    expect(2 ** 20 - 1).toBe(1048575)
     const s = steps('a03-ks-all')
-    expect(s.length).toBe(10)
+    expect(s.length).toBe(11)
     expect(edgeIds(s[0], 'cut')).toEqual(['e12', 'e45'])
   })
 })
