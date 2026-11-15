@@ -122,6 +122,18 @@ export function diameter(ix: GraphIndex): number {
   return best
 }
 
+/** Smallest eccentricity; Infinity if disconnected, 0 for the empty graph. */
+export function radius(ix: GraphIndex): number {
+  if (!ix.n) return 0
+  let best = Infinity
+  for (const v of ix.vertexIds) {
+    const d = bfsDistances(ix, v)
+    if (d.size < ix.n) return Infinity
+    best = Math.min(best, Math.max(...d.values()))
+  }
+  return best
+}
+
 /** Exact chromatic number by backtracking (small graphs only). */
 export function chromaticNumber(ix: GraphIndex, limit = 12): number | undefined {
   if (ix.n > limit) return undefined

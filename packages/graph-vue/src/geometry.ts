@@ -13,6 +13,8 @@ export interface EdgeGeom {
   arrow?: string
   midArrow?: string
   loop?: boolean
+  /** points the drawing must fit besides the label: the `via` points */
+  extent?: Pt[]
 }
 
 export const toScreen = (x: number, y: number): Pt => ({ x: x * UNIT, y: -y * UNIT })
@@ -34,6 +36,84 @@ function arrowHead(tip: Pt, dir: Pt, size = ARROW): string {
   const base = sub(tip, mul(u, size))
   const a = add(base, mul(n, size * 0.45)), b = sub(base, mul(n, size * 0.45))
   return `M${f(tip.x)},${f(tip.y)} L${f(a.x)},${f(a.y)} L${f(b.x)},${f(b.y)} Z`
+}
+
+/** Points an edge is routed through, `via="(x,y) (x,y)"` in layout units (GRAPH_DSL.md §5.2), in screen coordinates. */
+export function viaPoints(e: Edge): Pt[] {
+  if (e.data.via === undefined) return []
+  return [...String(e.data.via).matchAll(/\(\s*([-+0-9.eE]+)\s*,\s*([-+0-9.eE]+)\s*\)/g)].map(m => toScreen(Number(m[1]), Number(m[2])))
+}
+
+/** Catmull–Rom curve through the points as cubic Bézier segments [control 1, control 2, end]. */
+function smooth(pts: Pt[]): [Pt, Pt, Pt][] {
+  const out: [Pt, Pt, Pt][] = []
+  for (let i = 0; i + 1 < pts.length; i++) {
+    const p0 = pts[i - 1] ?? pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] ?? p2
+    out.push([add(p1, mul(sub(p2, p0), 1 / 6)), sub(p2, mul(sub(p3, p1), 1 / 6)), p2])
+  }
+  return out
+}
+
+/** Control point of a bent edge (quadratic Bézier). */
+const bendControl = (P: Pt, Q: Pt, bend: number): Pt => add(mul(add(P, Q), 0.5), mul(perp(unit(sub(Q, P))), -bend * len(sub(Q, P))))
+
+function viaGeom(e: Edge, P: Pt, Q: Pt, via: Pt[], rad: number, midArrows?: boolean): EdgeGeom {
+  const L = [P, ...via, Q], segs = smooth(L), last = segs[segs.length - 1]
+  const tEnd = unit(sub(Q, last[1]))
+  const end = e.directed ? sub(Q, mul(tEnd, rad + 1)) : Q
+  if (e.directed && !midArrows) last[2] = sub(end, mul(tEnd, TUCK))
+  else last[2] = end
+  const k = via.length, i = (k + 1) >> 1
+  const mid = k % 2 ? L[i] : mul(add(L[i], L[i + 1]), 0.5)
+  const tan = k % 2 ? sub(L[i + 1], L[i - 1]) : sub(L[i + 1], L[i])
+  const geom: EdgeGeom = {
+    id: e.id,
+    d: `M${f(P.x)},${f(P.y)} ${segs.map(([a, b, c]) => `C${f(a.x)},${f(a.y)} ${f(b.x)},${f(b.y)} ${f(c.x)},${f(c.y)}`).join(' ')}`,
+    label: add(mid, mul(perp(unit(tan)), -11)),
+    extent: via,
+  }
+  if (e.directed) {
+    if (midArrows) geom.midArrow = arrowHead(add(mid, mul(unit(tan), 5)), tan)
+    else geom.arrow = arrowHead(end, tEnd)
+  }
+  return geom
+}
+
+/** Points along the centre line of an ordinary edge from its tail at P to its head at Q, as drawn (faces follow it). */
+export function centerline(e: Edge, P: Pt, Q: Pt, bend: number): Pt[] {
+  const via = viaPoints(e)
+  if (via.length) {
+    const out = [P]
+    let s = P
+    for (const [a, b, c] of smooth([P, ...via, Q])) {
+      for (let i = 1; i <= 8; i++) {
+        const t = i / 8, u = 1 - t
+        out.push(add(add(mul(s, u * u * u), mul(a, 3 * u * u * t)), add(mul(b, 3 * u * t * t), mul(c, t * t * t))))
+      }
+      s = c
+    }
+    return out
+  }
+  if (Math.abs(bend) < 1e-6 || ends(e)[0] === ends(e)[1]) return [P, Q]
+  const C = bendControl(P, Q, bend)
+  return Array.from({ length: 13 }, (_, i) => { const t = i / 12, u = 1 - t; return add(add(mul(P, u * u), mul(C, 2 * u * t)), mul(Q, t * t)) })
+}
+
+/** The boundary of a face along its walk, following bent and routed edges (the k-th pass over a pair uses its k-th parallel edge). */
+export function facePolygon(g: GraphData, walk: Id[], pos: Map<Id, Pt>): Pt[] {
+  const bends = defaultBends(g), used = new Map<string, number>(), out: Pt[] = []
+  walk.forEach((u, i) => {
+    const v = walk[(i + 1) % walk.length], P = pos.get(u), Q = pos.get(v)
+    if (!P || !Q) return
+    const k = u < v ? `${u}\u0000${v}` : `${v}\u0000${u}`
+    const es = g.edges.filter(e => !e.hyper && ((e.tail[0] === u && e.head[0] === v) || (e.tail[0] === v && e.head[0] === u)))
+    const n = used.get(k) ?? 0
+    used.set(k, n + 1)
+    const e = es[n % Math.max(1, es.length)]
+    const line = !e ? [P, Q] : e.tail[0] === u ? centerline(e, P, Q, bends.get(e.id) ?? 0) : centerline(e, Q, P, bends.get(e.id) ?? 0).reverse()
+    out.push(...line.slice(0, -1))
+  })
+  return out
 }
 
 /** Bend of every ordinary non-loop edge: parallel edges fan out around the straight line; `data.bend` overrides. */
@@ -78,6 +158,8 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
       const P = pos.get(a), Q = pos.get(b)
       if (!P || !Q) return
       const bend = bends.get(e.id) ?? 0
+      const via = viaPoints(e)
+      if (via.length) { out.push(viaGeom(e, P, Q, via, rad(b), opts.midArrows)); return }
       const v = sub(Q, P), L = len(v), n = perp(unit(v))
       if (Math.abs(bend) < 1e-6) {
         const u = unit(v)
@@ -93,7 +175,7 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
         out.push(geom)
         return
       }
-      const C = add(mul(add(P, Q), 0.5), mul(n, -bend * L))
+      const C = bendControl(P, Q, bend)
       const tEnd = unit(sub(Q, C)), tStart = unit(sub(C, P))
       const end = e.directed ? sub(Q, mul(tEnd, rad(b) + 1)) : Q
       const lineEnd = e.directed && !opts.midArrows ? sub(end, mul(tEnd, TUCK)) : end
@@ -127,6 +209,8 @@ export function routeEdges(g: GraphData, pos: Map<Id, Pt>, opts: { midArrows?: b
       if (len(away) > 1) dir = unit(away)
     }
     es.forEach((e, i) => {
+      const via = viaPoints(e)
+      if (via.length) { out.push({ ...viaGeom(e, P, P, via, rad(v), opts.midArrows), loop: true }); return }
       const side = e.data.side
       let d = dir
       if (side !== undefined) {

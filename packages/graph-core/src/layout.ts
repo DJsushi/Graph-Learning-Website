@@ -4,6 +4,7 @@ import { GraphIndex, type GraphData, type Id } from './model'
 import { parseKV } from './dsl/parser'
 import { bipartition } from './analysis'
 import { rng } from './random'
+import { planarLayout } from './planar'
 
 export type Positions = Map<Id, { x: number; y: number }>
 
@@ -15,6 +16,7 @@ export function parseLayout(spec: string | undefined): { name: string; opts: Rec
 
 /** Compute positions for all vertices; pinned vertices keep their coordinates. */
 export function computeLayout(g: GraphData, hint?: Positions): Positions {
+  if (g.vertices.length && g.vertices.every(v => v.pinned && v.x !== undefined && v.y !== undefined)) return new Map(g.vertices.map(v => [v.id, { x: v.x!, y: v.y! }]))
   let { name, opts } = parseLayout(g.meta.layout)
   if (name === 'auto') name = autoName(g)
   const ids = g.vertices.map(v => v.id)
@@ -29,7 +31,9 @@ export function computeLayout(g: GraphData, hint?: Positions): Positions {
     case 'star': case 'wheel': pos = star(ids); break
     case 'hypercube': pos = hypercube(ids); break
     case 'petersen': pos = petersen(ids); break
-    case 'fixed': case 'force': case 'planar': default:
+    // a non-planar graph falls back to force; the parser reports it as an error
+    case 'planar': pos = planarLayout(g) ?? force(g, Number(opts.seed ?? 1), hint); break
+    case 'fixed': case 'force': default:
       pos = force(g, Number(opts.seed ?? 1), hint)
   }
   for (const v of g.vertices) if (v.pinned && v.x !== undefined && v.y !== undefined) pos.set(v.id, { x: v.x, y: v.y })

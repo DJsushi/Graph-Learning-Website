@@ -167,6 +167,7 @@ a -- b; a -- b          // two parallel edges
 | `id` | explicit edge id |
 | `bend` | curvature, number in roughly `[-1, 1]`; overrides automatic bending of parallel edges |
 | `side` | for loops: `top`, `bottom`, `left`, `right`, or angle in degrees |
+| `via` | points the edge passes through, in layout units: `via="(1,0.5) (2,1)"`. The edge is a smooth curve through them (a loop too) and ignores `bend`. |
 
 Any other attribute is stored as data.
 
@@ -236,14 +237,24 @@ face f0 outer: a b c [label="$f_\infty$"]
 - `face <id> [outer]: <vertex walk>` lists the boundary walk of a face in order (the walk is
   closed implicitly). A walk may repeat vertices (faces of non-2-connected graphs).
 - Faces are only drawn when vertex positions come from `fixed` or `planar` layout. With
-  `planar`, the layout must realise the given faces if they are specified.
+  `planar`, the layout realises the given faces: every edge must lie on two face sides (a
+  bridge twice on one face), the walks must close around every vertex and satisfy Euler's
+  formula, and the graph must be connected; otherwise the parser reports an error. A walk may
+  be written in either direction.
+- A face is filled along its edges as drawn, so it follows bent and `via`-routed edges. A walk
+  that passes the same pair twice (a face between two parallel edges) uses the next parallel
+  edge the second time.
 - Face attributes: `label`, `class` (e.g. `color1`…`color8` for face colourings).
 - The renderer fills each inner face with its class colour and places the label at a point
   inside the face; the outer face label goes near the boundary, outside the drawing.
 - `layout: planar` without explicit faces means "compute a planar embedding and draw it
   without crossings"; it is an error to request it for a non-planar graph.
-- The dual graph is produced by a generator transform, not by hand: `use: dual(this)` in a
-  separate panel (§10, §11).
+- The dual graph is produced by a generator transform, not by hand (§11). Drawn over the
+  graph: `use: dual(this) prefix=d` in the same panel. If the graph so far has no pinned
+  vertices, `dual(this)` first pins it to its planar drawing; then every dual vertex is pinned
+  inside its face, the outer one below the drawing, and every dual edge is routed with `via`
+  through the middle of the edge it crosses. In a separate panel, `use: dual(K(4))` gives the
+  dual alone, drawn with `planar`.
 
 ---
 
@@ -295,6 +306,7 @@ safe, distinguishable in greyscale where possible by also varying stroke width o
 | `back` | backward / reverse edge (residual graphs, DFS back edges) |
 | `source`, `sink` | flow network terminals |
 | `color1` … `color8` | categorical colours: vertex/edge colourings, faces, components |
+| `dual` | vertices and edges of a dual graph (set by `dual(...)`) |
 
 Content may introduce a new class only together with a note in `intent:`; the implementer then
 adds it to the theme and to this table.
@@ -439,7 +451,7 @@ Transforms take a graph expression and return a new graph:
 |-----------|---------|
 | `complement(G)` | complement of a simple graph |
 | `line(G)` | line graph |
-| `dual(G)` | planar dual (requires faces / planar embedding) |
+| `dual(G)` | planar dual: one vertex per face (the face's id and label; computed faces are `f0` for the outer face, then `f1`, `f2`, …), one edge per edge of `G` between the faces on its sides (a bridge gives a loop). Uses the faces of `G` if it has any, else a computed embedding. `G` must be connected, planar, without loops and parallel edges. Positions: §6. |
 | `this` | the graph defined so far in the current panel (only inside transforms) |
 | `ref(<figure-id>)` | the graph of another figure, by id (optionally `ref(<id>, panel=2)`) |
 
@@ -463,7 +475,7 @@ shown).
 | `tree` | `root=<v>` `direction=down|right` | Layered tree drawing (Reingold–Tilford style). |
 | `layered` | `direction=right|down` | Sugiyama-style for DAGs and flow networks (ELK layered). Default `right` (source left, sink right) for flow networks. |
 | `bipartite` | `left="a b c"` | Two columns; without `left`, computes a bipartition. |
-| `planar` | — | Crossing-free straight-line drawing. |
+| `planar` | — | Crossing-free straight-line drawing (Tutte's barycentric drawing of a triangulation of the embedding); outer face: the `outer` face, else the longest facial walk. Components side by side. Error for a non-planar graph. |
 | `fixed` | — | Every vertex must be pinned with `@(x, y)`. |
 | `star`, `wheel`, `hypercube`, `petersen` | — | Special drawings used by generators. |
 
@@ -633,13 +645,10 @@ reading the line as a statement.
 
 ## 17. Specified above but not implemented
 
-From the code review of 2026-11-10 (`BACKLOG.md` §3). Only the first two rows were checked
-again by hand.
+From the code review of 2026-11-10 (`BACKLOG.md` §3), not all checked again by hand.
 
 | Feature | Section | What happens today |
 |---------|---------|--------------------|
-| `layout: planar` | §12 | Falls back to `force`. |
-| `dual(...)` | §11 | Throws "not supported yet". |
 | `layout: layered` | §12 | BFS levels without routing of long edges. |
 | `layout: tree` | §12 | Places by leaf order and ignores non-tree edges. |
 | `interactive: zoom` | §9.1 | Ignored. |
@@ -648,5 +657,4 @@ again by hand.
 | `reset: false` | §9.3 | Ignored. |
 | `directed-style` on loops | §4 | Ignored. |
 | `check:` predicates | §9.4 | Missing: `is-vertex-cover`, `is-proper-coloring`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. |
-| `live:` properties | §9.3 | Missing: `planar`, `radius`. |
 | `task: simulate` | §9.4 | Works only for `bfs`, `kruskal` and `jarnik`. |
