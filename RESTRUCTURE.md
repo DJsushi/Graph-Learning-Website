@@ -233,6 +233,11 @@ the rows at any time.
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
 | T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | 8171a99 |
+| T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | |
+| T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | |
+| T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | |
+| T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | |
+| T4.51 | Same, `theory/basics/isomorphism.md`, figure `t01-iso-multigraph` (t01 item 2). The scan's H is not isomorphic to G, so the writer keeps the corrected H and marks it `<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->`, or, if the scan reads otherwise, follows the scan. | | |
 
 **Gate C.** See §6.
 
@@ -653,6 +658,8 @@ or keep and say so on the page. None changes a result.
   - No mismatch: `k-connectivity.md`, `paths-and-cuts.md`, `proving-the-edge-version.md`.
 
 ### Audit mismatches (T4.45, taught rewrites T4.34–T4.44), for the owner
+
+**Decided (2026-11-15, owner):** redraw the four "transcription" figures (and the multigraph one) from the scans: rows T4.47–T4.51. The other items stay open.
 
 Same format as T4.31. Main finding: four figures whose intent says "transcription of the
 lecture picture" differ from the scan. Fixing one means redrawing it and redoing the text and
