@@ -279,7 +279,7 @@ After Gate C. Same pipeline.
 | T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | 4fca56a |
 | T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | ada79d0 |
-| T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
+| T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | 3ca2cb2 |
 | T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | |
 | T5.35 | Audit slides 01 to 03 against the algorithms concept pages, read-only, as T4.31: one run per slide deck (a01 to a03), `general-purpose` with `model: "opus"`, comparing with the PDFs under `resources/`. Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
 
@@ -609,6 +609,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.6: the walkthrough reduces to one component, a step the notes do not write out.
 - T4.15 (`menger/vertex-version-from-edge-version.md`): the proof is attached to `thm:menger-directed`, which lives on `menger/mengers-theorem.md`, so its three walkthroughs have no `for=` and the validator keeps warning "proof of thm:menger-directed has no walkthrough". Open: allow a cross-page `for=` (coder task), or accept the warning.
 - T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
+
+- T5.33 (`global-min-cut/karger-stein.md`, writer): a branch "returns C" is loose, since min(C1, C2) may return another minimum cut of equal capacity; the same gap is in the "keep the best cut" step of `thm:karger-stein`. The page says "is a minimum cut"; the proof text is unchanged. The time proof does not cost the base case (MINIMUMCUT on at most 6 vertices, about n² leaves, O(n²)), so the result stands.
 
 ### Open questions for the owner
 
