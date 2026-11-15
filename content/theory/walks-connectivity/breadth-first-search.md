@@ -180,4 +180,4 @@ the queue before $u$, hence with value at most $d$.
 
 So BFS reaches exactly the component of $x$, and the value of $w$ is $\mathrm{dist}(x, w)$.
 :::
-<!-- REVIEW: added the BFS correctness argument; the theorem proof below relies on BFS values being the true distances. -->
+<!-- REVIEW: added the BFS correctness argument; the proof of the bipartite characterisation (see above) relies on BFS values being the true distances. -->

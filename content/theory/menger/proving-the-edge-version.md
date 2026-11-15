@@ -222,7 +222,7 @@ arcs leaving the set of vertices it can still reach form a smallest edge cut.
 
 ```graph id=t05-augmenting-player widget=player
 caption: Ford–Fulkerson with all capacities 1 finds a maximum d-flow and, at the end, the cut $D$ leaving the set $R$ of reachable vertices.
-intent: Connect Menger B with the flow algorithm of the algorithms course. Unit capacities.
+intent: Connect Menger B with the flow algorithm of the algorithms course. Unit capacities. A separate example, not the lecture's graph.
 type: directed
 layout: layered
 algo: ford-fulkerson
