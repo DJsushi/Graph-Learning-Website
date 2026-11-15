@@ -238,6 +238,8 @@ the rows at any time.
 | T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | 70997b8 |
 | T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | 5cb2dde |
 | T4.51 | Same, `theory/basics/isomorphism.md`, figure `t01-iso-multigraph` (t01 item 2). The scan's H is not isomorphic to G, so the writer keeps the corrected H and marks it `<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->`, or, if the scan reads otherwise, follows the scan. | | |
+| T4.52 | Small fixes from the T4.45 audit (owner, 2026-11-15: correct before faithful; main agent decided). (a) `theory/trees/spanning-trees.md:13`: the triangle sits beside "K₃ ↦ 3¹ = 3" in the Cayley table, not beside the definition. (b) `theory/walks-connectivity/breadth-first-search.md:183`: the REVIEW comment names a theorem proof the page no longer has; correct or delete it. (c) `theory/menger/proving-the-edge-version.md`: keep `t05-augmenting-player` as it is; if its caption or intent calls it the lecture's graph, call it a separate example. Writer with `model: "sonnet"`, then math-checker only if a statement changes. | | |
+| T4.53 | `algorithms/global-min-cut/karger-stein.md`: in the walkthroughs (not the locked proof text), say that if C survives in a branch, the branch returns a cut of capacity at most c(C), so a minimum cut, possibly another one of the same capacity; the same for "keep the best cut" in `thm:karger-stein`. Add that the base cases (MINIMUMCUT on at most 6 vertices, about n² leaves) cost O(n²) in total, so the bound stands. Writer with `model: "sonnet"`, then math-checker. | | |
 
 **Gate C.** See §6.
 
@@ -667,7 +669,9 @@ or keep and say so on the page. None changes a result.
 
 ### Audit mismatches (T4.45, taught rewrites T4.34–T4.44), for the owner
 
-**Decided (2026-11-15, owner):** redraw the four "transcription" figures (and the multigraph one) from the scans: rows T4.47–T4.51. The other items stay open.
+**Decided (2026-11-15, owner):** redraw the four "transcription" figures (and the multigraph one) from the scans: rows T4.47–T4.51.
+
+**Decided (2026-11-15, owner):** correctness comes before matching the notes; the main agent decides the rest. Kept, because they are correct and help the reader: girth ∞ for acyclic graphs; "closed", "finitely many" and the scheduling remark on `interval-graphs`; "of a directed multigraph" in `def:d-flow` (the size = in-degree of t fact stays in the prose); "at most k − 1" in the d-flow claim (the right hypothesis; the board's "(k−1)" read literally is a different one); disjoint V and E and the third special case on `multigraphs-and-digraphs`. Fixed in T4.52: the triangle sentence on `spanning-trees`, the stale REVIEW on `breadth-first-search`, the player caption on `proving-the-edge-version`. Karger–Stein tie and base case: T4.53.
 
 Same format as T4.31. Main finding: four figures whose intent says "transcription of the
 lecture picture" differ from the scan. Fixing one means redrawing it and redoing the text and
