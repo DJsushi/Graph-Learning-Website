@@ -6,6 +6,7 @@ order: 1
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:k-connected title="k-connected, k-edge-connected" defines="k-connected, k-edge-connected, vertex connectivity, edge connectivity" source="theory/2026-10-13 p1"}

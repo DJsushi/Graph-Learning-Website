@@ -6,6 +6,7 @@ order: 1
 lectures: [t02]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:bipartite title="Bipartite graph" defines="bipartite, bipartition" source="theory/2026-09-22 p4"}

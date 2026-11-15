@@ -6,6 +6,7 @@ order: 6
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 <!-- REVIEW: aka said "perfect elimination ordering", but the text below says the PEO is this ordering read backwards. aka changed to match. -->

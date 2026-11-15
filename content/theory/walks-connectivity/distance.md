@@ -6,6 +6,7 @@ order: 3
 lectures: [t02]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:distance title="Graph distance" defines="distance, dist" source="theory/2026-09-22 p4"}

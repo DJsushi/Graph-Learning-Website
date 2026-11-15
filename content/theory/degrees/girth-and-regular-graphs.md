@@ -8,6 +8,7 @@ goal: Find the length of the shortest cycle of a graph, and recognise graphs in 
 needs: [theory/basics/graph-families, theory/degrees/degrees-and-handshake, theory/basics/multigraphs-and-digraphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 Both graphs below have six vertices, and every vertex has three neighbours. In the prism, three

@@ -6,6 +6,7 @@ order: 1
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:chordal title="Chord, chordal graph" defines="chord, chordal graph" source="theory/2026-10-06 p1"}

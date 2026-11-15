@@ -6,6 +6,7 @@ order: 1
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 <!-- REVIEW: added "irreflexive": a symmetric relation alone would allow pairs (v, v), i.e. loops; a simple graph has none. -->

@@ -8,6 +8,7 @@ goal: Recognise forests, graphs without a cycle, and trees, the forests that are
 needs: [theory/basics/graph-families, theory/walks-connectivity/connected-components, theory/basics/multigraphs-and-digraphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecturer drew three small graphs next to the definition. In which of them can we get from

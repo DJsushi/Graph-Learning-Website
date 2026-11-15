@@ -8,6 +8,7 @@ goal: Recognise cliques and independent sets in a small graph, and check a given
 needs: [theory/basics/graphs, theory/basics/graph-families, theory/basics/isomorphism, theory/basics/subgraphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecture drew the graph below. Look at the four vertices $a, b, c, d$ at the top, and then

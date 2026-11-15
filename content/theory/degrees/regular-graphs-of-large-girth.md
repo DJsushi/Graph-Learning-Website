@@ -6,6 +6,7 @@ order: 7
 lectures: [t03]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 Can a graph have **many** edges at every vertex and still no short cycles? Locally, around every vertex,

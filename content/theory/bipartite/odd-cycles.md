@@ -6,6 +6,7 @@ order: 2
 lectures: [t02]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: theorem {#thm:bipartite-odd-cycle title="König's characterisation of bipartite graphs" aka="bipartite iff no odd cycle" source="theory/2026-09-22 p5"}
@@ -275,6 +276,7 @@ cycle of length
 $$(i - j) + (i - j) + 1 = 2(i - j) + 1,$$
 which is odd.
 ::::
+<!-- REVIEW: audit, proof of (⇐): the proof first reduces to a non-bipartite component K and runs BFS from x ∈ K; the lecture runs BFS from any x ∈ V(G), which reaches all of G only if G is connected. The reduction fills that gap. -->
 
 ```graph id=t02-odd-cycle-bfs widget=stepper
 caption: The proof in action: BFS layers from $x$, an edge $a_1a_2$ inside one layer, and the odd cycle through their least common ancestor $b$.

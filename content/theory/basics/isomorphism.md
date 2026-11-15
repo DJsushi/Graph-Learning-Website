@@ -8,6 +8,7 @@ goal: Decide when two graphs are the same up to the names of their vertices, and
 needs: [theory/basics/graphs, theory/basics/graph-families, theory/basics/multigraphs-and-digraphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecture drew the two graphs below. In the first, no edges cross. In the second, two edges

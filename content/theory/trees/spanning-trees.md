@@ -8,6 +8,7 @@ goal: Recognise a spanning tree, a tree inside a graph that keeps every vertex o
 needs: [theory/trees/forests-and-trees]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 In the Cayley table, the lecturer drew a triangle beside "$K_3 \mapsto 3^1 = 3$". Keep all three of its vertices and delete

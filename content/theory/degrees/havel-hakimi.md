@@ -6,6 +6,7 @@ order: 3
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The following theorem reduces the question for a sequence of $n$ numbers to the same question for

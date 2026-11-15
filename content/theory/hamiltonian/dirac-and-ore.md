@@ -6,6 +6,7 @@ order: 2
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 Unlike Euler tours (which traverse every *edge* once and have a simple characterisation), deciding whether a
@@ -45,6 +46,7 @@ b) **(Ore)** for all $u \ne v \in V(G)$: $uv \notin E(G) \implies d_G(u) + d_G(v
 
 Then $G$ is Hamiltonian.
 :::
+<!-- REVIEW: audit, the lecture states the theorem with no condition on n; n ≥ 3 is added because K₂ satisfies Dirac's condition and is not Hamiltonian. -->
 
 The lecture states this without proof.
 

@@ -8,6 +8,7 @@ goal: Decide by hand whether a sequence of numbers is the degree sequence of a g
 needs: [theory/degrees/degree-sequences, theory/degrees/havel-hakimi, theory/basics/graph-families]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 Seven vertices carry the numbers 4, 4, 3, 3, 1, 1 and 0. Can we draw edges so that every vertex

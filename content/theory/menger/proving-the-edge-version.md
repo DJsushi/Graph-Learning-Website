@@ -8,6 +8,7 @@ goal: Check whether a set of arcs is a d-flow, and find the edge-disjoint paths 
 needs: [theory/menger/mengers-theorem]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecturer drew this picture next to the definition below. All its arcs belong to $F$. Count,

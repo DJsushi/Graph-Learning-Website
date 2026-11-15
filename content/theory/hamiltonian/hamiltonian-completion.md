@@ -6,6 +6,7 @@ order: 3
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The proof works by adding edges that do not change Hamiltonicity.

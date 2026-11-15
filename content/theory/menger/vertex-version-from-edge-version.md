@@ -6,6 +6,7 @@ order: 5
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The proof reduces A to B: it builds a new graph in which edge-disjoint paths are the same thing as internally disjoint paths. First part: the construction.

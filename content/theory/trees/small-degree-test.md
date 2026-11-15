@@ -6,6 +6,7 @@ order: 3
 lectures: [t03]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: corollary {#cor:acyclic-subgraph-small-degree title="Acyclicity via small degrees" source="theory/2026-09-29 p3"}
