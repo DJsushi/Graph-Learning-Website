@@ -282,12 +282,14 @@ After Gate C. Same pipeline.
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | 4fca56a |
 | T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | ada79d0 |
 | T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | 3ca2cb2 |
-| T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | |
-| T5.35 | Audit slides 01 to 03 against the algorithms concept pages, read-only, as T4.31: one run per slide deck (a01 to a03), `general-purpose` with `model: "opus"`, comparing with the PDFs under `resources/`. Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
+| T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | deferred |
+| T5.35 | Audit slides 01 to 03 against the algorithms concept pages, read-only, as T4.31: one run per slide deck (a01 to a03), `general-purpose` with `model: "opus"`, comparing with the PDFs under `resources/`. Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | deferred |
 
 **Gate D.** See §6.
 
 ### Phase 6: theory lectures 6 to 8 (planarity, colouring)
+
+**Owner, 2026-11-15:** planarity now, before the rest of Phase 5: T6.1, T6.3, T6.4–T6.11, then T6.17 for t06 and t07. T5.34 and T5.35 are `deferred` until then; colouring (T6.2, T6.12–T6.16) is not asked for yet.
 
 New content, written from the notes (Scope). The owner may move this phase before Phase 5.
 Writer rows use the "New page" prompt (§1.2) and the pipeline of §1.4; a page whose notes
