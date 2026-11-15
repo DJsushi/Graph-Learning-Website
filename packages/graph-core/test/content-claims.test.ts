@@ -3415,3 +3415,135 @@ describe('proving-the-edge-version page', () => {
     expect(balance(opts[0]).bad).toEqual(['d']); expect(balance(opts[3]).bad).toEqual(['c'])
   })
 })
+
+describe('karger-stein page', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const tOf = (n: number) => Math.ceil(1 + n / Math.SQRT2)
+  const binom2 = (n: number) => n * (n - 1) / 2
+  const edgeIds = (g: GraphData, c: string) => g.edges.filter(e => e.classes.includes(c)).map(e => e.id).sort()
+  const sideOf = (g: GraphData, side: string[]) => cutCapacity(g, new Set(side))
+  it('part 1 of the lemma: C = {e15, e48} is a minimum cut (2 edges) of the 8-vertex graph; four contractions leave 4 vertices; the product is 3/14', () => {
+    const g = fig('a03-ct-product')
+    expect(g.vertices.length).toBe(8)
+    expect(g.edges.length).toBe(14)
+    expect(globalMinCut(g).value).toBe(2)
+    expect(sideOf(g, ['1', '2', '3', '4'])).toBe(2)
+    const s = steps('a03-ct-product')
+    expect(edgeIds(s[0], 'cut')).toEqual(['e15', 'e48'])
+    expect(edgeIds(s[1], 'tree')).toEqual(['e14', 'e23', 'e67', 'e78'])
+    // none of the four contracted edges is in C; contracting them leaves t = 4 vertices and the cut edges stay
+    expect(s[1].edges.filter(e => e.classes.includes('tree')).every(e => !['e15', 'e48'].includes(e.id))).toBe(true)
+    expect(s[4].vertices.length).toBe(4)
+    expect(s[4].edges.filter(e => e.classes.includes('cut')).length).toBe(2)
+    const n = 8, t = 4
+    const factors = Array.from({ length: n - t }, (_, i) => [n - i - 2, n - i])
+    expect(factors).toEqual([[6, 8], [5, 7], [4, 6], [3, 5]])
+    const num = factors.reduce((z, f) => z * f[0], 1), den = factors.reduce((z, f) => z * f[1], 1)
+    expect([num, den]).toEqual([360, 1680])
+    expect(num * binom2(n)).toBe(den * binom2(t)) // 3/14 = C(4,2)/C(8,2)
+    expect([binom2(t), binom2(n), t * (t - 1), n * (n - 1)]).toEqual([6, 28, 12, 56])
+    expect(num / den).toBeCloseTo(3 / 14, 12)
+  })
+  it('part 2 of the lemma: n = 8 gives t = 7, s = 5.66, 42 >= 32 >= 28, ratio 3/4; n = 7 gives t = 6 and n(1 - 1/sqrt 2) = 2.05; n = 6 gives t = 6 = n', () => {
+    const g = fig('a03-ct-half')
+    expect(g.vertices.length).toBe(8)
+    const s = steps('a03-ct-half')
+    expect(s[1].vertices.filter(v => v.classes.includes('color1')).length).toBe(7)
+    expect(s[4].vertices.length).toBe(7)
+    expect(s[5].vertices.filter(v => v.classes.includes('color1')).length).toBe(7)
+    const n = 8, t = tOf(n), sq = n / Math.SQRT2
+    expect(t).toBe(7)
+    expect(sq).toBeCloseTo(5.657, 3)
+    expect(t - 1 >= sq && t >= sq).toBe(true)
+    expect([t * (t - 1), n * n / 2, n * (n - 1) / 2]).toEqual([42, 32, 28])
+    expect(t * (t - 1) / (n * (n - 1))).toBe(0.75)
+    expect(7 * (1 - 1 / Math.SQRT2)).toBeCloseTo(2.05, 2)
+    expect(6 * (1 - 1 / Math.SQRT2)).toBeLessThan(2)
+    expect([tOf(6), tOf(7)]).toEqual([6, 6])
+    for (let m = 7; m <= 5000; m++) {
+      const tm = tOf(m)
+      expect(tm).toBeLessThan(m)
+      expect(tm * (tm - 1) / (m * (m - 1))).toBeGreaterThanOrEqual(0.5)
+    }
+  })
+  it('running time: sizes 1000, 709, 503, ... reach at most 6 after 19 levels; level 2 has 4 calls of about 500 vertices; 4 * 250 000 = 1e6 = n^2', () => {
+    const sizes = [1000]
+    while (sizes.at(-1)! > 6) sizes.push(tOf(sizes.at(-1)!))
+    expect(sizes.slice(0, 3)).toEqual([1000, 709, 503])
+    expect(sizes.length - 1).toBe(19)
+    const g = fig('a03-fm-levels')
+    expect(g.vertices.length).toBe(7)
+    expect(g.edges.length).toBe(6)
+    const s = steps('a03-fm-levels')
+    expect(s.length).toBe(7)
+    expect(s[2].vertices.filter(v => v.classes.includes('color3')).length).toBe(2 ** 2)
+    expect(s[2].vertices.filter(v => v.classes.includes('color2')).length).toBe(2)
+    expect((1000 / 2) ** 2).toBe(250000)
+    expect(4 * 250000).toBe(1000 ** 2)
+  })
+  it('recurrence: n = 7 gives t = 6 (solved exactly), lemma bound 30/42 = 5/7, and 1 - (1 - 1/2)^2 = 3/4', () => {
+    const g = fig('a03-fm-branch')
+    expect(g.vertices.length).toBe(5)
+    expect(steps('a03-fm-branch').length).toBe(6)
+    expect(tOf(7)).toBe(6)
+    expect(6 * 5 / (7 * 6)).toBeCloseTo(5 / 7, 12)
+    expect(1 - (1 - 1 / 2) ** 2).toBe(0.75)
+  })
+  it('solving the recurrence: g(1) = 3/4, g(1/2) = 7/16 > 1/3, 1/2 - 1/3 = 1/6 > 1/16, g(x) increasing, p_d >= 1/(d+1) for all d, and 1/20 for 19 levels', () => {
+    expect(steps('a03-fm-depth').length).toBe(9)
+    expect(fig('a03-fm-depth').vertices.length).toBe(6)
+    const g = (x: number) => x - x * x / 4
+    expect([g(1), g(0.5), g(0.75)]).toEqual([0.75, 7 / 16, 39 / 64])
+    expect(g(0.5)).toBeGreaterThan(1 / 3)
+    expect(1 / 2 - 1 / 3).toBeCloseTo(1 / 6, 12)
+    expect(1 / 6).toBeGreaterThan(1 / 16)
+    expect(1 - (1 - 0.7 / 2) ** 2).toBeCloseTo(g(0.7), 12) // the expansion of the square
+    for (let k = 0; k < 100; k++) expect(g((k + 1) / 100)).toBeGreaterThan(g(k / 100))
+    let p = 1
+    for (let d = 0; d <= 200; d++) {
+      expect(p).toBeGreaterThanOrEqual(1 / (d + 1))
+      // 4(d+1) - (d+2) = 3d + 2 >= 0 and g(1/(d+1)) >= 1/(d+2)
+      expect(4 * (d + 1) - (d + 2)).toBe(3 * d + 2)
+      expect(g(1 / (d + 1))).toBeGreaterThanOrEqual(1 / (d + 2) - 1e-15)
+      p = g(p)
+    }
+    expect(1 / (19 + 1)).toBe(0.05)
+  })
+  it('FASTMINCUT repeated: n = 1000, P = 1/20 gives r = 139, r P = 6.95 >= ln 1000 = 6.91, 0.95^139 < 0.0008 + , e^-6.95 = 0.00096 <= 1/1000', () => {
+    const n = 1000, P = 1 / 20
+    const r = Math.ceil(Math.log(n) / P)
+    expect(r).toBe(139)
+    expect(r * P).toBeCloseTo(6.95, 12)
+    expect(Math.log(n)).toBeCloseTo(6.9078, 4)
+    expect((1 - P) ** r).toBeCloseTo(0.0008, 4)
+    expect(Math.exp(-r * P)).toBeCloseTo(0.00096, 5)
+    expect(Math.exp(-r * P)).toBeLessThanOrEqual(1 / n)
+    expect(steps('a03-ks-runs').length).toBe(7)
+    expect(fig('a03-ks-runs').vertices.length).toBe(7)
+  })
+  it('all minimum cuts: C_6 has 15 minimum cuts of 2 edges; {e12,e45}, {e23,e56}, {e34,e61} are three of them; 15/1296 = 0.0116', () => {
+    const g = fig('a03-ks-all')
+    expect(g.vertices.length).toBe(6)
+    expect(globalMinCut(g).value).toBe(2)
+    // count the bipartitions {S, V - S} with 1 in S whose cut has 2 edges
+    const vs = g.vertices.map(v => v.id)
+    let count = 0
+    for (let mask = 0; mask < 2 ** 5 - 1; mask++) { // vs[0] always in S; skip S = V
+      const S = new Set([vs[0], ...vs.slice(1).filter((_, i) => mask >> i & 1)])
+      if (cutCapacity(g, S) === 2) count++
+    }
+    expect(count).toBe(15)
+    expect(binom2(6)).toBe(15)
+    const cutOf = (es: string[]) => { // the two edges form a cut: removing them leaves exactly 2 components
+      const rest = g.edges.filter(e => !es.includes(e.id)); const comp = new Map(vs.map(v => [v, v]))
+      const find = (x: string): string => comp.get(x) === x ? x : find(comp.get(x)!)
+      for (const e of rest) comp.set(find(e.tail[0]), find(e.head[0]))
+      return new Set(vs.map(find)).size
+    }
+    expect([['e12', 'e45'], ['e23', 'e56'], ['e34', 'e61']].map(cutOf)).toEqual([2, 2, 2])
+    expect(15 / 6 ** 4).toBeCloseTo(0.0116, 4)
+    const s = steps('a03-ks-all')
+    expect(s.length).toBe(10)
+    expect(edgeIds(s[0], 'cut')).toEqual(['e12', 'e45'])
+  })
+})
