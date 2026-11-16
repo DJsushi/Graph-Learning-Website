@@ -92,3 +92,31 @@ describe('parallel edges', () => {
     expect(bend(interpolate(one, one, 0.5), 'e1')).toBeUndefined()
   })
 })
+
+describe('hidden vertices', () => {
+  // a dashed circle through hidden points, as in t06-poly-check: the points stay hidden in every step, the last step removes them
+  const d = parseGraph(`layout: fixed
+a @(0, 0); b @(2, 0)
+p [class=hidden] @(0, 1); q [class=hidden] @(1, 1); r [class=hidden] @(2, 1)
+a -- b
+p -- q -- r [class=dashed]
+step: one
+step: two
+class highlight: a--b
+step: three
+remove p q r
+`)
+  const [one, two, three] = d.panels[0].steps.map(s => s.graph)
+  const ids = (t: number, a = one, b = two) => interpolate(a, b, t).graph.vertices.map(v => v.id).sort()
+  it('keeps them mid-tween, so edges through them still have ends', () => {
+    expect(d.errors).toEqual([])
+    for (const t of [0.1, 0.5, 0.9]) expect(ids(t)).toEqual(['a', 'b', 'p', 'q', 'r'])
+    const p = interpolate(one, two, 0.5).graph.vertices.find(v => v.id === 'p')!
+    expect(p).toMatchObject({ x: 0, y: 1, classes: ['hidden'] })
+  })
+  it('keeps the ends of edges that fade out with them', () => {
+    const r = interpolate(two, three, 0.5)
+    expect(r.graph.vertices.map(v => v.id).sort()).toEqual(['a', 'b', 'p', 'q', 'r'])
+    expect(r.fade['e:' + two.edges.find(e => e.tail[0] === 'p')!.id]).toBeLessThan(1)
+  })
+})

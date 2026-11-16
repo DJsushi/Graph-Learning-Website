@@ -77,6 +77,14 @@ function forward(s: GraphData, d: GraphData, u: number, merges: Merge[], dest: G
       fade[`l:${id}`] = inn(u, 0.2)
     } else place(w, pt(w), inn(u, 0.5))
   }
+  // hidden vertices are not drawn, but edges through them and the viewBox need them: carry them through
+  const sa = new Map(s.vertices.map(v => [v.id, v])), da = new Map(d.vertices.map(v => [v.id, v]))
+  for (const id of new Set([...sa.keys(), ...da.keys()])) {
+    if (sv.has(id) || dv.has(id)) continue
+    const v = sa.get(id), w = da.get(id)
+    const p = v && w ? { x: lerp(v.x ?? 0, w.x ?? 0, u), y: lerp(v.y ?? 0, w.y ?? 0, u) } : pt((v ?? w)!)
+    vertices.push({ ...destOf(id, (w ?? v)!), ...p })
+  }
 
   const se = new Map(s.edges.filter(visible).map(e => [e.id, e]))
   const de = new Map(d.edges.filter(visible).map(e => [e.id, e]))
