@@ -3659,3 +3659,138 @@ describe('planar-drawings page', () => {
     expect(drawn(g).crossings.length).toBe(3); expect(drawn(g).through).toEqual([])
   })
 })
+
+describe('polygonal-drawings page', () => {
+  type P = { x: number; y: number }
+  const panels = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels }
+  const stepsOf = (id: string) => panels(id)[0].steps.map(s => s.graph)
+  // every edge as drawn, in layout units (y up)
+  const lines = (g: GraphData) => {
+    const pos = new Map(g.vertices.map(v => [v.id, toScreen(v.x ?? 0, v.y ?? 0)])), b = defaultBends(g)
+    return g.edges.map(e => { const [u, v] = ends(e); return { e, u, v, pts: centerline(e, pos.get(u)!, pos.get(v)!, b.get(e.id) ?? 0).map(p => ({ x: p.x / 64, y: -p.y / 64 })) } })
+  }
+  const at = (g: GraphData, id: string): P => { const v = g.vertices.find(w => w.id === id)!; return { x: v.x!, y: v.y! } }
+  const d2 = (p: P, q: P) => Math.hypot(p.x - q.x, p.y - q.y)
+  const toSeg = (c: P, p: P, q: P) => {
+    const dx = q.x - p.x, dy = q.y - p.y, t = Math.max(0, Math.min(1, ((c.x - p.x) * dx + (c.y - p.y) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p.x + t * dx - c.x, p.y + t * dy - c.y)
+  }
+  const ptLine = (c: P, L: P[]) => Math.min(...L.slice(1).map((q, i) => toSeg(c, L[i], q)))
+  const lineLine = (A: P[], B: P[]) => Math.min(...A.map(p => ptLine(p, B)), ...B.map(p => ptLine(p, A)))
+  const cross = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return false
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9
+  }
+  const meet = (A: P[], B: P[]) => A.slice(1).some((a, i) => B.slice(1).some((b, j) => cross(A[i], a, B[j], b)))
+  const hidden = (g: GraphData, id: string) => g.vertices.find(v => v.id === id)!.classes.includes('hidden')
+  const named = ['a', 'b', 'c', 'x', 'y']
+  // all drawn edges (not the dashed circles): pairwise no crossing, and no named vertex on an edge it does not end at
+  const planarDrawing = (g: GraphData) => {
+    const L = lines(g).filter(l => !l.e.classes.includes('dashed') && !l.e.classes.includes('hidden'))
+    const crossings = L.flatMap((A, i) => L.slice(i + 1).filter(B => meet(A.pts, B.pts)).map(B => `${A.u}${A.v}/${B.u}${B.v}`))
+    const through = L.flatMap(A => g.vertices.filter(v => !v.classes.includes('hidden') && v.id !== A.u && v.id !== A.v && ptLine(at(g, v.id), A.pts) < 0.2).map(v => `${A.u}${A.v}@${v.id}`))
+    return { crossings, through }
+  }
+  const fits = (g: GraphData) => {
+    const pts = [...g.vertices.map(v => toScreen(v.x ?? 0, v.y ?? 0)), ...lines(g).flatMap(l => l.pts.map(p => toScreen(p.x, p.y)))]
+    const b = computeBox(pts, { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    return Math.min(314 / b.w, 195 / b.h)
+  }
+
+  it('opening figure: the board drawing, and the same multigraph with polygonal lines, both without crossings', () => {
+    const [curves, poly] = panels('t06-polygonal-board').map(p => p.graph)
+    expect(curves.vertices.map(v => [v.id, v.x, v.y])).toEqual(fig('t06-board-drawing').vertices.map(v => [v.id, v.x, v.y]))
+    expect(planarDrawing(curves)).toEqual({ crossings: [], through: [] })
+    expect(planarDrawing(poly)).toEqual({ crossings: [], through: [] })
+    expect(poly.edges.every(e => e.data.via === undefined)).toBe(true)
+    // contract the hidden bend points: the same 7 edges, two of them between 1 and 3
+    const real = poly.vertices.filter(v => !v.classes.includes('hidden')).map(v => v.id)
+    expect(real).toEqual(['1', '2', '3', '4', '5'])
+    const follow = (from: string, e: typeof poly.edges[0]) => { let prev = from, cur = ends(e).find(x => x !== from)!, seen = new Set([e.id]); while (hidden(poly, cur)) { const n = poly.edges.find(f => !seen.has(f.id) && ends(f).includes(cur))!; seen.add(n.id); prev = cur; cur = ends(n).find(x => x !== prev)! } return [from, cur].sort().join('') }
+    const pairs = poly.edges.filter(e => ends(e).some(x => real.includes(x))).flatMap(e => ends(e).filter(x => real.includes(x)).map(x => follow(x, e)))
+    // each edge is found from both of its ends
+    expect(pairs.sort()).toEqual(curves.edges.flatMap(e => [ends(e).sort().join(''), ends(e).sort().join('')]).sort())
+  })
+  it('the lecture zigzag: four segments, three bends', () => {
+    const g = fig('t06-polygonal-line')
+    expect(g.edges.length).toBe(4)
+    expect(g.vertices.filter(v => v.classes.includes('hidden')).length).toBe(3)
+  })
+
+  const S = stepsOf('t06-poly-construction')
+  const D = S[0]
+  const curve = (g: GraphData, u: string, v: string) => lines(g).find(l => (l.u === u && l.v === v) || (l.u === v && l.v === u))!.pts
+  const E = [['x', 'y'], ['x', 'a'], ['x', 'b'], ['x', 'c'], ['a', 'y']]
+  const nu = Math.min(...named.flatMap((p, i) => named.slice(i + 1).map(q => d2(at(D, p), at(D, q)))))
+  const vertEdge = named.flatMap(z => E.filter(e => !e.includes(z)).map(e => ({ z, e: e.join(''), d: ptLine(at(D, z), curve(D, e[0], e[1])) }))).sort((p, q) => p.d - q.d)
+  const delta = vertEdge[0].d, dp = Math.min(delta, nu / 3)
+
+  it('construction: D is a planar drawing; delta is about 0.62 (c and xy), nu about 1.19 (x and c), so delta\' = nu/3, about 0.40', () => {
+    expect(S.length).toBe(8)
+    expect(D.vertices.map(v => v.id)).toEqual(['a', 'b', 'x', 'c', 'y'])
+    expect(planarDrawing(D)).toEqual({ crossings: [], through: [] })
+    expect([vertEdge[0].z, vertEdge[0].e]).toEqual(['c', 'xy'])
+    expect(Math.abs(delta - 0.62)).toBeLessThan(0.005)
+    expect(d2(at(D, 'x'), at(D, 'c'))).toBeCloseTo(nu, 12)
+    expect(named.flatMap((p, i) => named.slice(i + 1).filter(q => d2(at(D, p), at(D, q)) < nu + 0.05).map(q => p + q))).toEqual(['cx'])
+    expect(Math.abs(nu - 1.19)).toBeLessThan(0.005)
+    expect(nu / 3).toBeLessThan(delta)
+    expect(Math.abs(dp - 0.40)).toBeLessThan(0.005)
+  })
+  it('construction: the disks have radius delta\', the cut points lie on them, and the middle pieces keep delta\' from every vertex', () => {
+    const g = S[3]
+    for (const v of named) {
+      const pts = g.vertices.filter(w => new RegExp(`^${v}\\d+$`).test(w.id))
+      expect(pts.length).toBe(16)
+      for (const p of pts) expect(Math.abs(d2(at(g, p.id), at(g, v)) - dp)).toBeLessThan(0.01)
+    }
+    const h = S[4]
+    for (const [u, v] of E) {
+      const n = E.findIndex(e => e[0] === u && e[1] === v), tag = 'efghk'[n]
+      expect(Math.abs(d2(at(h, 'p' + tag), at(h, u)) - dp)).toBeLessThan(0.01)
+      expect(Math.abs(d2(at(h, 'q' + tag), at(h, v)) - dp)).toBeLessThan(0.01)
+      const m = curve(h, 'p' + tag, 'q' + tag)
+      for (const z of named) expect(Math.min(...m.map(p => d2(p, at(h, z))))).toBeGreaterThan(dp - 0.01)
+    }
+    // the edge xc leaves the disk around x and comes back before its last exit
+    expect(Math.max(...curve(h, 'x', 'ph').map(p => d2(p, at(h, 'x'))))).toBeGreaterThan(dp + 0.1)
+  })
+  it('construction: epsilon is about 0.33, between the pieces of xa and xb; P_e has 16 segments, all shorter than epsilon/3', () => {
+    const h = S[4], tags = 'efghk'.split('')
+    const pieces = tags.map(t => curve(h, 'p' + t, 'q' + t))
+    const dist = tags.flatMap((s, i) => tags.slice(i + 1).map((t, j) => ({ st: s + t, d: lineLine(pieces[i], pieces[i + 1 + j]) }))).sort((p, q) => p.d - q.d)
+    const eps = Math.min(dist[0].d, dp)
+    expect(dist[0].st).toBe('fg')
+    expect(Math.abs(eps - 0.33)).toBeLessThan(0.005)
+    const g = S[6]
+    const chain = (t: string) => { const ids = ['p' + t]; for (let i = 1; g.vertices.some(v => v.id === t.toUpperCase() + i); i++) ids.push(t.toUpperCase() + i); ids.push('q' + t); return ids }
+    expect(chain('e').length - 1).toBe(16)
+    for (const [i, t] of tags.entries()) {
+      const ids = chain(t)
+      ids.slice(1).forEach((id, k) => {
+        expect(d2(at(g, ids[k]), at(g, id))).toBeLessThan(eps / 3)
+        expect(g.edges.some(e => ends(e).sort().join() === [ids[k], id].sort().join())).toBe(true)
+      })
+      for (const id of ids) expect(ptLine(at(g, id), pieces[i])).toBeLessThan(0.02) // on the piece as drawn, up to about 1px
+    }
+    expect(Math.abs(eps / 3 - 0.11)).toBeLessThan(0.005)
+  })
+  it('construction: the last step is a planar drawing with straight segments only, and every step fits the walkthrough box', () => {
+    const g = S[7]
+    expect(g.edges.every(e => e.data.via === undefined)).toBe(true)
+    expect(planarDrawing(g)).toEqual({ crossings: [], through: [] })
+    for (const st of S) expect(fits(st)).toBeGreaterThanOrEqual(1)
+  })
+  it('check: starts from the end of the construction, 6 steps, ends without the disks', () => {
+    const C = stepsOf('t06-poly-check')
+    expect(C.length).toBe(6)
+    const key = (g: GraphData) => g.vertices.map(v => `${v.id}@${v.x},${v.y}`).sort().join(' ')
+    expect(key(C[0])).toBe(key(S[7]))
+    expect(C[0].edges.length).toBe(S[7].edges.length)
+    expect(C[5].vertices.length).toBe(S[7].vertices.length - 80)
+    expect(planarDrawing(C[5])).toEqual({ crossings: [], through: [] })
+    for (const st of C) expect(fits(st)).toBeGreaterThanOrEqual(1)
+  })
+})

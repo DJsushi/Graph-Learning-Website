@@ -123,6 +123,7 @@
   "lem:karger-success#proof1": "520f22298b384d4db1430d8cba4aa8f1e32471b61dac2488e873e9d9397cd687",
   "lem:minimal-cut-clique": "032fff9b06045e16c57353414091ba249aa86b69704e9806fa57eec3b8cdb08f",
   "lem:minimal-cut-clique#proof1": "fbbb779160c983b69aa45c4638e171a55a0a2e70fa622f8687d69c6ec88373d9",
+  "lem:polygonal-drawing": "86f3f7c8a42831e097d00d78677a6663295fb94fd653fe711ee115f63b897231",
   "lem:sampling": "5155584aa658f3ff09a726a4c93b4b096d263ddf091e5006bc0215f937141e71",
   "lem:sampling#proof1": "6cbe8f52be7b931c68bb0e8503990de476c700ef72a336af54350e6c59dc38f8",
   "lem:two-simplicial": "84630c68a41b748baa221461a6ad176cda2e0d988f333c4a881ca9898625cfa0",
