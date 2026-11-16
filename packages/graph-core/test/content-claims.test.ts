@@ -4374,3 +4374,189 @@ describe('small-degree page (t07)', () => {
     expect(3 * 2 - 6).toBe(0)
   })
 })
+
+describe('kuratowski page (t07)', () => {
+  type P = { x: number; y: number }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (a: string, b: string) => [a, b].sort().join('|')
+  const pairs = (g: GraphData) => g.edges.map(e => key(...ends(e)))
+  const ids = (g: GraphData) => g.vertices.map(v => v.id)
+  const adj = (vs: string[], ps: string[]) => { const m = new Map(vs.map(v => [v, new Set<string>()])); for (const p of ps) { const [a, b] = p.split('|'); m.get(a)!.add(b); m.get(b)!.add(a) } return m }
+  const connected = (vs: string[], ps: string[]) => {
+    if (vs.length === 0) return false
+    const m = adj(vs, ps.filter(p => p.split('|').every(x => vs.includes(x)))), seen = new Set([vs[0]]), st = [vs[0]]
+    while (st.length) for (const w of m.get(st.pop()!)!) if (!seen.has(w)) { seen.add(w); st.push(w) }
+    return seen.size === vs.length
+  }
+  const subsets = (vs: string[], k: number): string[][] => k === 0 ? [[]] : vs.flatMap((v, i) => subsets(vs.slice(i + 1), k - 1).map(s => [v, ...s]))
+  // k-connected (def:k-connected): at least k + 1 vertices and connected after deleting any at most k - 1 vertices
+  const kConn = (vs: string[], ps: string[], k: number) => vs.length >= k + 1 && [...Array(k).keys()].every(j => subsets(vs, j).every(del => connected(vs.filter(v => !del.includes(v)), ps)))
+  const contract = (vs: string[], ps: string[], u: string, v: string, w: string) => {
+    const r = (x: string) => (x === u || x === v ? w : x)
+    return { vs: [...vs.filter(x => x !== u && x !== v), w], ps: [...new Set(ps.map(p => p.split('|').map(r)).filter(([a, b]) => a !== b).map(([a, b]) => key(a, b)))] }
+  }
+  // the graph that a subdivision with these branch vertices stands for: follow each path through vertices of degree 2
+  const suppress = (vs: string[], ps: string[], branch: string[]) => {
+    const m = adj(vs, ps), out: string[] = []
+    for (const v of vs) if (!branch.includes(v)) expect(m.get(v)!.size).toBe(2)
+    for (const b of branch) for (const n of m.get(b)!) {
+      let prev = b, cur = n
+      while (!branch.includes(cur)) { const nx = [...m.get(cur)!].find(x => x !== prev)!; prev = cur; cur = nx }
+      out.push(key(b, cur))
+    }
+    return out.sort()
+  }
+  const completePairs = (vs: string[]) => subsets(vs, 2).map(([a, b]) => key(a, b)).sort()
+  const bipPairs = (A: string[], B: string[]) => A.flatMap(a => B.map(b => key(a, b))).sort()
+  const dup = (xs: string[]) => [...xs, ...xs].sort()
+  const pos = (g: GraphData, id: string): P => { const v = g.vertices.find(x => x.id === id)!; return { x: v.x!, y: v.y! } }
+  const segHit = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return false
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9
+  }
+  const crossFree = (g: GraphData) => g.edges.every((a, i) => g.edges.slice(i + 1).every(b => !segHit(pos(g, ends(a)[0]), pos(g, ends(a)[1]), pos(g, ends(b)[0]), pos(g, ends(b)[1]))))
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const markPairs = (g: GraphData, name: string) => g.marks[name].filter(r => r.startsWith('@') || r.includes('--')).map(r => { const e = r.startsWith('@') ? g.edges.find(x => x.id === r.slice(1))! : g.edges.find(x => key(...ends(x)) === key(...(r.split('--') as [string, string])))!; return key(...ends(e)) }).sort()
+
+  it('opening: 8 vertices, 13 edges, a subdivision of K5 on 1..5 (path 5 a b c 4), not planar, no K5 subgraph (4, 5 not adjacent; a, b, c of degree 2)', () => {
+    const g = fig('t07-kuratowski-board')
+    expect([g.vertices.length, g.edges.length]).toEqual([8, 13])
+    expect(suppress(ids(g), pairs(g), ['1', '2', '3', '4', '5'])).toEqual(dup(completePairs(['1', '2', '3', '4', '5'])))
+    expect(isPlanar(g)).toBe(false)
+    expect(pairs(g)).not.toContain(key('4', '5'))
+    expect(['a', 'b', 'c'].map(v => adj(ids(g), pairs(g)).get(v)!.size)).toEqual([2, 2, 2])
+    expect(subsets(ids(g), 5).some(s => completePairs(s).every(p => pairs(g).includes(p)))).toBe(false)
+    expect(markPairs(g, 'path')).toEqual([key('5', 'a'), key('a', 'b'), key('b', 'c'), key('c', '4')].sort())
+  })
+
+  it('subdivision stepper: K33 with 6 vertices and 9 edges, at the end 12 vertices and 15 edges, a subdivision of K33', () => {
+    const s = steps('t07-subdivision-k33')
+    expect(s.length).toBe(4)
+    const U = ['u1', 'u2', 'u3'], W = ['w1', 'w2', 'w3']
+    expect([s[0].vertices.length, s[0].edges.length]).toEqual([6, 9])
+    expect(pairs(s[0]).sort()).toEqual(bipPairs(U, W))
+    expect([s[3].vertices.length, s[3].edges.length]).toEqual([12, 15])
+    expect(suppress(ids(s[3]), pairs(s[3]), [...U, ...W])).toEqual(dup(bipPairs(U, W)))
+  })
+
+  it('wheel: 3-connected; contracting 1 2 gives a wheel on 5 vertices with 8 edges, 3-connected; contracting h 1 does not, deleting the new vertex and 3 isolates 2; every contraction of K4 gives K3, not 3-connected', () => {
+    const s = steps('t07-contract-wheel')
+    expect(s.length).toBe(3)
+    const g = s[0]
+    expect(kConn(ids(g), pairs(g), 3)).toBe(true)
+    const last = s[2]
+    expect([last.vertices.length, last.edges.length]).toEqual([5, 8])
+    expect(new Set(pairs(last)).size).toBe(8)
+    expect(pairs(last).sort()).toEqual(contract(ids(g), pairs(g), '1', '2', 've').ps.sort())
+    expect(adj(ids(last), pairs(last)).get('h')!.size).toBe(4)
+    expect(kConn(ids(last), pairs(last), 3)).toBe(true)
+    const sp = contract(ids(g), pairs(g), 'h', '1', 'n')
+    expect(kConn(sp.vs, sp.ps, 3)).toBe(false)
+    expect(connected(sp.vs.filter(v => v !== 'n' && v !== '3'), sp.ps)).toBe(false)
+    expect(sp.ps.filter(p => p.split('|').includes('2')).sort()).toEqual([key('2', '3'), key('2', 'n')].sort())
+    const k4 = completePairs(['1', '2', '3', '4'])
+    for (const [a, b] of subsets(['1', '2', '3', '4'], 2)) {
+      const c = contract(['1', '2', '3', '4'], k4, a, b, 'n')
+      expect([c.vs.length, c.ps.length]).toEqual([3, 3])
+      expect(kConn(c.vs, c.ps, 3)).toBe(false)
+    }
+  })
+
+  it('first walkthrough: S subdivides K33 (inner vertex s), u1 u2 is extra; after erasing s: K33 with 6 vertices, 9 edges, bipartite, all degrees 3, girth 4, 9 > 2 * 6 - 4 = 8, not planar; fits', () => {
+    const s = steps('t07-kuratowski-easy')
+    expect(s.length).toBe(5)
+    const U = ['u1', 'u2', 'u3'], W = ['w1', 'w2', 'w3']
+    const g = s[0]
+    expect(suppress(ids(g), markPairs(g, 'S'), [...U, ...W])).toEqual(dup(bipPairs(U, W)))
+    expect(pairs(g).filter(p => !markPairs(g, 'S').includes(p))).toEqual([key('u1', 'u2')])
+    const k = s[2]
+    expect(pairs(k).sort()).toEqual(bipPairs(U, W))
+    const ix = new GraphIndex(k)
+    expect(A.bipartition(ix)).toBeDefined()
+    expect(A.degreeSequence(ix)).toEqual(Array(6).fill(3))
+    expect(A.girth(ix)).toBe(4)
+    expect(A.isConnected(ix)).toBe(true)
+    expect(2 * 6 - 4).toBe(8)
+    expect(isPlanar(k)).toBe(false)
+    s.forEach(fits)
+  })
+
+  it('second walkthrough: two K4 sharing x; deleting x disconnects; G1, G2 are K4; planar and drawn without crossings; fits', () => {
+    const s = steps('t07-kuratowski-cut-vertex')
+    expect(s.length).toBe(5)
+    const g = s[0]
+    expect(connected(ids(g), pairs(g))).toBe(true)
+    expect(connected(ids(g).filter(v => v !== 'x'), pairs(g))).toBe(false)
+    expect(markPairs(g, 'G1')).toEqual(completePairs(['a', 'b', 'c', 'x']))
+    expect(markPairs(g, 'G2')).toEqual(completePairs(['d', 'f', 'g', 'x']))
+    expect(isPlanar(g)).toBe(true)
+    expect(crossFree(g)).toBe(true)
+    s.forEach(fits)
+  })
+
+  it('third walkthrough: 2-connected, deleting x and y leaves {a, b} and {c, d}; x c y is a path of G2; with the edge x y both sides and the whole graph are planar; fits', () => {
+    const s = steps('t07-kuratowski-two-cut')
+    expect(s.length).toBe(6)
+    const g = s[0]
+    expect(kConn(ids(g), pairs(g), 2)).toBe(true)
+    expect(connected(['a', 'b', 'c', 'd'], pairs(g))).toBe(false)
+    expect(connected(['a', 'b'], pairs(g)) && connected(['c', 'd'], pairs(g))).toBe(true)
+    expect(markPairs(g, 'path').every(p => markPairs(g, 'G2').includes(p))).toBe(true)
+    expect(markPairs(g, 'path')).toEqual([key('x', 'c'), key('c', 'y')].sort())
+    expect(isPlanar(s[2])).toBe(true)
+    expect(crossFree(s[2])).toBe(true)
+    s.forEach(fits)
+  })
+
+  it('fourth walkthrough (red drawing): G/e is K5; u takes a, b and v takes c, d: a K33 with sides u, c, d and v, a, b; fits', () => {
+    const s = steps('t07-kuratowski-contract')
+    expect(s.length).toBe(6)
+    const g = s[0]
+    const c = contract(ids(g), pairs(g), 'u', 'v', 've')
+    expect(c.ps.sort()).toEqual(completePairs(['ve', 'a', 'b', 'c', 'd']))
+    expect(pairs(s[2]).sort()).toEqual(completePairs(['ve', 'a', 'b', 'c', 'd']))
+    expect(kConn(c.vs, c.ps, 3)).toBe(true)
+    const K33 = markPairs(g, 'K33')
+    expect(K33).toEqual(bipPairs(['u', 'c', 'd'], ['v', 'a', 'b']))
+    expect(K33.every(p => pairs(g).includes(p))).toBe(true)
+    expect(pairs(s[3]).sort()).toEqual(pairs(g).sort())
+    s.forEach(fits)
+  })
+
+  it('fifth walkthrough: wheel with hub ve, 3-connected; C = 1 2 3 4 5; each case contracts to the wheel; case 1 planar, v in the segment 1 2 3 4 of u; case 2 a K33 (sides u, 1, 4 and v, 3, 5); case 3 a K5 on u, v, 1, 3, 4; fits', () => {
+    const s = steps('t07-kuratowski-cases')
+    expect(s.length).toBe(6)
+    const w = s[0]
+    expect(kConn(ids(w), pairs(w), 3)).toBe(true)
+    expect(markPairs(w, 'C')).toEqual(['1|2', '2|3', '3|4', '4|5', '1|5'].sort())
+    const C = ['1', '2', '3', '4', '5']
+    for (const k of [2, 3, 4]) {
+      const c = contract(ids(s[k]), pairs(s[k]), 'u', 'v', 've')
+      expect(c.ps.sort()).toEqual(pairs(w).sort())
+    }
+    const nb = (g: GraphData, x: string) => [...adj(ids(g), pairs(g)).get(x)!].filter(y => C.includes(y)).sort()
+    expect([nb(s[2], 'u'), nb(s[2], 'v')]).toEqual([['1', '4', '5'], ['1', '2', '3']])
+    expect(isPlanar(s[2])).toBe(true)
+    expect(crossFree(s[2])).toBe(true)
+    expect(markPairs(s[2], 'seg')).toEqual(['1|2', '2|3', '3|4'])
+    expect([nb(s[3], 'u'), nb(s[3], 'v')]).toEqual([['3', '5'], ['1', '2', '4']])
+    const k33 = pairs(s[3]).filter(p => p !== key('v', '2'))
+    expect(suppress(ids(s[3]), k33, ['u', '1', '4', 'v', '3', '5'])).toEqual(dup(bipPairs(['u', '1', '4'], ['v', '3', '5'])))
+    expect(isPlanar(s[3])).toBe(false)
+    expect([nb(s[4], 'u'), nb(s[4], 'v')]).toEqual([['1', '3', '4', '5'], ['1', '2', '3', '4']])
+    const k5 = pairs(s[4]).filter(p => p !== key('u', '5') && p !== key('v', '2'))
+    expect(suppress(ids(s[4]), k5, ['u', 'v', '1', '3', '4'])).toEqual(dup(completePairs(['u', 'v', '1', '3', '4'])))
+    expect(isPlanar(s[4])).toBe(false)
+    s.forEach(fits)
+  })
+
+  it('quiz: K5 with every edge subdivided once has 5 + 10 = 15 vertices and 20 edges', () => {
+    const k = complete(5)
+    expect([k.vertices.length + k.edges.length, 2 * k.edges.length]).toEqual([15, 20])
+  })
+})
