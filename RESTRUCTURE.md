@@ -301,7 +301,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.1 | Planarity in the framework: `BACKLOG.md` FS1, FS2, FS12, FL7, FL8, C12. | coder (opus) | | 75f9a06 |
 | T6.2 | Colouring in the framework: `BACKLOG.md` C13 and `is-proper-coloring` (FS11). | coder | | |
 | T6.3 | Lecture files `content/theory/06-planarity.md`, `07-planarity-combinatorial.md`, `08-colouring.md` (lectures 6 to 8, slugs t06 to t08, their `sources`), chapters `planarity` and `colouring` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only; no lesson text. | coder | | ce8a665 |
-| T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | |
+| T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | 0760fe7 |
 | T6.5 | `theory/planarity/polygonal-drawings.md`: drawings with polygonal lines, lemma and proof sketch. | writer | 2026-10-20 p2 | |
 | T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | |
 | T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | |
@@ -601,7 +601,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.1 (75f9a06): `dual()` refuses multigraphs, so (G*)* in T6.7 is drawn by hand. A dual loop only clears a pendant bridge end. TikZ export ignores `via` (F8). Not seen in a browser; the first planarity page checks it.
 
-- **T6.4 in progress (2026-11-15, usage limit).** Page committed as draft (380d1bb); row not ticked. Next session: send the math-checker findings to a writer (Opus), re-check, set `status: reviewed`, then visual-qa (stopped before it reported; first page with `via` curves, a loop `via`, `set via` in a stepper and `live: planar`). Findings: lines 74–75, 147–148 and 178 say the ends are off the arc "because the arc is open"; false under the page's definition (injective on (0,1) allows α(1) = α(1/2)); the reason is that an arc avoids every vertex, its own ends included. Line 41: the caption states it for every open arc, true only in a drawing. Line 33: "touches no other curve" needs "except at a common end". The arc definition (continuous on [0,1], injective on (0,1), SOURCE UNCLEAR) is correct and keeps loops; keep it.
+- T6.4 (0760fe7): math findings fixed, re-check passed, `status: reviewed`. Visual check not done: Chrome extension not connected (2026-11-16). This is the first page with `via` curves, a loop `via`, `set via` in a stepper and `live: planar`; run visual-qa on it before deploying planarity (T6.18 at the latest).
 
 ### Needs reported by writers
 
