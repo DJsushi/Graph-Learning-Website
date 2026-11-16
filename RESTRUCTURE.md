@@ -308,7 +308,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | f43822f |
 | T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | f6f1d65 |
 | T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | d7cdfcf |
-| T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | |
+| T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | e1bafcb |
 | T6.12 | `theory/colouring/colourings.md`: k-colouring, proper colouring, chromatic number, the two facts. | writer | 2026-11-03 p1 | |
 | T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | |
 | T6.14 | `theory/colouring/three-colouring-and-sat.md`: "3-COL solves SAT", construction and both directions. | writer | 2026-11-03 p2–4 | |
@@ -613,8 +613,11 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.10 (d7cdfcf): lecture t07. Sonnet writer. The board proves only the first part (degree ≤ 5); the writer had proved the bipartite part (≤ 3) itself, removed per Scope as in T6.8: it is stated without proof, the cube stays as its example. The math check failed once (the proof block's title claimed the whole corollary); retitled "Proof of the first part", re-check passed. "Take a component" is the writer's addition. Visual check open (T6.18).
 
+- T6.11 (e1bafcb): lecture t07. Opus writer. Math check: round 1 four findings (case split in the proof, the 2+2 split's reason, "may no longer be subgraphs", G0 on at most 2 vertices; two REVIEW comments, on the writer's own proof text), round 2 one finding (the rewrite dropped the S-paths of the K3,3), round 3 (owner-approved) one finding ("$K_{3,3}$ has maximum degree 4"), fixed by the main agent on the owner's choice as "have degrees ≤ 4" (60-word limit), confirmed by the checker. Used without proof: any face can be made outer; faces of 2-connected plane graphs are cycles (checker: true). "Contains" read as "has as a subgraph". Reading path 1269 words (over the 600-word warning). Visual check open (T6.18).
+
 ### Needs reported by writers
 
+- T6.11 (`planarity/kuratowski.md`): no counterexample exists, so walkthroughs 1 to 3 use stand-ins. A cut cannot be split apart in undirected graphs, so gluing is shown only with marks. Contraction is explained in prose only.
 - T6.9 (`planarity/k5-not-planar.md`): $K_5$ has no plane drawing, so the walkthrough uses $K_5$ minus one edge as a stand-in. Faces cannot be relabelled mid-stepper (`set` rejects faces).
 - T6.8 (`planarity/euler-formula.md`): no free curve; the curve in walkthrough step 8 is shown only as its walk of faces. The writer had proved claim ★ itself; removed per Scope, ★ is now "stated without proof", the crossed-out dual cycle is an illustration only. REVIEW fix: F(G) counted one per face.
 - T6.7 (`planarity/geometric-dual.md`): faces have no separate fills; duals of multigraphs are drawn by hand (`dual()` refuses them). Two REVIEW fixes, confirmed by the math-checker against the scan: the dual has one vertex for each face, not one per element of the set of facial walks (inside and outside of C4 share a walk); the exercise (G*)* = G needs G connected (the scan writes "connected!" on p2). Reading path 659 words (soft limit 600). T6.17 must not duplicate `exr:t07-dual-of-dual`.
