@@ -315,7 +315,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.15 | `theory/colouring/chromatic-bounds.md`: cliques give a lower bound, small degrees an upper bound (proof of b), χ(K_{m,n}) = 2. | writer | 2026-11-03 p5 | |
 | T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | |
 | T6.17 | Lecture pages t06 to t08: intro, summary, and the exercises the notes give. Only text from the notes. | writer | all three | 93a9ae8 (t06, t07; t08 open) |
-| T6.18 | Check the pages of T6.4 to T6.17 at 390px and 1366×768. | visual-qa | | |
+| T6.18 | Check the pages of T6.4 to T6.17 at 390px and 1366×768. | visual-qa | | b931dc5 (planarity; colouring pages and t08 open) |
 
 ### Phase 7: algorithms lecture 4 (matchings in general graphs)
 
@@ -616,6 +616,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T6.11 (e1bafcb): lecture t07. Opus writer. Math check: round 1 four findings (case split in the proof, the 2+2 split's reason, "may no longer be subgraphs", G0 on at most 2 vertices; two REVIEW comments, on the writer's own proof text), round 2 one finding (the rewrite dropped the S-paths of the K3,3), round 3 (owner-approved) one finding ("$K_{3,3}$ has maximum degree 4"), fixed by the main agent on the owner's choice as "have degrees ≤ 4" (60-word limit), confirmed by the checker. Used without proof: any face can be made outer; faces of 2-connected plane graphs are cycles (checker: true). "Contains" read as "has as a subgraph". Reading path 1269 words (over the 600-word warning). Visual check open (T6.18).
 
 - T6.17 (93a9ae8), t06 and t07 only (t08 waits for colouring): Sonnet writer. Lecture pages have no proofs but restate results, so both got a math check: t06 failed once (planar drawing missing two conditions; "each face bounded by a closed walk"), t07 failed once (dual vertex per face, not per walk; hypotheses missing on (G*)* = G and the edge bounds; small-degree proof covers only the first part). Fixed, both re-checks passed. t06's notes have no exercise, so it has no Exercises section (CC §1); t07's two exercises are links to the concept pages. Lint is checked only in Summary and Exercises. Visual check open (T6.18).
+
+- T6.18 (b931dc5), planarity pages (T6.9 to T6.11, lecture pages t06 and t07; T6.4 to T6.8 passed earlier), 2026-11-16, iframes at 1366×768 and 390×800. All pass except `t07-k5-proof` on k5-not-planar: face labels B, D crossed by the dashed 3-5 curve and E touching edge 1-2; the Sonnet writer's relayout then ran the curve under vertex 4; an Opus writer's relayout (coordinates and `via` only) passed. Not verified: console inside the iframes, Escape closing the enlarge dialog. **Planarity is done (owner's list of 2026-11-15).**
 
 ### Needs reported by writers
 
