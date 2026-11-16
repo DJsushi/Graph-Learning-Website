@@ -49,9 +49,9 @@ the faces and once from the edges, and the two counts disagree.
 caption: A stand-in for the proof: $K_5$ without the edge 3 5, drawn without crossings. It has 9 edges and the 6 faces A to E and O, all triangles. The dashed curve is the tenth edge 3 5 of $K_5$; it has to cross the edge 2 4.
 intent: New figure; the lecture has only the drawing of K5 with crossings (t07-k5-board). Since K5 has no plane drawing, the figure shows K5 minus one edge, which has one, with the missing edge dashed. Each step is one step of the written proof (theory/2026-10-27 p3).
 layout: fixed
-1 @(0, 0); 2 @(3.6, 0); 3 @(1.8, 1.7); 4 @(1.8, 1.0); 5 @(1.8, 0.4)
+1 @(0, 0); 2 @(3.95, 0); 3 @(1.45, 2.1); 4 @(1.55, 1.22); 5 @(1.64, 0.51)
 1 -- 2; 2 -- 3; 3 -- 1; 1 -- 4; 2 -- 4; 3 -- 4; 1 -- 5; 2 -- 5; 4 -- 5
-3 -- 5 [class=dashed via="(2.6, 0.75)"]
+3 -- 5 [class=dashed via="(2.14, 0.97) (1.81, 0.56)"]
 mark miss: 3--5
 mark tri: 1--4 3--4 1--3
 mark side: 1--2
