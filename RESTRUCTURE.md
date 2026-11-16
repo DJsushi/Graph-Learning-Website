@@ -306,7 +306,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | 3e83e86 |
 | T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | f4aaf87 |
 | T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | f43822f |
-| T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | |
+| T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | f6f1d65 |
 | T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | |
 | T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | |
 | T6.12 | `theory/colouring/colourings.md`: k-colouring, proper colouring, chromatic number, the two facts. | writer | 2026-11-03 p1 | |
@@ -609,8 +609,11 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - **Session 2026-11-16 ended at 14:00 (owner away until 14:30).** Done: T6.4 to T6.8, tween fix 9c54237. Next: T6.9. Remaining for planarity: T6.9 to T6.11, then T6.17 for t06 and t07, then T6.18.
 
+- T6.9 (f6f1d65): lecture t07 (the 2026-10-27 notes). Sonnet writer; the math check failed once (3 wording findings: a loop *can* bound a face of length 1, step 3 now covers length 0, "simple and without vertices of degree 1"), fixed, re-check passed. Writer's points: the board exercise fails for $K_1$, so "connected, at least one edge" was added (REVIEW comment); the board's CLAIM is a proposition here; the red octahedron drawing in the scan is partly illegible (SOURCE UNCLEAR); reading path 609 words (over the 600-word warning). Visual check open (T6.18).
+
 ### Needs reported by writers
 
+- T6.9 (`planarity/k5-not-planar.md`): $K_5$ has no plane drawing, so the walkthrough uses $K_5$ minus one edge as a stand-in. Faces cannot be relabelled mid-stepper (`set` rejects faces).
 - T6.8 (`planarity/euler-formula.md`): no free curve; the curve in walkthrough step 8 is shown only as its walk of faces. The writer had proved claim ★ itself; removed per Scope, ★ is now "stated without proof", the crossed-out dual cycle is an illustration only. REVIEW fix: F(G) counted one per face.
 - T6.7 (`planarity/geometric-dual.md`): faces have no separate fills; duals of multigraphs are drawn by hand (`dual()` refuses them). Two REVIEW fixes, confirmed by the math-checker against the scan: the dual has one vertex for each face, not one per element of the set of facial walks (inside and outside of C4 share a walk); the exercise (G*)* = G needs G connected (the scan writes "connected!" on p2). Reading path 659 words (soft limit 600). T6.17 must not duplicate `exr:t07-dual-of-dual`.
 - T6.6 (`planarity/faces.md`): classes on faces have no CSS, so one face cannot be shaded differently from another; the outer face is never shaded. The "NO!" wheel drawing on 2026-10-20 p3 is unreadable and not drawn (SOURCE UNCLEAR). Walks are read up to start and direction, so mirror images are equivalent; `lectures: [t06, t07]`. Visual check passed 2026-11-16 at 390px and 1366×768.
@@ -626,6 +629,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.35 (`basics/isomorphism.md`): a stepper draws only panel 0, so G and H share one graph in both new steppers.
 
 - T4.43 (`chordal/interval-graphs.md`): the DSL cannot draw intervals; bars are thick edges between two endpoint vertices, named at both ends.
+
 
 ### Open questions from Phase 4 writers
 
