@@ -7,10 +7,10 @@ import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
-import { isPlanar } from '../src/planar'
+import { interiorPoint, isPlanar } from '../src/planar'
 import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
 import { computeBox } from '../../graph-vue/src/viewbox'
-import { centerline, defaultBends, R, toScreen } from '../../graph-vue/src/geometry'
+import { centerline, defaultBends, facePolygon, R, toScreen } from '../../graph-vue/src/geometry'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -3792,5 +3792,134 @@ describe('polygonal-drawings page', () => {
     expect(C[5].vertices.length).toBe(S[7].vertices.length - 80)
     expect(planarDrawing(C[5])).toEqual({ crossings: [], through: [] })
     for (const st of C) expect(fits(st)).toBeGreaterThanOrEqual(1)
+  })
+})
+
+describe('faces page (t06)', () => {
+  type P = { x: number; y: number }
+  const panels = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels }
+  // every edge as drawn, in screen coordinates, from its tail to its head
+  const lines = (g: GraphData) => {
+    const pos = new Map(g.vertices.map(v => [v.id, toScreen(v.x ?? 0, v.y ?? 0)])), b = defaultBends(g)
+    return { pos, L: g.edges.map(e => { const [u, v] = ends(e); return { u, v, pts: centerline(e, pos.get(u)!, pos.get(v)!, b.get(e.id) ?? 0) } }) }
+  }
+  const cross = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return false
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9
+  }
+  const toSeg = (c: P, p: P, q: P) => {
+    const dx = q.x - p.x, dy = q.y - p.y, t = Math.max(0, Math.min(1, ((c.x - p.x) * dx + (c.y - p.y) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p.x + t * dx - c.x, p.y + t * dy - c.y)
+  }
+  /** No two drawn edges cross, and no edge comes within `gap` screen units of a vertex circle that is not its end. */
+  const clean = (g: GraphData, gap: number) => {
+    const { pos, L } = lines(g)
+    const bad: string[] = []
+    L.forEach((A, i) => L.slice(i + 1).forEach(B => {
+      if (A.pts.slice(1).some((a, k) => B.pts.slice(1).some((c, l) => cross(A.pts[k], a, B.pts[l], c)))) bad.push(A.u + A.v + '/' + B.u + B.v)
+    }))
+    for (const A of L) for (const [id, p] of pos) if (id !== A.u && id !== A.v && A.pts.slice(1).some((a, k) => toSeg(p, A.pts[k], a) < R + gap)) bad.push(A.u + A.v + '@' + id)
+    return bad
+  }
+  /** The facial walks of the drawing as drawn: rotation at each vertex by the angle of the first piece of each edge. */
+  const facialWalks = (g: GraphData) => {
+    const { L } = lines(g)
+    const darts = L.flatMap(l => [{ u: l.u, v: l.v, pts: l.pts }, { u: l.v, v: l.u, pts: [...l.pts].reverse() }])
+    const ang = (d: { pts: P[] }) => Math.atan2(d.pts[1].y - d.pts[0].y, d.pts[1].x - d.pts[0].x)
+    const around = new Map<string, typeof darts>()
+    for (const d of darts) around.set(d.u, [...(around.get(d.u) ?? []), d])
+    for (const l of around.values()) l.sort((p, q) => ang(p) - ang(q))
+    const seen = new Set<object>(), out: { walk: string[]; area: number }[] = []
+    for (const d0 of darts) {
+      if (seen.has(d0)) continue
+      const walk: string[] = [], poly: P[] = []
+      for (let d = d0; !seen.has(d);) {
+        seen.add(d); walk.push(d.u); poly.push(...d.pts.slice(0, -1))
+        const l = around.get(d.v)!, back = l.findIndex(x => x.v === d.u && x.pts.every((p, i) => p === d.pts[d.pts.length - 1 - i]))
+        d = l[(back + l.length - 1) % l.length]
+      }
+      const area = poly.reduce((s, p, i) => { const q = poly[(i + 1) % poly.length]; return s + p.x * q.y - q.x * p.y }, 0) / 2
+      out.push({ walk, area })
+    }
+    return out
+  }
+  // a closed walk up to its start and its direction
+  const canon = (w: string[]) => {
+    const all = [w, [...w].reverse()].flatMap(x => x.map((_, i) => [...x.slice(i), ...x.slice(0, i)].join(' ')))
+    return all.sort()[0]
+  }
+  const walks = (g: GraphData) => facialWalks(g).map(f => canon(f.walk)).sort()
+  // the outer face's signed area is minus the sum of the others, so it has the largest absolute area and the opposite sign
+  const outerWalk = (g: GraphData) => {
+    const fs = facialWalks(g).sort((p, q) => Math.abs(q.area) - Math.abs(p.area))
+    expect(fs.slice(1).every(f => Math.sign(f.area) === -Math.sign(fs[0].area))).toBe(true)
+    return canon(fs[0].walk)
+  }
+  const W = (s: string) => canon(s.split(' '))
+
+  const board = ['a b c', 'b c d', 'c d e', 'a c e d b'].map(W).sort()
+  it('opening and worked example: 5 vertices, 7 edges, no crossings; four faces with walks abc, bcd, cde and the outer acedb (5 of 7 edges)', () => {
+    for (const g of [fig('t06-faces-board'), panels('t06-two-plane-graphs')[0].graph]) {
+      expect([g.vertices.length, g.edges.length]).toEqual([5, 7])
+      expect(clean(g, 4)).toEqual([])
+      expect(walks(g)).toEqual(board)
+      expect(outerWalk(g)).toBe(W('a c e d b'))
+      expect(g.vertices.map(v => [v.id, v.x, v.y])).toEqual(fig('t06-faces-board').vertices.map(v => [v.id, v.x, v.y]))
+    }
+    expect(fig('t06-faces-board').faces.map(f => canon(f.walk))).toEqual([W('b c d')])
+    const s = panels('t06-faces-walks')[0].steps.map(x => x.graph)
+    expect(s.length).toBe(5)
+    const bold = (g: GraphData) => g.edges.filter(e => e.classes.includes('bold')).map(e => ends(e).sort().join('')).sort()
+    const edgesOf = (w: string) => { const v = w.split(' '); return v.map((x, i) => [x, v[(i + 1) % v.length]].sort().join('')).sort() }
+    expect(bold(s[0])).toEqual([])
+    ;['b c d', 'a b c', 'c d e', 'a c e d b'].forEach((w, i) => expect(bold(s[i + 1])).toEqual(edgesOf(w)))
+    expect(s.slice(1, 4).map((g, i) => canon(g.faces[i].walk))).toEqual(['b c d', 'a b c', 'c d e'].map(W))
+    expect(edgesOf('a c e d b').length).toBe(5)
+  })
+  it('squares: facial walks 1234, 5678 and W = 1 2 3 4 1 5 8 7 6 5 in both drawings; W passes 1 and 5 twice; three faces; outer face 1234 inside, W outside', () => {
+    const Wsq = W('1 2 3 4 1 5 8 7 6 5')
+    const [inside, outside] = panels('t06-equivalent-squares').map(p => p.graph)
+    const single = fig('t06-facial-walk-repeats')
+    expect(single.vertices.map(v => [v.id, v.x, v.y])).toEqual(inside.vertices.map(v => [v.id, v.x, v.y]))
+    for (const g of [single, inside, outside]) {
+      expect([g.vertices.length, g.edges.length]).toEqual([8, 9])
+      expect(clean(g, 4)).toEqual([])
+      expect(walks(g)).toEqual([W('1 2 3 4'), W('5 6 7 8'), Wsq].sort())
+    }
+    expect(outerWalk(inside)).toBe(W('1 2 3 4'))
+    expect(outerWalk(outside)).toBe(Wsq)
+    const w = '1 2 3 4 1 5 8 7 6 5'.split(' ')
+    expect(['1', '5'].map(v => w.filter(x => x === v).length)).toEqual([2, 2])
+    expect(w.filter((x, i) => [x, w[(i + 1) % w.length]].sort().join('') === '15').length).toBe(2)
+    for (const g of [single, inside]) expect(canon(g.faces[0].walk)).toBe(Wsq)
+    // the label W is drawn between the squares, not inside the small one
+    const { pos } = lines(single)
+    const c = interiorPoint(facePolygon(single, single.faces[0].walk, pos))
+    const sq = ['5', '6', '7', '8'].map(v => pos.get(v)!)
+    const inSmall = c.x > Math.min(...sq.map(p => p.x)) && c.x < Math.max(...sq.map(p => p.x)) && c.y > Math.min(...sq.map(p => p.y)) && c.y < Math.max(...sq.map(p => p.y))
+    expect(inSmall).toBe(false)
+  })
+  it('K4: both drawings have the facial walks 124, 234, 134 and the outer 123', () => {
+    for (const g of panels('t06-equivalent-k4').map(p => p.graph)) {
+      expect(clean(g, 4)).toEqual([])
+      expect(walks(g)).toEqual(['1 2 4', '2 3 4', '1 3 4', '1 2 3'].map(W).sort())
+      expect(outerWalk(g)).toBe(W('1 2 3'))
+    }
+  })
+  it('two plane graphs: "a inside" has abc, bacd, cde and the outer bced; both have four faces; bcd is facial only in "a outside"', () => {
+    const [out, ins] = panels('t06-two-plane-graphs').map(p => p.graph)
+    expect(clean(ins, 4)).toEqual([])
+    expect(walks(ins)).toEqual(['a b c', 'b a c d', 'c d e', 'b c e d'].map(W).sort())
+    expect(outerWalk(ins)).toBe(W('b c e d'))
+    expect([walks(out).length, walks(ins).length]).toEqual([4, 4])
+    expect(walks(out)).toContain(W('b c d')); expect(walks(ins)).not.toContain(W('b c d'))
+    expect(walks(ins)).not.toContain(W('a c e d b'))
+    expect(walks(out)).not.toEqual(walks(ins))
+    expect(canon(ins.faces[0].walk)).toBe(W('b a c d'))
+    // same graph: same vertices and edges
+    const es = (g: GraphData) => g.edges.map(e => ends(e).sort().join('')).sort()
+    expect(es(out)).toEqual(es(ins))
   })
 })

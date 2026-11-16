@@ -67,7 +67,7 @@
   course: theory
   title: Planar graphs
   intro: Drawings in the plane, faces, the geometric dual, Euler's formula and Kuratowski's theorem.
-  ids: [def:planar-drawing, def:planar-graph, lem:polygonal-drawing]
+  ids: [def:planar-drawing, def:planar-graph, lem:polygonal-drawing, def:face, def:plane-graph]
 - slug: colouring
   course: theory
   title: Graph colouring
