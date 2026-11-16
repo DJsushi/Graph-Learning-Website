@@ -150,6 +150,7 @@
   "prop:global-cut-flows#proof1": "6741d6b16139e3cb1795df8e598a4dce41dd3fb1a1f7deda52a58df9e8fd4c4a",
   "prop:gomory-hu-path": "69562e1f68931a9258673737acb0424745245393d36f5e34582662f650949b11",
   "prop:interval-chordal": "87063e12817a14630345d4b5f42e9bad36812d76ead2d9e16902fd7c2bfbbdfc",
+  "prop:k5-not-planar": "178ee6382e579db92804b580a2f8ae0105514994d0342416e8512b0fb7b66f2a",
   "prop:kruskal-complexity": "00a31e3f09e9a13bd37f64911d1259a0a67093e9b702b385a63f6e6e6040b40f",
   "prop:kruskal-complexity#proof1": "7736309bb2ff8c7fb24dde264163691304e3535993d686467e6b148ed4d1d85b",
   "prop:matching-flow": "807d15dd2fc621a7e208314f4925dcb838e2c7acd5907064fff3e9c6fcdca10c",

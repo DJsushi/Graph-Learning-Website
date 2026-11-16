@@ -4227,3 +4227,95 @@ describe("Euler's formula page (t07)", () => {
     expect([w.vertices.length, w.edges.length, we.faces.length]).toEqual([7, 12, 7])
   })
 })
+
+describe('k5-not-planar page (t07)', () => {
+  type P = { x: number; y: number }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const pos = (g: GraphData, id: string): P => { const v = g.vertices.find(x => x.id === id)!; return { x: v.x!, y: v.y! } }
+  const poly = (g: GraphData, e: GraphData['edges'][number]): P[] => {
+    const via = String(e.data.via ?? '').match(/-?[\d.]+,\s*-?[\d.]+/g) ?? []
+    return [pos(g, ends(e)[0]), ...via.map(s => { const [x, y] = s.split(',').map(Number); return { x, y } }), pos(g, ends(e)[1])]
+  }
+  const segHit = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return false
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9
+  }
+  const crossings = (g: GraphData, a: GraphData['edges'][number], b: GraphData['edges'][number]) => {
+    const A = poly(g, a), B = poly(g, b)
+    return A.slice(1).reduce((n, p, i) => n + B.slice(1).filter((q, j) => segHit(A[i], p, B[j], q)).length, 0)
+  }
+  const pairs = (g: GraphData) => g.edges.flatMap((a, i) => g.edges.slice(i + 1).map(b => [a, b] as const))
+  const faceLengths = (g: GraphData) => { const e = embed(g, false); if (typeof e === 'string') throw new Error(e); return e.faces.map(f => f.length).sort() }
+
+  it('K5 is not planar; it has 5 vertices, 10 edges; Euler gives 10 + 2 - 5 = 7 faces; 3 * 7 = 21 > 20 = 2 * 10 and 21 / 2 = 10.5 > 10; every vertex has degree 4', () => {
+    const k = complete(5)
+    expect(isPlanar(k)).toBe(false)
+    expect([k.vertices.length, k.edges.length]).toEqual([5, 10])
+    expect(k.edges.length + 2 - k.vertices.length).toBe(7)
+    expect(3 * 7).toBe(21)
+    expect(2 * k.edges.length).toBe(20)
+    expect(21 / 2).toBe(10.5)
+    expect(k.vertices.every(v => k.edges.filter(e => ends(e).includes(v.id)).length === 4)).toBe(true)
+  })
+
+  it('opening figure: the pentagon with its diagonals is K5 and has 5 crossings, all between diagonals', () => {
+    const g = fig('t07-k5-board')
+    expect([g.vertices.length, g.edges.length]).toEqual([5, 10])
+    expect(new Set(g.edges.map(e => ends(e).slice().sort().join('')))).toEqual(new Set(complete(5).edges.map(e => ends(e).slice().sort().join(''))))
+    const cr = pairs(g).filter(([a, b]) => crossings(g, a, b) > 0)
+    expect(cr.length).toBe(5)
+    const diag = new Set(['13', '14', '24', '25', '35'])
+    expect(cr.every(([a, b]) => diag.has(ends(a).slice().sort().join('')) && diag.has(ends(b).slice().sort().join('')))).toBe(true)
+  })
+
+  it('walkthrough: the stand-in is K5 minus 3 5, planar, with 9 edges and 6 faces of length 3 (sum 18 = 2 * 9); the dashed edge 3 5 crosses only the edge 2 4, once; 10 + 2 - 5 = 7 and 5 + 6 - 9 = 2; fits the box', () => {
+    const s = steps('t07-k5-proof')
+    expect(s.length).toBe(6)
+    const dashed = s[0].edges.filter(e => e.classes.includes('dashed'))
+    expect(dashed.map(e => ends(e).slice().sort().join(''))).toEqual(['35'])
+    const G: GraphData = { ...s[1], edges: s[1].edges.filter(e => !e.classes.includes('dashed')), faces: [] }
+    expect([G.vertices.length, G.edges.length]).toEqual([5, 9])
+    // K5 minus the edge 3 5
+    const names = new Set(G.edges.map(e => ends(e).slice().sort().join('')))
+    expect(names).toEqual(new Set(complete(5).edges.map(e => ends(e).slice().sort().join('')).filter(n => n !== '35')))
+    expect(isPlanar(G)).toBe(true)
+    expect(faceLengths(G)).toEqual([3, 3, 3, 3, 3, 3])
+    expect(faceLengths(G).reduce((a, b) => a + b, 0)).toBe(2 * G.edges.length)
+    expect(5 + 6 - 9).toBe(2)
+    // the authored faces are the faces of the straight-line drawing, and the drawing has no crossings
+    expect(G.edges.every((a, i) => G.edges.slice(i + 1).every(b => crossings(G, a, b) === 0))).toBe(true)
+    const withFaces = embed({ ...G, faces: s[1].faces })
+    if (typeof withFaces === 'string') throw new Error(withFaces)
+    expect(s[1].faces.length).toBe(6)
+    expect(withFaces.faces.length).toBe(6)
+    const crossed = G.edges.filter(e => crossings(s[0], dashed[0], e) > 0)
+    expect(crossed.map(e => ends(e).slice().sort().join(''))).toEqual(['24'])
+    expect(crossings(s[0], dashed[0], crossed[0])).toBe(1)
+    // the edge 1 2 lies on the faces E and O; the walk 1 4 3 is the face A
+    const sides = (a: string, b: string) => s[1].faces.filter(f => f.walk.some((x, i) => [x, f.walk[(i + 1) % f.walk.length]].sort().join('') === [a, b].sort().join(''))).map(f => f.id).sort()
+    expect(sides('1', '2')).toEqual(['E', 'O'])
+    expect(s[1].faces.find(f => f.id === 'A')!.walk).toEqual(['1', '4', '3'])
+    // 3 faces classes: step 5 colours E and O
+    expect(s[4].faces.filter(f => f.classes.includes('color2')).map(f => f.id).sort()).toEqual(['E', 'O'])
+    for (const st of s) {
+      const b = computeBox(st.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+      expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+    }
+  })
+
+  it('edge-bound figure: octahedron 6 vertices, 12 edges, 8 faces of length 3, 12 = 3 * 6 - 6; cube 8 vertices, 12 edges, 6 faces of length 4, 12 = 2 * 8 - 4; both drawings are crossing-free', () => {
+    const [oct, cube] = [fig('t07-edge-bounds-examples', 0), fig('t07-edge-bounds-examples', 1)]
+    expect([oct.vertices.length, oct.edges.length]).toEqual([6, 12])
+    expect(faceLengths(oct)).toEqual(Array(8).fill(3))
+    expect(oct.edges.length).toBe(3 * oct.vertices.length - 6)
+    expect([cube.vertices.length, cube.edges.length]).toEqual([8, 12])
+    expect(faceLengths(cube)).toEqual(Array(6).fill(4))
+    expect(cube.edges.length).toBe(2 * cube.vertices.length - 4)
+    for (const g of [oct, cube]) expect(pairs(g).every(([a, b]) => crossings(g, a, b) === 0)).toBe(true)
+    // the quiz and the More section: 5 vertices and 9 edges give 6 faces; 3 * 5 - 6 = 9 < 10
+    expect(2 - 5 + 9).toBe(6)
+    expect(3 * 5 - 6).toBe(9)
+  })
+})
