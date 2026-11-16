@@ -605,6 +605,10 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.5 (cf583ef): the math check failed twice (3 findings, then 1 wrong phrase in the pitfall). The owner was away and had said not to stop at a gate, so on Fable's advice the writer got a third round, limited to that one phrase (confirmed by diff); the third check passed. This exceeds §1.4; revert cf583ef if unwanted. `ε` is not defined on the board (SOURCE UNCLEAR, read as the distance between middle pieces); splitting loops is the writer's addition. Visual check open. Visual check 2026-11-16: everything passes except the tween bug, confirmed on `t06-poly-check` and `t06-poly-construction` (all `path.gv-line` vanish ~1 s after each step, box rescales at 1366); fixed in 9c54237, re-check passed (lines stay, box height constant, counter does not fall back). Open, minor: at 390px (measured in an iframe; the window would not resize) scroll-driven step activation lags by one: a step centred in the viewport shows the next step's counter. Clicking a step is right. Unconfirmed on a real phone.
 
+- T6.7, T6.8 visual check passed 2026-11-16 at 390px and 1366×768 (iframes). Minor: on euler-formula at 390 (578px-high viewport) the sticky figure is capped near 120px and its caption scrolls inside a scrollbar. The geometric-dual exercise "The dual of the dual" has no answer field or solution; the notes give none (Scope).
+
+- **Session 2026-11-16 ended at 14:00 (owner away until 14:30).** Done: T6.4 to T6.8, tween fix 9c54237. Next: T6.9. Remaining for planarity: T6.9 to T6.11, then T6.17 for t06 and t07, then T6.18.
+
 ### Needs reported by writers
 
 - T6.8 (`planarity/euler-formula.md`): no free curve; the curve in walkthrough step 8 is shown only as its walk of faces. The writer had proved claim ★ itself; removed per Scope, ★ is now "stated without proof", the crossed-out dual cycle is an illustration only. REVIEW fix: F(G) counted one per face.
