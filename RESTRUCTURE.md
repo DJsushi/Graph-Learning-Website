@@ -601,7 +601,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.1 (75f9a06): `dual()` refuses multigraphs, so (G*)* in T6.7 is drawn by hand. A dual loop only clears a pendant bridge end. TikZ export ignores `via` (F8). Not seen in a browser; the first planarity page checks it.
 
-- T6.4 (0760fe7): math findings fixed, re-check passed, `status: reviewed`. Visual check not done: Chrome extension not connected (2026-11-16). This is the first page with `via` curves, a loop `via`, `set via` in a stepper and `live: planar`; run visual-qa on it before deploying planarity (T6.18 at the latest).
+- T6.4 (0760fe7): math findings fixed, re-check passed, `status: reviewed`. Visual check passed 2026-11-16 at 390px and 1366×768 (`via` curves, loop `via`, `set via` stepper, `live: planar`, marks, quiz). Minor: at a 1093px window the loop figure in `t06-open-arcs` shrinks to a 20.6px vertex and ~10px label, below spec size.
 
 ### Needs reported by writers
 
