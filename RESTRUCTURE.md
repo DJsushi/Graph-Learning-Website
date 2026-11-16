@@ -303,7 +303,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.3 | Lecture files `content/theory/06-planarity.md`, `07-planarity-combinatorial.md`, `08-colouring.md` (lectures 6 to 8, slugs t06 to t08, their `sources`), chapters `planarity` and `colouring` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only; no lesson text. | coder | | ce8a665 |
 | T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | 0760fe7 |
 | T6.5 | `theory/planarity/polygonal-drawings.md`: drawings with polygonal lines, lemma and proof sketch. | writer | 2026-10-20 p2 | cf583ef |
-| T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | |
+| T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | 3e83e86 |
 | T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | |
 | T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | |
 | T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | |
@@ -603,10 +603,11 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - T6.4 (0760fe7): math findings fixed, re-check passed, `status: reviewed`. Visual check passed 2026-11-16 at 390px and 1366×768 (`via` curves, loop `via`, `set via` stepper, `live: planar`, marks, quiz). Minor: at a 1093px window the loop figure in `t06-open-arcs` shrinks to a 20.6px vertex and ~10px label, below spec size.
 
-- T6.5 (cf583ef): the math check failed twice (3 findings, then 1 wrong phrase in the pitfall). The owner was away and had said not to stop at a gate, so on Fable's advice the writer got a third round, limited to that one phrase (confirmed by diff); the third check passed. This exceeds §1.4; revert cf583ef if unwanted. `ε` is not defined on the board (SOURCE UNCLEAR, read as the distance between middle pieces); splitting loops is the writer's addition. Visual check open.
+- T6.5 (cf583ef): the math check failed twice (3 findings, then 1 wrong phrase in the pitfall). The owner was away and had said not to stop at a gate, so on Fable's advice the writer got a third round, limited to that one phrase (confirmed by diff); the third check passed. This exceeds §1.4; revert cf583ef if unwanted. `ε` is not defined on the board (SOURCE UNCLEAR, read as the distance between middle pieces); splitting loops is the writer's addition. Visual check open. Visual check 2026-11-16: everything passes except the tween bug, confirmed on `t06-poly-check` and `t06-poly-construction` (all `path.gv-line` vanish ~1 s after each step, box rescales at 1366); a coder is fixing it.
 
 ### Needs reported by writers
 
+- T6.6 (`planarity/faces.md`): classes on faces have no CSS, so one face cannot be shaded differently from another; the outer face is never shaded. The "NO!" wheel drawing on 2026-10-20 p3 is unreadable and not drawn (SOURCE UNCLEAR). Walks are read up to start and direction, so mirror images are equivalent; `lectures: [t06, t07]`.
 - T6.5 (`planarity/polygonal-drawings.md`): no disk or strip shape; disks are drawn as dashed 16-gons through hidden points, strips are not drawn. Bug: `tween.ts` drops hidden vertices mid-animation, so the circles and polylines vanish and the box rescales during each transition. The writer could not see the page (headless Chromium gave blank screenshots).
 - T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
 
