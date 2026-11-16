@@ -6,6 +6,7 @@ order: 2
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:degree-sequence title="Degree sequence" defines="degree sequence" source="theory/2026-09-15 p5"}

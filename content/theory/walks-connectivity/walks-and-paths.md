@@ -8,6 +8,7 @@ goal: Write down a walk step by step, count its length, and tell a walk apart fr
 needs: [theory/basics/graphs, theory/basics/graph-families, theory/basics/isomorphism, theory/basics/subgraphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 A walker starts at $a$ in the graph $G$ below. She goes to $b$, around the triangle through $c$

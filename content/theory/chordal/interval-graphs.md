@@ -8,6 +8,7 @@ goal: Build the graph of a few intervals on a line, and see on it that every int
 needs: [theory/chordal/chordal-graphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 Six tasks share one machine. Each task needs it during a time window, drawn as a bar on the

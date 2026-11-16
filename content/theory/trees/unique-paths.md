@@ -6,6 +6,7 @@ order: 4
 lectures: [t03]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: corollary {#cor:tree-unique-path title="Unique paths in trees" source="theory/2026-09-29 p5"}

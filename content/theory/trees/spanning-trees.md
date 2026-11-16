@@ -8,14 +8,15 @@ goal: Recognise a spanning tree, a tree inside a graph that keeps every vertex o
 needs: [theory/trees/forests-and-trees]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
-Next to the definition, the lecturer drew a triangle. Keep all three of its vertices and delete
+In the Cayley table, the lecturer drew a triangle beside "$K_3 \mapsto 3^1 = 3$". Keep all three of its vertices and delete
 some edges. Which edges can we delete so that what is left is a [[def:forest-tree|tree]]?
 
 ```graph id=t03-spanning-question widget=figure
 caption: The triangle from the board: three vertices and three edges that form a cycle.
-intent: From the lecture (theory/2026-09-29 p6, the triangle next to K_3 in the margin), with the vertex names and positions of t03-tree-question.
+intent: From the lecture (theory/2026-09-29 p6, the triangle beside the Cayley-table entry K_3 ↦ 3^1 = 3), with the vertex names and positions of t03-tree-question.
 layout: fixed
 x @(0, 0); y @(0.6, 1); z @(1.2, 0)
 x -- y; y -- z; z -- x

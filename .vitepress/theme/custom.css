@@ -232,6 +232,7 @@
 .gv-edge.color3 .gv-line { stroke: var(--gv-c3); stroke-width: 3; } .gv-edge.color4 .gv-line { stroke: var(--gv-c4); stroke-width: 3; }
 .gv-edge.color5 .gv-line { stroke: var(--gv-c5); stroke-width: 3; } .gv-edge.color6 .gv-line { stroke: var(--gv-c6); stroke-width: 3; }
 .gv-edge.color7 .gv-line { stroke: var(--gv-c7); stroke-width: 3; } .gv-edge.color8 .gv-line { stroke: var(--gv-c8); stroke-width: 3; }
+.gv-edge.dual .gv-line { stroke: var(--gv-c6); stroke-width: 2.2; stroke-dasharray: 7 3; }
 
 /* semantic classes: vertices */
 .gv-vertex.highlight .gv-vertex-shape, .gv-vertex.current .gv-vertex-shape { fill: var(--gv-accent-soft); stroke: var(--gv-accent); stroke-width: 3; }
@@ -247,6 +248,7 @@
 .gv-vertex.color3 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c3) 45%, var(--gv-paper)); } .gv-vertex.color4 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c4) 45%, var(--gv-paper)); }
 .gv-vertex.color5 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c5) 45%, var(--gv-paper)); } .gv-vertex.color6 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c6) 45%, var(--gv-paper)); }
 .gv-vertex.color7 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c7) 45%, var(--gv-paper)); } .gv-vertex.color8 .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c8) 45%, var(--gv-paper)); }
+.gv-vertex.dual .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-c6) 30%, var(--gv-paper)); stroke: var(--gv-c6); stroke-dasharray: 3 2; }
 /* muted / spotlight-dimmed vertex: fade toward the paper instead of lowering opacity, so the opaque disc still hides edges behind it; class fills keep their hue */
 :is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)) .gv-vertex-shape { fill: var(--gv-paper); stroke: color-mix(in srgb, var(--gv-ink) 35%, var(--gv-paper)); }
 :is(.gv-vertex.muted, .gv-spot .gv-vertex:not(.gv-marked)).gv-dot .gv-vertex-shape { fill: color-mix(in srgb, var(--gv-ink) 35%, var(--gv-paper)); }

@@ -6,6 +6,7 @@ order: 3
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 A few graphs appear so often that they have standard names. Mind the conventions for the index

@@ -6,6 +6,7 @@ order: 4
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The proof needs two lemmas. The first one is about how chordal graphs can be cut apart.

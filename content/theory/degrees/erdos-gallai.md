@@ -6,6 +6,7 @@ order: 5
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecture closes with a second characterisation of degree sequences. It does not need to be

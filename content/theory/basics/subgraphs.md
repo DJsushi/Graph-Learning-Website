@@ -6,6 +6,7 @@ order: 6
 lectures: [t02]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:subgraph title="Subgraph, induced subgraph" defines="subgraph, induced subgraph" source="theory/2026-09-22 p3"}

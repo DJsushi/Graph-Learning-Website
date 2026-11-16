@@ -4,7 +4,8 @@ import { computed, inject, onBeforeUnmount, onMounted, ref, watch, type Ref } fr
 import katex from 'katex'
 import type { GraphData, Id, Vertex, Edge } from '@core/model'
 import type { Overlay } from '@core/algorithms/types'
-import { routeEdges, toScreen, blobPath, centroid, bridgePath, UNIT, R, type Pt } from './geometry'
+import { routeEdges, facePolygon, toScreen, blobPath, centroid, bridgePath, UNIT, R, type Pt } from './geometry'
+import { interiorPoint } from '@core/planar'
 import { labelToSpans, spansWidth, type TSpan } from './texsvg'
 import { KATEX_MACROS } from './katexMacros'
 import { tweenMs } from './settings'
@@ -137,8 +138,8 @@ const groupShapes = computed(() => [...props.graph.groups, ...(props.overlay?.gr
 }))
 
 const faceShapes = computed(() => props.graph.faces.filter(fc => !fc.outer).map(fc => {
-  const pts = fc.walk.map(v => pos.value.get(v)).filter(Boolean) as Pt[]
-  return { id: fc.id, d: pts.length ? `M${pts.map(p => `${p.x},${p.y}`).join(' L')} Z` : '', c: centroid(pts), label: fc.label, classes: fc.classes }
+  const pts = facePolygon(props.graph, fc.walk, pos.value)
+  return { id: fc.id, d: pts.length ? `M${pts.map(p => `${Math.round(p.x * 10) / 10},${Math.round(p.y * 10) / 10}`).join(' L')} Z` : '', c: interiorPoint(pts), label: fc.label, classes: fc.classes }
 }))
 const outerFaceLabels = computed(() => props.graph.faces.filter(fc => fc.outer && fc.label).map(fc => {
   const pts = fc.walk.map(v => pos.value.get(v)).filter(Boolean) as Pt[]
@@ -149,7 +150,7 @@ const outerFaceLabels = computed(() => props.graph.faces.filter(fc => fc.outer &
 // ---- viewBox ----
 const bbox = computed(() => {
   // vertices, curve apexes (edge label points) and group labels all have to fit
-  const pts = [...pos.value.values(), ...[...geoms.value.values()].filter(g => !g.loop).map(g => g.label)]
+  const pts = [...pos.value.values(), ...[...geoms.value.values()].flatMap(g => [...(g.loop ? [] : [g.label]), ...(g.extent ?? [])])]
   for (const gr of groupShapes.value) if (gr.label) pts.push({ x: gr.labelAt.x - 40, y: gr.labelAt.y - 6 }, { x: gr.labelAt.x + 40, y: gr.labelAt.y - 6 })
   return computeBox(pts, {
     hasVertices: pos.value.size > 0,

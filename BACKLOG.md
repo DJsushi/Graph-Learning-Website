@@ -57,8 +57,8 @@ Measure before optimising, except FP1.
 
 | ID | Where | Gap | When | Checked |
 |----|-------|-----|------|---------|
-| FS1 | `layout.ts` ~32 | `layout: planar` silently uses the force layout. The spec promises a crossing-free drawing. | Before planarity | yes |
-| FS2 | `dsl/parser.ts` ~241 | `dual()` throws "not supported yet". | Before planarity | yes |
+| FS1 | `layout.ts` ~32 | `layout: planar` silently uses the force layout. The spec promises a crossing-free drawing. | Before planarity | yes | 75f9a06
+| FS2 | `dsl/parser.ts` ~241 | `dual()` throws "not supported yet". | Before planarity | yes | 75f9a06
 | FS3 | `layout.ts` ~147 | `layered` is not ELK as specified: it uses BFS levels without dummy nodes, so an edge can run through a vertex or lie inside a level. | Before fast-flows | no |
 | FS4 | `layout.ts` | `tree` places vertices by leaf order and ignores non-tree edges. | Later | no |
 | FS5 | widgets | `interactive: zoom` is ignored. | Later | no |
@@ -68,7 +68,7 @@ Measure before optimising, except FP1.
 | FS9 | `GraphView.vue` | `directed-style` is ignored on loops. | Later | no |
 | FS10 | `GraphView.vue` | No `hover` event and no arrow-key navigation along adjacency, both promised by the first plan. | Later | no |
 | FS11 | `graph-core/src/predicates.ts` | Predicates the first plan listed that do not exist: `is-vertex-cover`, `is-proper-coloring`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. | Each before the chapter that needs it | partly |
-| FS12 | `graph-core/src/properties.ts` | Properties the first plan listed that do not exist: `planar`, `radius`. | Before planarity | no |
+| FS12 | `graph-core/src/properties.ts` | Properties the first plan listed that do not exist: `planar`, `radius`. | Before planarity | no | 75f9a06
 
 ## 4. Framework: drawing quality
 
@@ -80,8 +80,8 @@ Measure before optimising, except FP1.
 | FL4 | `geometry.ts` | Several loops at one vertex point in the same direction. | Later | no |
 | FL5 | `geometry.ts` | Two parallel edges on a short edge are only about 10px apart (estimate from the formula). | Later | no |
 | FL6 | `geometry.ts` | The mid-arrow on a curved directed edge is placed approximately. | Later | no |
-| FL7 | `GraphView.vue` | Faces are straight polygons even when their edges curve. | Before planarity | no |
-| FL8 | DSL | An edge cannot be routed through given points. | Before planarity | no |
+| FL7 | `GraphView.vue` | Faces are straight polygons even when their edges curve. | Before planarity | no | 75f9a06
+| FL8 | DSL | An edge cannot be routed through given points. | Before planarity | no | 75f9a06
 
 ## 5. Framework: accessibility and input
 
@@ -107,7 +107,7 @@ Measure before optimising, except FP1.
 | C9 | Matching elements across two panels: highlighting one highlights its partner. | With C8 | |
 | C10 | Free annotations on the canvas: a note, a brace, an arrow, a "this edge is missing" mark. Today only vertices, edges, groups and faces can be drawn; vertices are always circles. | Before the first page that needs one | no |
 | C11 | Non-graph visuals, each when its chapter needs it: intervals on a line (chordal; `t04-interval-graph` cannot draw its intervals today), bars for degree sequences (degrees), heap and array views (Jarník, Fredman–Tarjan), a matrix view. Tree-shaped state (recursion tree, union-find) can be a graph panel. | Before that chapter | yes |
-| C12 | Planarity: a planar layout or an authored embedding, edges through given points (FL8), faces that follow curves (FL7), the dual (FS2) drawn over the primal graph. | Before planarity | |
+| C12 | Planarity: a planar layout or an authored embedding, edges through given points (FL8), faces that follow curves (FL7), the dual (FS2) drawn over the primal graph. | Before planarity | | 75f9a06
 | C13 | Colouring: an exercise task where the reader assigns colours to vertices, and `is-proper-coloring`. Today the tasks are `select-*`, `build`, `simulate`, `answer`. | Before colouring | yes |
 | C14 | Matchings: generators for augmenting-path bipartite matching, the Hungarian algorithm and Edmonds' blossom algorithm; `is-perfect-matching`. Contraction, badges and the `matched` class exist. | Before matchings | |
 | C15 | `simulate` for more algorithms: only `bfs`, `kruskal` and `jarnik` emit the action the reader must reproduce. | Per chapter | no |

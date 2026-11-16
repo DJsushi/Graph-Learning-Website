@@ -6,6 +6,7 @@ order: 2
 lectures: [t02]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 The relation "$u$ and $v$ are connected by a [[def:walk|walk]]" on $V(G)$ is an **equivalence relation**:

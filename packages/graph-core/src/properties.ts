@@ -3,6 +3,7 @@ import { GraphIndex } from './model'
 import * as A from './analysis'
 import { maxFlowValue } from './algorithms/flow'
 import { globalMinCut } from './algorithms/cuts'
+import { isPlanar } from './planar'
 
 export interface PropertyDef {
   id: string
@@ -29,6 +30,8 @@ const defs: PropertyDef[] = [
   { id: 'has-cycle', name: 'has a cycle', compute: ix => yesno(!A.isAcyclic(ix)) },
   { id: 'girth', name: 'girth', compute: ix => inf(A.girth(ix)) },
   { id: 'diameter', name: 'diameter', compute: ix => inf(A.diameter(ix)) },
+  { id: 'radius', name: 'radius', compute: ix => inf(A.radius(ix)) },
+  { id: 'planar', name: 'planar', compute: ix => yesno(isPlanar(ix.g)) },
   { id: 'is-simple', name: 'simple', compute: ix => yesno(A.isSimple(ix.g)) },
   {
     id: 'is-regular', name: 'regular', compute: ix => {

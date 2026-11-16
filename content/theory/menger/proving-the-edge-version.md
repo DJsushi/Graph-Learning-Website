@@ -8,6 +8,7 @@ goal: Check whether a set of arcs is a d-flow, and find the edge-disjoint paths 
 needs: [theory/menger/mengers-theorem]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecturer drew this picture next to the definition below. All its arcs belong to $F$. Count,
@@ -222,7 +223,7 @@ arcs leaving the set of vertices it can still reach form a smallest edge cut.
 
 ```graph id=t05-augmenting-player widget=player
 caption: Ford–Fulkerson with all capacities 1 finds a maximum d-flow and, at the end, the cut $D$ leaving the set $R$ of reachable vertices.
-intent: Connect Menger B with the flow algorithm of the algorithms course. Unit capacities.
+intent: Connect Menger B with the flow algorithm of the algorithms course. Unit capacities. A separate example, not the lecture's graph.
 type: directed
 layout: layered
 algo: ford-fulkerson

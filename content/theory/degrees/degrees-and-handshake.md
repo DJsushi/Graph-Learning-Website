@@ -6,6 +6,7 @@ order: 1
 lectures: [t01]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:degree title="Degree" defines="degree, d_G(v), isolated vertex" source="theory/2026-09-15 p5"}

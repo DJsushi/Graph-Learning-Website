@@ -6,6 +6,7 @@ order: 5
 lectures: [t03]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 Recall that a walk may repeat vertices and edges, and a closed walk returns to its start

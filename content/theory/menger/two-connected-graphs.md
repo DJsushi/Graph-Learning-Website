@@ -6,6 +6,7 @@ order: 9
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: theorem {#thm:two-connected-cycles title="2-connected graphs and cycles" source="theory/2026-10-13 p3"}

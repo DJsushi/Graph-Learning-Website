@@ -6,6 +6,7 @@ order: 3
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:st-cut title="s–t paths and cuts" defines="s-t path, s-t cut, s-t edge cut, internally disjoint, edge-disjoint" source="theory/2026-10-13 p1"}

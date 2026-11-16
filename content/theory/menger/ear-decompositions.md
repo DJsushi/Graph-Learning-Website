@@ -6,6 +6,7 @@ order: 10
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: theorem {#thm:ear-decomposition title="Ear decomposition" defines="ear, ear decomposition" source="theory/2026-10-13 p3–4"}

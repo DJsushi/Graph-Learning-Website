@@ -63,6 +63,16 @@
   intro: Vertex and edge connectivity, cut vertices and bridges, Menger's theorem in its variants, 2-connected graphs and ear decompositions.
   ids: [def:k-connected, def:st-cut, thm:menger, thm:menger-directed, def:d-flow, thm:total-menger,
     thm:two-connected-cycles, thm:ear-decomposition]
+- slug: planarity
+  course: theory
+  title: Planar graphs
+  intro: Drawings in the plane, faces, the geometric dual, Euler's formula and Kuratowski's theorem.
+  ids: [def:planar-drawing, def:planar-graph, lem:polygonal-drawing, def:face, def:plane-graph, def:geometric-dual, thm:euler-formula, prop:k5-not-planar, cor:planar-small-degree, def:subdivision, thm:kuratowski, thm:contractible-edge]
+- slug: colouring
+  course: theory
+  title: Graph colouring
+  intro: Proper colourings and the chromatic number, two-colourable graphs, 3-colouring and SAT, bounds and Mycielski graphs.
+  ids: []
 - slug: flows
   course: algorithms
   title: Flows and cuts

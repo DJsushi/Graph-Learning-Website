@@ -6,6 +6,7 @@ order: 3
 lectures: [t04]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: definition {#def:simplicial title="Simplicial vertex" defines="simplicial vertex" source="theory/2026-10-06 p1"}

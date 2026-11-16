@@ -8,6 +8,7 @@ goal: Describe loops, parallel edges and one-way edges with a map that tells eve
 needs: [theory/basics/graphs]
 stage: taught
 status: reviewed
+audited: 2026-11-15
 ---
 
 The lecture drew the picture below. Some of its edges have no place in a

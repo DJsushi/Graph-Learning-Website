@@ -6,6 +6,7 @@ order: 4
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: theorem {#thm:menger title="Menger's theorem (undirected, vertex and edge versions)" source="theory/2026-10-13 p2"}

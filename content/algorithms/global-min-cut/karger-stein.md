@@ -173,7 +173,7 @@ The proof counts the levels of the recursion tree and shows that every level cos
 
 :::: walkthrough {for=prop:fast-mincut-time}
 ```graph id=a03-fm-levels widget=stepper
-caption: The top three levels of the recursion tree of FASTMINCUT on a graph with $n = 1000$ vertices: each vertex is one recursive call, and the edges go to the two calls it makes. Step 1 thickens the leftmost branch, step 2 fills its three calls, step 3 fills each level in its own way, steps 4 and 6 ring the four calls of the last level, step 5 rings one of them, step 7 thickens all edges.
+caption: The top three levels of the recursion tree of FASTMINCUT on a graph with $n = 1000$ vertices: each vertex is one recursive call, and the edges go to the two calls it makes. Step 1 thickens the leftmost branch, step 2 fills its three calls, step 3 fills each level in its own way, steps 4 and 6 ring the four calls of the bottom row, step 5 rings one of them, step 7 adds below them four calls of the last level (the dashed edges stand for the levels in between) and makes them bold, step 8 thickens all edges.
 intent: Proof walkthrough of the running time. New (algorithms/03 p47 has no figure); the sizes 1000, 709, 503 are those of the example in the intuition of the algorithm.
 layout: fixed
 r @(1.5, 0.6); a @(0.5, 0); b @(2.5, 0); c @(0, -0.6); d @(1, -0.6); e @(2, -0.6); f @(3, -0.6)
@@ -197,8 +197,13 @@ step: The cost of one call.
 unclass current: d e f
 step: The cost of one level.
 class current: d e f
-step: The total cost.
+step: The base cases at the bottom.
 unclass current: c d e f
+1 @(0, -1.2); 2 @(1, -1.2); 3 @(2, -1.2); 4 @(3, -1.2)
+c -- 1 [id=c1]; d -- 2 [id=d2]; e -- 3 [id=e3]; f -- 4 [id=f4]
+class dashed: @c1 @d2 @e3 @f4
+class bold: 1 2 3 4
+step: The total cost.
 class path: @ra @rb @ac @ad @be @bf
 ```
 
@@ -228,7 +233,11 @@ Level $i$ has $2^i$ calls of this cost, so the level costs $2^i \cdot \O(n^2/2^i
 :::
 
 ::: step
-There are logarithmically many levels (step 2), each costing $\O(n^2)$, so the total time is $\O(n^2 \log n)$. Here: 19 levels of about a million steps each.
+The calls at the bottom, below the dashed edges, are the base cases: 6 vertices, MINIMUMCUT, constant time each. There are $2^L$ of them for $L$ levels. Their size $n/2^{L/2}$ is constant, so $2^L$ is a constant times $n^2$. They cost $\O(n^2)$ in total, like one level, and the bound stands. Here: 524 288 calls, against $n^2 = 1\,000\,000$.
+:::
+
+::: step
+There are logarithmically many levels (step 2), each costing $\O(n^2)$, the last one too (step 7), so the total time is $\O(n^2 \log n)$. Here: 19 levels of about a million steps each.
 :::
 
 ::::
@@ -244,8 +253,9 @@ The recursion tree doubles in width while the problem area $n^2$ halves, so ever
 is the "balanced" case of the master theorem, like merge sort's $T(n) = 2\,T(n/2) + \O(n)$.
 :::
 
+<!-- REVIEW: the lecture says "returns C"; with ties FASTMINCUT can miss a fixed C for ever (C_7, tie rule toward the side without vertex 1), so P(n) bounds the survival of C, which makes the run return a minimum cut -->
 ::: theorem {#thm:fast-mincut-probability title="Success probability of FASTMINCUT" source="algorithms/03 p48"}
-Let $P(n)$ be a lower bound on the probability that $\textsf{FASTMINCUT}$ returns a fixed minimum cut $C$ of a graph with $n$ vertices. For $n \ge 7$:
+Let $P(n)$ be a lower bound on the probability that a fixed minimum cut $C$ of a graph with $n$ vertices survives every contraction on some root–leaf path of the recursion of $\textsf{FASTMINCUT}$ (then the run returns a minimum cut). For $n \ge 7$:
 $$P(n) \ge 1 - \left(1 - \frac{1}{2} P\left(\left\lceil 1 + \frac{n}{\sqrt{2}} \right\rceil\right)\right)^2,$$
 and the solution of this recurrence is $P(n) = \Omega(1 / \log n)$.
 :::
@@ -254,22 +264,28 @@ Part 1, the recurrence: we multiply the chances of the two events that make one 
 
 :::: walkthrough {for=thm:fast-mincut-probability}
 ```graph id=a03-fm-branch widget=stepper
-caption: One call of FASTMINCUT on a graph $G$ with $n = 7$ vertices. Each edge from $G$ is a contraction to $t = 6$ vertices, giving $H_1$ and $H_2$; each edge below is a recursive call returning the cut $C_1$ or $C_2$. Step 1 thickens branch 1, steps 2 and 3 mark one edge of it, step 4 makes it bold, step 5 thickens branch 2, step 6 fills $G$.
+caption: One call of FASTMINCUT on a graph $G$ with $n = 7$ vertices. Each edge from $G$ is a contraction to $t = 6$ vertices, giving $H_1$ and $H_2$; each edge below is a recursive call returning the cut $C_1$ or $C_2$. Step 1 rings $G$, step 2 thickens branch 1, steps 3 and 4 mark one edge of it, step 5 rings the cut $C_1$, step 6 makes the branch bold, step 7 thickens branch 2, step 8 fills $G$.
 intent: Proof walkthrough, part 1 of the theorem (the recurrence). New (algorithms/03 p48 has no figure); n = 7 is the smallest size for which the recursion makes a call.
 layout: fixed
 G @(1.5, 0.6); H1 @(0.5, 0); H2 @(2.5, 0); C1 @(0.5, -0.6); C2 @(2.5, -0.6)
 G -- H1 [id=k1]; H1 -- C1 [id=f1]; G -- H2 [id=k2]; H2 -- C2 [id=f2]
 mark keep: @k1
 mark call: @f1
+step: $C$ survives in a call.
+class current: G
 step: A branch has two events.
+unclass current: G
 class path: @k1 @f1
 step: The contraction keeps $C$.
 class highlight: @k1
-step: The recursive call returns $C$.
+step: $C$ survives in the recursive call.
 unclass highlight: @k1
 class highlight: @f1
-step: A branch fails with probability at most $1 - P(t)/2$.
+step: Survival gives a minimum cut.
 unclass highlight: @f1
+class current: C1
+step: A branch fails with probability at most $1 - P(t)/2$.
+unclass current: C1
 class bold: @k1 @f1
 step: The second branch is independent.
 unclass path: @k1 @f1
@@ -280,7 +296,11 @@ class color1: G
 
 
 ::: step
-Fix a minimum cut $C$ of $G$. A branch is one line of [[alg:fast-mincut|FASTMINCUT]]: contract to $t$ vertices, then call the algorithm on the result. It returns $C$ when two events happen: the contraction keeps $C$, and the recursive call finds it. Here: [[fig:a03-fm-branch#keep|the contraction]] from $G$ to $H_1$, then [[fig:a03-fm-branch#call|the call]] returning $C_1$.
+Fix a minimum cut $C$ of $G$. We say $C$ survives in a call if some path from it down to a leaf contracts no edge of $C$. A leaf is a call on at most 6 vertices; it contracts nothing. The theorem bounds the chance of survival in a call on $n$ vertices by $P(n)$. Here: call on $G$.
+:::
+
+::: step
+A branch is one line of [[alg:fast-mincut|FASTMINCUT]]: contract to $t$ vertices, then call the algorithm on the result. $C$ survives in the branch when two events happen: the contraction keeps $C$, and $C$ survives in the call on the result. Here: [[fig:a03-fm-branch#keep|the contraction]] from $G$ to $H_1$, then [[fig:a03-fm-branch#call|the call]] returning $C_1$.
 :::
 
 ::: step
@@ -288,11 +308,15 @@ The contraction keeps $C$ with probability at least a half, by [[lem:contract-t]
 :::
 
 ::: step
-Suppose the contraction kept $C$. Then $C$ is still a cut of $H_1$ with the same number of edges, and no cut of $H_1$ is smaller ([[obs:identification-cuts]]). So $C$ is a minimum cut of $H_1$, which has $t$ vertices, and the call returns it with probability at least $P(t)$. Here: $H_1$ has 6 vertices, solved exactly, so this is 1.
+Suppose the contraction kept $C$. Then $C$ is still a cut of $H_1$ with the same capacity, and none is smaller ([[obs:identification-cuts]]). So $C$ is a minimum cut of $H_1$, which has $t$ vertices, and survives in the call on it with probability at least $P(t)$. Here: $H_1$ has 6 vertices, a leaf, so the probability is 1.
 :::
 
 ::: step
-The branch returns $C$ if the first event happens and then the second, which uses its own random choices. So it succeeds with probability at least $P(t)/2$, the product of the two bounds, and fails with probability at most $1 - P(t)/2$. Here: it fails with probability at most a half.
+Survival suffices. If $C$ survives, the leaf on that path still has $C$ as a cut, so its MINIMUMCUT returns a cut of capacity at most that of $C$. Each smaller of two cuts above keeps that bound. So the call returns a minimum cut, perhaps another one of the same capacity. Here: $C_1$ may differ from $C$.
+:::
+
+::: step
+$C$ survives in the branch if the first event happens and then the second, which uses its own random choices. So this has probability at least $P(t)/2$, the product of the two bounds, and the branch fails with probability at most $1 - P(t)/2$. Here: it fails with probability at most a half.
 :::
 
 ::: step
@@ -300,7 +324,7 @@ The second branch is the same, with the same bound. The two calls use independen
 :::
 
 ::: step
-If one branch returns $C$, the smaller of $C_1$ and $C_2$ is a minimum cut, so the call succeeds unless both branches fail. So $P(n) \ge 1 - (1 - P(t)/2)^2$, where $t = \lceil 1 + n/\sqrt{2} \rceil$ as in the algorithm. This is the recurrence. Here: for 7 vertices the bound is 3/4.
+If $C$ survives in one branch, it survives in the call on $G$: the path of that branch extends to a path from $G$. So the call fails only if both branches fail, and $P(n) \ge 1 - (1 - P(t)/2)^2$ with $t$ as in the algorithm: the recurrence. Here: for 7 vertices the bound is 3/4.
 :::
 
 ::::
@@ -342,7 +366,7 @@ class highlight: @e01 @e12 @e23 @e34 @e45
 
 
 ::: step
-Write $x$ for $P(t)$. Expanding the square gives $1 - (1 - x/2)^2 = x - x^2/4$. Call the right side $g$ of $x$. So the success probability at one level is $g$ of the one below. Here: [[fig:a03-fm-depth#link|every edge]] is one such step.
+Write $x$ for $P(t)$. Expanding the square gives $1 - (1 - x/2)^2 = x - x^2/4$. Call the right side $g$ of $x$. So the survival probability at one level is $g$ of the one below. Here: [[fig:a03-fm-depth#link|every edge]] is one such step.
 :::
 
 ::: step
@@ -350,7 +374,7 @@ The function $g$ is increasing on the interval from 0 to 1: its derivative $1 - 
 :::
 
 ::: step
-A graph with at most 6 vertices is solved exactly by MINIMUMCUT, so it returns $C$ with probability 1. These are the graphs at depth 0. Let $p_d$ be the success probability at depth $d$. Then $p_0 = 1$. Here: [[fig:a03-fm-depth#bottom|depth 0]]. The recurrence applies from depth 1 on, as it needs $n$ at least 7.
+A graph with at most 6 vertices is a leaf: it contracts nothing, so $C$ survives with probability 1. These are the graphs at depth 0. Let $p_d$ be the survival probability at depth $d$. Then $p_0 = 1$. Here: [[fig:a03-fm-depth#bottom|depth 0]]. The recurrence applies from depth 1 on, as it needs $n$ at least 7.
 :::
 
 ::: step
@@ -374,19 +398,20 @@ Multiply both sides by the positive number 4 times the square of $d+1$ times $d+
 :::
 
 ::: step
-The depth $d$ of the recursion for $n$ vertices is $\O(\log n)$ ([[prop:fast-mincut-time]]), and the success probability is at least one over $d+1$. So it is $\Omega(1/\log n)$. Here: 1000 vertices have 19 levels, so the bound is 1/20.
+The depth $d$ of the recursion for $n$ vertices is $\O(\log n)$ ([[prop:fast-mincut-time]]), and the survival probability is at least one over $d+1$. So it is $\Omega(1/\log n)$. Here: 1000 vertices have 19 levels, so the bound is 1/20.
 :::
 
 ::::
 
+<!-- REVIEW: "returns C" replaced by "C survives": with ties a run may always return another minimum cut of the same capacity and never C -->
 ::: proof
-A branch returns $C$ if $\textsf{CONTRACT}(G, t)$ keeps $C$ (probability at least $1/2$ by [[lem:contract-t]]) and the recursive call on the
-contracted graph, of size $t$, returns $C$ (probability at least $P(t)$). So a branch fails with probability at most $1 - \frac{1}{2}P(t)$, and the
+$C$ survives in a branch if $\textsf{CONTRACT}(G, t)$ keeps $C$ (probability at least $1/2$ by [[lem:contract-t]]) and $C$ survives in the recursive call on the
+contracted graph, of size $t$ (probability at least $P(t)$). So a branch fails with probability at most $1 - \frac{1}{2}P(t)$, and the
 two independent branches both fail with probability at most $(1 - \frac{1}{2}P(t))^2$. This gives the recurrence.
 
 <!-- REVIEW: the lecture only says "solving this recurrence we get P(n) = Ω(1/log n)"; the induction below fills this in. -->
 For the solution, write $x = P(t)$; the recurrence reads $P(n) \ge 1 - (1 - x/2)^2 = x - x^2/4$. The function $g(x) = x - x^2/4$ is increasing on
-$[0, 1]$. Number the recursion levels from the bottom: graphs with at most $6$ vertices are solved exactly, $P = 1$ at depth $0$. We show
+$[0, 1]$. Number the recursion levels from the bottom: graphs with at most $6$ vertices contract nothing, so $C$ survives, $P = 1$ at depth $0$. We show
 $p_d \ge 1/(d + 1)$ for the success probability $p_d$ at depth $d$, by induction: $p_{d+1} \ge g(p_d) \ge g(1/(d+1))$, and
 $$g\!\left(\frac{1}{d+1}\right) = \frac{1}{d+1} - \frac{1}{4(d+1)^2} \ge \frac{1}{d+2} \iff \frac{1}{(d+1)(d+2)} \ge \frac{1}{4(d+1)^2} \iff 4(d+1) \ge d+2,$$
 which holds. The depth of the recursion is $\O(\log n)$ ([[prop:fast-mincut-time]]), so $P(n) = \Omega(1/\log n)$.
@@ -398,15 +423,16 @@ up. The loss per level is only quadratic in the current probability, so after $\
 $1/\log n$, much more than Karger's $2/n^2$. Example: at depth $1$, $p_1 \ge 1 - 1/4 = 3/4$, at depth $2$, $p_2 \ge 3/4 - 9/64 \approx 0.61$.
 :::
 
+<!-- REVIEW: the lecture says "a specific minimum cut C"; with ties repeated FASTMINCUT can miss a fixed C for ever, so the statement and proof claim a minimum cut -->
 ::: theorem {#thm:karger-stein title="Karger–Stein" source="algorithms/03 p48"}
-There is an algorithm which finds a specific minimum cut $C$ [[def:whp|with high probability]] in time $\O(n^2 \log^3 n)$.
+There is an algorithm which finds a minimum cut [[def:whp|with high probability]] in time $\O(n^2 \log^3 n)$.
 :::
 
 The proof repeats an experiment with success probability at least $P(n)$ until a success is very likely.
 
 :::: walkthrough {for=thm:karger-stein}
 ```graph id=a03-ks-runs widget=stepper
-caption: The repetition for $n = 1000$ and $P(n) = 1/20$: the vertex $B$ keeps the best cut of the runs; of the $r = 139$ runs, six are drawn. Step 1 fills all runs, step 2 rings one, step 3 the other five, step 4 fades the edges, step 5 fills $B$, steps 6 and 7 thicken all edges.
+caption: The repetition for $n = 1000$ and $P(n) = 1/20$: the vertex $B$ keeps the best cut of the runs; of the $r = 139$ runs, six are drawn. Step 1 fills all runs, step 2 rings one, step 3 the other five, step 4 fades the edges, step 5 fills $B$, step 6 rings $B$, steps 7 and 8 thicken all edges.
 intent: Proof walkthrough of the theorem. New (algorithms/03 p48 has no figure); the size n = 1000 is that of the intuitions, and P = 1/20 is the bound of the induction at 19 levels.
 layout: fixed
 1 @(0, 0.65); 2 @(1.5, 0.65); 3 @(3, 0.65); 4 @(0, -0.65); 5 @(1.5, -0.65); 6 @(3, -0.65); B @(1.5, 0)
@@ -415,9 +441,9 @@ mark runs: 1 2 3 4 5 6
 mark one: 1
 step: Repeat the algorithm $r$ times.
 class color1: 1 2 3 4 5 6
-step: One run misses $C$.
+step: One run fails.
 class rejected: 1
-step: All runs miss $C$.
+step: All runs fail.
 class rejected: 2 3 4 5 6
 step: A convenient upper bound.
 unclass rejected: 1 2 3 4 5 6
@@ -425,7 +451,10 @@ class muted: @b1 @b2 @b3 @b4 @b5 @b6
 step: The choice of $r$.
 unclass muted: @b1 @b2 @b3 @b4 @b5 @b6
 class highlight: B
+step: The best cut is a minimum cut.
+class current: B
 step: The number of runs.
+unclass current: B
 class bold: @b1 @b2 @b3 @b4 @b5 @b6
 step: The running time.
 class path: @b1 @b2 @b3 @b4 @b5 @b6
@@ -437,23 +466,27 @@ Run [[alg:fast-mincut|FASTMINCUT]] $r = \lceil \log n / P(n) \rceil$ times, with
 :::
 
 ::: step
-One run misses $C$ with probability at most $1 - P(n)$, because $P(n)$ is a lower bound on the probability that a run returns $C$. Here: [[fig:a03-ks-runs#one|a run]] misses $C$ with probability at most 19/20.
+Fix a minimum cut $C$. A run fails when $C$ does not survive in it. $P(n)$ is a lower bound on the probability that $C$ survives, so one run fails with probability at most $1 - P(n)$. Here: [[fig:a03-ks-runs#one|a run]] fails with probability at most 19/20.
 :::
 
 ::: step
-All $r$ runs miss $C$ only if each one does. The runs are independent, so the probabilities multiply: all miss with probability at most $(1 - P(n))^r$. Here: 19/20 to the power 139 is about 0.0008.
+All $r$ runs fail only if each one does. The runs are independent, so the probabilities multiply: all fail with probability at most $(1 - P(n))^r$. Here: 19/20 to the power 139 is about 0.0008.
 :::
 
 ::: step
-For every real $x$ we have $1 - x \le e^{-x}$, since the curve of the exponential lies above its tangent line at 0. Taking $x$ as the success bound and raising both sides to the power $r$ (both sides are non-negative) gives $(1 - P(n))^r \le e^{-rP(n)}$. Here: $e$ to the minus 6.95 is about 0.00096.
+For every real $x$ we have $1 - x \le e^{-x}$, since the curve of the exponential lies above its tangent line at 0. Taking $x$ as the survival bound and raising both sides to the power $r$ (both sides are non-negative) gives $(1 - P(n))^r \le e^{-rP(n)}$. Here: $e$ to the minus 6.95 is about 0.00096.
 :::
 
 ::: step
-By the choice of $r$, we get $rP(n) \ge \log n$. Hence all runs miss $C$ with probability at most $e^{-\log n} = 1/n$, and some run finds it [[def:whp|with high probability]]. Here: 6.95 is at least 6.91, so the bound is 1/1000.
+By the choice of $r$, we get $rP(n) \ge \log n$. Hence all runs fail with probability at most $e^{-\log n} = 1/n$, so $C$ survives in some run [[def:whp|with high probability]]. Here: 6.95 is at least 6.91, so the bound is 1/1000.
 :::
 
 ::: step
-By [[thm:fast-mincut-probability]] the success probability is $\Omega(1/\log n)$, so its inverse is logarithmic in $n$. Then $r$, which is the logarithm times that inverse (rounded up), is $\O(\log^2 n)$. Here: the inverse is at most 20, and $r$ is 139.
+If $C$ survives in a run, the leaf on its path has $C$ as a cut, so MINIMUMCUT there returns a cut of capacity at most that of $C$; each smaller of two cuts above keeps that. So the run returns a minimum cut, and so does the best cut kept: $C$ or another one. Here: $B$ holds one.
+:::
+
+::: step
+By [[thm:fast-mincut-probability]] the survival probability is $\Omega(1/\log n)$, so its inverse is logarithmic in $n$. Then $r$, which is the logarithm times that inverse (rounded up), is $\O(\log^2 n)$. Here: the inverse is at most 20, and $r$ is 139.
 :::
 
 ::: step
@@ -463,8 +496,8 @@ One run takes time $\O(n^2 \log n)$ by [[prop:fast-mincut-time]]. So $r$ runs ta
 ::::
 
 ::: proof
-Run $\textsf{FASTMINCUT}$ $r = \lceil \log n / P(n) \rceil = \O(\log^2 n)$ times independently and keep the best cut. All runs miss $C$ with
-probability at most $(1 - P(n))^r \le e^{-r P(n)} \le e^{-\log n} = 1/n$. The time is $r \cdot \O(n^2 \log n) = \O(n^2 \log^3 n)$ by
+Run $\textsf{FASTMINCUT}$ $r = \lceil \log n / P(n) \rceil = \O(\log^2 n)$ times independently and keep the best cut. A fixed minimum cut $C$ survives in none of the runs with
+probability at most $(1 - P(n))^r \le e^{-r P(n)} \le e^{-\log n} = 1/n$, and a run in which it survives returns a minimum cut. The time is $r \cdot \O(n^2 \log n) = \O(n^2 \log^3 n)$ by
 [[prop:fast-mincut-time]].
 :::
 
@@ -482,7 +515,7 @@ The proof makes the failure probability of one cut so small that a union bound o
 
 :::: walkthrough {for=thm:karger-stein-all}
 ```graph id=a03-ks-all widget=stepper
-caption: The cycle $C_6$, whose minimum cuts are the 15 pairs of its edges. Step 1 dashes the pair $12$, $45$ as the cut $C$. Steps 2 to 5 mark $C$ again (thick, then emphasised, then ringed, then bold). Step 6 dashes two more pairs, step 7 fills all vertices, step 8 thickens all edges, step 9 makes them bold, step 10 fills the vertices.
+caption: The cycle $C_6$, whose minimum cuts are the 15 pairs of its edges. Step 1 dashes the pair $12$, $45$ as the cut $C$. Steps 2 to 6 mark $C$ again, each time in a new way. Step 7 colours two more pairs, step 8 fills all vertices, step 9 thickens all edges, step 10 makes them bold, step 11 fills the vertices.
 intent: Proof walkthrough of the theorem. New (algorithms/03 p49 has no figure); the cycle is the tight example for the number of minimum cuts, as in exr:a03-cycle-min-cuts.
 layout: fixed
 1 @(0.6, 0.65); 2 @(1.8, 0.65); 3 @(2.4, 0); 4 @(1.8, -0.65); 5 @(0.6, -0.65); 6 @(0, 0)
@@ -491,14 +524,16 @@ mark C: @e12 @e45
 mark others: @e23 @e56 @e34 @e61
 step: Run the algorithm $r$ times.
 class cut: @e12 @e45
-step: One run misses $C$.
+step: A run in which $C$ survives lists $C$.
 class bold: @e12 @e45
-step: All runs miss $C$.
+step: One run fails to list $C$.
 class highlight: @e12 @e45
-step: A convenient upper bound.
+step: All runs fail.
 class current: @e12 @e45
-step: The choice of $r$.
+step: A convenient upper bound.
 class path: @e12 @e45
+step: The choice of $r$.
+class color3: @e12 @e45
 step: The number of minimum cuts.
 class color1: @e23 @e56
 class color2: @e34 @e61
@@ -515,23 +550,27 @@ class highlight: 1 2 3 4 5 6
 
 
 ::: step
-By [[thm:fast-mincut-probability]] there is a constant $a$, greater than 0, with $P(n) \ge a/\log n$. We run [[alg:fast-mincut|FASTMINCUT]] $r = \lceil 4 \log^2 n / a \rceil$ times, independently, and collect the cuts of smallest capacity seen. Here: in the cycle, [[fig:a03-ks-all#C|the pair 12, 45]] is one minimum cut $C$.
+By [[thm:fast-mincut-probability]] there is a positive constant $a$ with $P(n) \ge a/\log n$. We run [[alg:fast-mincut|FASTMINCUT]] $r = \lceil 4 \log^2 n / a \rceil$ times, independently. A leaf reports all its minimum cuts; each call keeps all cuts of the smallest capacity it gets. Here: in the cycle, [[fig:a03-ks-all#C|the pair 12, 45]] is one minimum cut $C$.
 :::
 
 ::: step
-One run misses the fixed minimum cut $C$ with probability at most $1 - P(n)$, since $P(n)$ is a lower bound on the probability that a run returns $C$. Here: $C$ is the pair of dashed edges.
+Suppose $C$ survives in a run. The leaf on its path has $C$ as a cut, of capacity $c(C)$; none is smaller, as it would be a smaller cut of $G$. So the leaf reports $C$, and no call above drops it: each keeps all cuts of smallest capacity. Here: the run lists the pair 12, 45.
 :::
 
 ::: step
-All $r$ runs miss $C$ only if every run does. The runs are independent, so the probabilities multiply: all miss with probability at most $(1 - P(n))^r$. Here: this is the chance that no run returns the pair 12, 45.
+One run fails to list $C$ only if $C$ does not survive in it. The bound $P(n)$ is a lower bound on survival, so this has probability at most $1 - P(n)$. Here: $C$ is the pair 12, 45.
 :::
 
 ::: step
-For every real $x$ we have $1 - x \le e^{-x}$, because the curve of the exponential lies above its tangent line at 0. Taking $x$ as the success bound, we get $(1 - P(n))^r \le e^{-rP(n)}$.
+All $r$ runs fail to list $C$ only if every run does. The runs are independent, so the probabilities multiply: all fail with probability at most $(1 - P(n))^r$. Here: this is the chance that no run lists the pair 12, 45.
 :::
 
 ::: step
-The bounds on $r$ and on the success probability multiply to $rP(n) \ge 4 \log n$: the factor $a$ and the logarithm cancel. So $e^{-rP(n)} \le e^{-4\log n} = 1/n^4$. Here: for $n$ equal to 6 the bound is 1/1296 for each cut.
+For every real $x$ we have $1 - x \le e^{-x}$, because the curve of the exponential lies above its tangent line at 0. Taking $x$ as the survival bound, we get $(1 - P(n))^r \le e^{-rP(n)}$.
+:::
+
+::: step
+The bounds on $r$ and on the survival probability multiply to $rP(n) \ge 4 \log n$: the factor $a$ and the logarithm cancel. So $e^{-rP(n)} \le e^{-4\log n} = 1/n^4$. Here: for $n$ equal to 6 the bound is 1/1296 for each cut.
 :::
 
 ::: step
@@ -543,27 +582,30 @@ The union bound: the probability that at least one of several events happens is 
 :::
 
 ::: step
-If no minimum cut is missed, the list is exactly the set of minimum cuts: no cut is smaller than a minimum cut, so the smallest capacity seen is the minimum, and all cuts of that capacity were found.
+If no minimum cut is missed, every entry of the list is a minimum cut, and every minimum cut appears at least once: no cut is smaller than a minimum cut, so the smallest capacity seen is the minimum, and all cuts of that capacity were found.
 :::
 
 ::: step
-The number of runs $r$ is $\O(\log^2 n)$, since $a$ is a constant. Each run takes time $\O(n^2 \log n)$ by [[prop:fast-mincut-time]]. Here: for a fixed $a$ the number of runs grows like the square of the logarithm.
+The number of runs $r$ is $\O(\log^2 n)$, since $a$ is a constant. Without the lists, each run takes time $\O(n^2 \log n)$ by [[prop:fast-mincut-time]]. A run makes $\O(n^2)$ calls, so constant time per call for the lists keeps this bound. Here: for 1000 vertices a run makes about a million calls, 1 048 575.
 :::
 
 ::: step
-The runs are made one after another, so their times add: $r$ runs of time $\O(n^2 \log n)$ each take $\O(n^2 \log^3 n)$ in total. Comparing the cuts found costs less than the runs.
+Store each cut as a pointer to its leaf plus a split of that leaf's at most 6 vertices. Each call keeps its list as a linked list headed by its capacity, so keeping the smaller list, or joining both on a tie, takes constant time. The times of the $r$ runs add up to $\O(n^2 \log^3 n)$.
 :::
 
 ::::
 
+<!-- REVIEW: plain FASTMINCUT returns one cut and with ties can miss a fixed C for ever; the run must list cuts, and the listing must not cost more than prop:fast-mincut-time -->
 ::: proof
-The probability of missing a specific minimum cut in one run of $\textsf{FASTMINCUT}$ is at most $1 - P(n)$ with $P(n) \ge a/\log n$ for some
+Let each leaf of $\textsf{FASTMINCUT}$ list all its minimum cuts, and each call keep all cuts of the smallest capacity it gets; then a run lists every
+minimum cut that survives in it. The probability of missing a specific minimum cut in one run is at most $1 - P(n)$ with $P(n) \ge a/\log n$ for some
 constant $a > 0$ ([[thm:fast-mincut-probability]]). Run it $r = \lceil 4 \log^2 n / a \rceil = \O(\log^2 n)$ times and collect all cuts of the minimum
 [[def:flow-network|capacity]] found. A specific minimum cut $C$ is missed with probability at most
 $$(1 - P(n))^{r} \le e^{-r a / \log n} \le e^{-4 \log n} = \frac{1}{n^4}.$$
 There are at most $\binom{n}{2}$ minimum cuts ([[cor:number-min-cuts]]), so by the union bound
 $$\Pr[\text{missing any minimum cut}] \le \binom{n}{2} \cdot \frac{1}{n^4} = \O\!\left(\frac{1}{n^2}\right).$$
-The running time is $\O(\log^2 n) \cdot \O(n^2 \log n) = \O(n^2 \log^3 n)$.
+Store each cut as a pointer to its leaf plus a split of that leaf's at most $6$ vertices; each call keeps its list as a linked list headed by its
+capacity, so keeping the smaller list, or joining both on a tie, takes constant time. The running time is $\O(\log^2 n) \cdot \O(n^2 \log n) = \O(n^2 \log^3 n)$.
 :::
 
 ::: intuition

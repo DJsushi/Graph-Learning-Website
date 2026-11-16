@@ -1,6 +1,7 @@
 // Parser for the graph DSL (GRAPH_DSL.md). Line based; produces one GraphData per panel plus stepper frames.
 import { cloneGraph, emptyGraph, resolveRef, type Attrs, type AttrValue, type Edge, type GraphData, type Id, type Merge } from '../model'
 import * as gen from './generators'
+import { dual, embed, planarLayout } from '../planar'
 
 export interface DslMessage { line: number; message: string }
 export type Directives = Record<string, string[]>
@@ -243,8 +244,17 @@ function evalExpr(e: Expr, ctx: { current: GraphData; opts: ParseOptions; warn: 
       if (!r) throw new Error(`ref(${id}): unknown figure`)
       return cloneGraph(r)
     }
-    case 'dual':
-      throw new Error('dual(): not supported yet')
+    case 'dual': {
+      const a = e.args[0]
+      // drawn over the graph so far: pin that graph to its planar drawing first, so the dual can be placed in its faces
+      if (typeof a === 'object' && a.name === 'this' && ctx.current.vertices.some(v => !v.pinned)) {
+        if (ctx.current.vertices.some(v => v.pinned)) throw new Error('dual(this): pin every vertex or none')
+        const pos = planarLayout(ctx.current)
+        if (!pos) throw new Error('dual(this): the graph is not planar')
+        for (const v of ctx.current.vertices) { const p = pos.get(v.id)!; v.x = p.x; v.y = p.y; v.pinned = true }
+      }
+      return dual(g(0))
+    }
     default:
       throw new Error(`unknown generator "${e.name}"`)
   }
@@ -364,6 +374,10 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
     const hasUndirected = g.edges.some(e => !e.directed)
     if (g.type === 'undirected' && hasArc) err('directed edge "->" in an undirected graph (add "type: directed" or "type: mixed")')
     if (g.type === 'directed' && hasUndirected) err('undirected edge "--" in a directed graph (use "type: mixed")')
+    if (/^planar\b/.test(g.meta.layout ?? '') && g.vertices.some(v => !v.pinned)) {
+      const r = embed(g)
+      if (typeof r === 'string') err(`layout: planar: ${r}`)
+    }
     if (g.simple) {
       const seen = new Set<string>()
       for (const e of g.edges) {
@@ -413,6 +427,7 @@ export function parseGraph(source: string, info: Record<string, string> = {}, op
       if (k === 'label') e.label = String(val)
       else if (k === 'class') e.classes = mergeClasses(e.classes, String(val))
       else if (k === 'id') e.id = String(val)
+      else if (k === 'via' && !/^(\s*\(\s*[-+0-9.eE]+\s*,\s*[-+0-9.eE]+\s*\))+\s*$/.test(String(val))) throw new Error(`via="${val}": expected points like "(1,0.5) (2,1)"`)
       else e.data[k] = val
     }
   }

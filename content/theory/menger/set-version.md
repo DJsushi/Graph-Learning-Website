@@ -6,6 +6,7 @@ order: 8
 lectures: [t05]
 stage: split
 status: reviewed
+audited: 2026-11-15
 ---
 
 ::: theorem {#thm:total-menger title="Set version of Menger's theorem" aka="total Menger" source="theory/2026-10-13 p2"}
