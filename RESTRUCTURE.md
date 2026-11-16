@@ -307,7 +307,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | f4aaf87 |
 | T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | f43822f |
 | T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | f6f1d65 |
-| T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | |
+| T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | d7cdfcf |
 | T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | |
 | T6.12 | `theory/colouring/colourings.md`: k-colouring, proper colouring, chromatic number, the two facts. | writer | 2026-11-03 p1 | |
 | T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | |
@@ -610,6 +610,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - **Session 2026-11-16 ended at 14:00 (owner away until 14:30).** Done: T6.4 to T6.8, tween fix 9c54237. Next: T6.9. Remaining for planarity: T6.9 to T6.11, then T6.17 for t06 and t07, then T6.18.
 
 - T6.9 (f6f1d65): lecture t07 (the 2026-10-27 notes). Sonnet writer; the math check failed once (3 wording findings: a loop *can* bound a face of length 1, step 3 now covers length 0, "simple and without vertices of degree 1"), fixed, re-check passed. Writer's points: the board exercise fails for $K_1$, so "connected, at least one edge" was added (REVIEW comment); the board's CLAIM is a proposition here; the red octahedron drawing in the scan is partly illegible (SOURCE UNCLEAR); reading path 609 words (over the 600-word warning). Visual check open (T6.18).
+
+- T6.10 (d7cdfcf): lecture t07. Sonnet writer. The board proves only the first part (degree ≤ 5); the writer had proved the bipartite part (≤ 3) itself, removed per Scope as in T6.8: it is stated without proof, the cube stays as its example. The math check failed once (the proof block's title claimed the whole corollary); retitled "Proof of the first part", re-check passed. "Take a component" is the writer's addition. Visual check open (T6.18).
 
 ### Needs reported by writers
 
