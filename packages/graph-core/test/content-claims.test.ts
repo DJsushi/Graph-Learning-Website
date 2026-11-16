@@ -7,7 +7,7 @@ import { ALGORITHMS, collect, cutCapacity, edgeOrder, globalMinCut, gomoryHuTree
 import { GraphIndex, ends, num, type GraphData } from '../src/model'
 import { PREDICATES } from '../src/predicates'
 import * as A from '../src/analysis'
-import { interiorPoint, isPlanar } from '../src/planar'
+import { dual, interiorPoint, isPlanar } from '../src/planar'
 import { cycle, completeBipartite, complete, path as pathGraph } from '../src/dsl/generators'
 import { computeBox } from '../../graph-vue/src/viewbox'
 import { centerline, defaultBends, facePolygon, R, toScreen } from '../../graph-vue/src/geometry'
@@ -3921,5 +3921,167 @@ describe('faces page (t06)', () => {
     // same graph: same vertices and edges
     const es = (g: GraphData) => g.edges.map(e => ends(e).sort().join('')).sort()
     expect(es(out)).toEqual(es(ins))
+  })
+})
+
+describe('geometric-dual page (t07)', () => {
+  type P = { x: number; y: number }
+  const panels = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels }
+  const steps = (id: string) => panels(id)[0].steps.map(s => s.graph)
+  const shown = (g: GraphData): GraphData => ({ ...g, vertices: g.vertices.filter(v => !v.classes.includes('hidden')), edges: g.edges.filter(e => !e.classes.includes('hidden')) })
+  const isDual = (x: { classes: string[] }) => x.classes.includes('dual')
+  const primal = (g: GraphData): GraphData => ({ ...g, vertices: g.vertices.filter(v => !isDual(v)), edges: g.edges.filter(e => !isDual(e)), faces: [] })
+  const dualPart = (g: GraphData): GraphData => ({ ...g, vertices: g.vertices.filter(isDual), edges: g.edges.filter(isDual), faces: [] })
+  const lines = (g: GraphData) => {
+    const pos = new Map(g.vertices.map(v => [v.id, toScreen(v.x ?? 0, v.y ?? 0)])), b = defaultBends(g)
+    return { pos, L: g.edges.map(e => { const [u, v] = ends(e); return { id: e.id, u, v, pts: centerline(e, pos.get(u)!, pos.get(v)!, b.get(e.id) ?? 0) } }) }
+  }
+  const hit = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return undefined
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? { x: p.x + t * (q.x - p.x), y: p.y + t * (q.y - p.y) } : undefined
+  }
+  const toSeg = (c: P, p: P, q: P) => {
+    const dx = q.x - p.x, dy = q.y - p.y, t = Math.max(0, Math.min(1, ((c.x - p.x) * dx + (c.y - p.y) * dy) / (dx * dx + dy * dy || 1)))
+    return Math.hypot(p.x + t * dx - c.x, p.y + t * dy - c.y)
+  }
+  /** Each crossing of two drawn edges away from the vertices, as `id/id` (points closer than 1px count once); and edges that pass within 4px of a vertex circle that is not an end. */
+  const drawn = (g: GraphData) => {
+    const { pos, L } = lines(shown(g))
+    const crossings: string[] = [], near: string[] = []
+    L.forEach((A, i) => L.slice(i + 1).forEach(B => {
+      const pts: P[] = []
+      A.pts.slice(1).forEach((a, k) => B.pts.slice(1).forEach((c, l) => {
+        const x = hit(A.pts[k], a, B.pts[l], c)
+        if (x && ![...pos.values()].some(p => Math.hypot(p.x - x.x, p.y - x.y) < R) && !pts.some(p => Math.hypot(p.x - x.x, p.y - x.y) < 1)) pts.push(x)
+      }))
+      for (const _ of pts) crossings.push(`${A.id}/${B.id}`)
+    }))
+    for (const A of L) for (const [id, p] of pos) if (id !== A.u && id !== A.v && A.pts.slice(1).some((a, k) => toSeg(p, A.pts[k], a) < R + 4)) near.push(`${A.id}@${id}`)
+    return { crossings, near }
+  }
+  /** The faces of a drawing as drawn: their walks, boundary polygons and signed areas (rotation by the first piece of each edge). */
+  const facesOf = (g: GraphData) => {
+    const { L } = lines(g)
+    const darts = L.flatMap(l => [{ id: l.id, u: l.u, v: l.v, pts: l.pts }, { id: l.id, u: l.v, v: l.u, pts: [...l.pts].reverse() }])
+    const ang = (d: { pts: P[] }) => Math.atan2(d.pts[1].y - d.pts[0].y, d.pts[1].x - d.pts[0].x)
+    const around = new Map<string, typeof darts>()
+    for (const d of darts) around.set(d.u, [...(around.get(d.u) ?? []), d])
+    for (const l of around.values()) l.sort((p, q) => ang(p) - ang(q))
+    const seen = new Set<object>(), out: { walk: string[]; edges: string[]; poly: P[]; area: number }[] = []
+    for (const d0 of darts) {
+      if (seen.has(d0)) continue
+      const walk: string[] = [], edges: string[] = [], poly: P[] = []
+      for (let d = d0; !seen.has(d);) {
+        seen.add(d); walk.push(d.u); edges.push(d.id); poly.push(...d.pts.slice(0, -1))
+        const l = around.get(d.v)!, back = l.findIndex(x => x.id === d.id && x.u === d.v)
+        d = l[(back + l.length - 1) % l.length]
+      }
+      out.push({ walk, edges, poly, area: poly.reduce((s, p, i) => { const q = poly[(i + 1) % poly.length]; return s + p.x * q.y - q.x * p.y }, 0) / 2 })
+    }
+    return out.sort((p, q) => Math.abs(q.area) - Math.abs(p.area)) // the outer face first
+  }
+  const inside = (c: P, poly: P[]) => {
+    let r = false
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const a = poly[i], b = poly[j]
+      if ((a.y > c.y) !== (b.y > c.y) && c.x < ((b.x - a.x) * (c.y - a.y)) / (b.y - a.y) + a.x) r = !r
+    }
+    return r
+  }
+  const canon = (w: string[]) => [w, [...w].reverse()].flatMap(x => x.map((_, i) => [...x.slice(i), ...x.slice(0, i)].join(' '))).sort()[0]
+  const W = (s: string) => canon(s.split(' '))
+  const pair = (g: GraphData, id: string) => ends(g.edges.find(e => e.id === id)!).slice().sort().join('-')
+
+  const faceWalks = { A: '1 2 7 6', B: '2 3 8 7', C: '3 4 9 8', D: '4 5 10 9', E: '5 1 6 10', P: '6 7 8 9 10', O: '1 2 3 4 5' }
+  it('opening: 10 vertices, 15 edges, no crossings; the seven faces as drawn are the labelled ones, the outer one 1 2 3 4 5', () => {
+    const g = fig('t07-dual-faces')
+    expect([g.vertices.length, g.edges.length]).toEqual([10, 15])
+    expect(drawn(g)).toEqual({ crossings: [], near: [] })
+    const fs = facesOf(g)
+    expect(fs.length).toBe(7)
+    expect(canon(fs[0].walk)).toBe(W(faceWalks.O))
+    expect(fs.map(f => canon(f.walk)).sort()).toEqual(Object.values(faceWalks).map(W).sort())
+    expect(g.faces.map(f => [f.label, canon(f.walk)])).toEqual(Object.entries(faceWalks).map(([k, w]) => [k, W(w)]))
+  })
+  it('building the dual: same G; 1, 5, 10, 15 dual edges; the hand-drawn dual is dual(G); each dual edge crosses its own edge of G once and nothing else', () => {
+    const s = steps('t07-dual-board'), last = s[s.length - 1]
+    const G = primal(last)
+    expect(G.vertices.map(v => [v.id, v.x, v.y])).toEqual(fig('t07-dual-faces').vertices.map(v => [v.id, v.x, v.y]))
+    expect(s.map(g => dualPart(g).edges.length)).toEqual([0, 1, 5, 10, 15, 15])
+    expect(s.map(g => dualPart(g).vertices.length)).toEqual([7, 7, 7, 7, 7, 7])
+    // dual(): computed face ids; map each to the letter whose walk it is
+    const emb = facesOf(G), D = dual(G)
+    expect(D.vertices.length).toBe(7)
+    const letterOf = (walk: string) => Object.entries(faceWalks).find(([, w]) => W(w) === walk)![0]
+    // the hand-drawn vertex of each inner face sits at dual()'s point inside that face
+    const at = new Map(D.vertices.map(v => [v.id, v]))
+    const letter = new Map<string, string>()
+    for (const v of D.vertices) {
+      if (v.id === 'f0') { letter.set('f0', 'O'); continue }
+      const f = emb.slice(1).find(f => inside(toScreen(v.x!, v.y!), f.poly))!
+      letter.set(v.id, letterOf(canon(f.walk)))
+      const mine = last.vertices.find(x => x.id === letter.get(v.id))!
+      expect([mine.x, mine.y]).toEqual([Math.round(at.get(v.id)!.x! * 100) / 100, Math.round(at.get(v.id)!.y! * 100) / 100])
+    }
+    expect(new Set(letter.values()).size).toBe(7)
+    // dual() lists edge i of G as edge i of the dual: compare the pairs of faces
+    const want = G.edges.map((e, i) => [pair(G, e.id), ends(D.edges[i]).map(x => letter.get(x)!).sort().join('-')])
+    const { crossings, near } = drawn(last)
+    expect(near).toEqual([])
+    expect(crossings.length).toBe(15)
+    const got = crossings.map(c => { const [a, b] = c.split('/'); return [pair(last, a), pair(last, b)] })
+    expect(got.sort()).toEqual(want.sort())
+    // the edge e = 7 8 lies on the walks of P and B; P and O have 5 edges each
+    expect(want.find(([e]) => e === '7-8')![1]).toBe('B-P')
+    const deg = (x: string) => dualPart(last).edges.filter(e => ends(e).includes(x)).length
+    expect(['P', 'O', 'A'].map(deg)).toEqual([5, 5, 4])
+  })
+  it('parallel edges and loops: square -> 2 dual vertices, 4 parallel edges; pendant 2 5 -> inner walk 1 2 5 2 3 4 and a loop at I that crosses 2 5', () => {
+    const s = steps('t07-dual-multi')
+    expect(s.length).toBe(4)
+    const sq = s[0]
+    expect(facesOf(sq).map(f => canon(f.walk))).toEqual([W('1 2 3 4'), W('1 2 3 4')])
+    const d2 = dualPart(s[1])
+    expect([d2.vertices.length, d2.edges.length]).toEqual([2, 4])
+    expect(d2.edges.every(e => pair(d2, e.id) === 'I-O')).toBe(true)
+    expect(drawn(s[1]).crossings.map(c => c.split('/').map(id => pair(s[1], id)).join(' ')).sort()).toEqual(['1-2 I-O', '2-3 I-O', '3-4 I-O', '1-4 I-O'].sort())
+    const G = primal(s[3])
+    expect(facesOf(G).map(f => canon(f.walk)).sort()).toEqual([W('1 2 3 4'), W('1 2 5 2 3 4')].sort())
+    const D = dual(G)
+    expect([D.vertices.length, D.edges.length]).toEqual([2, 5])
+    const loops = D.edges.map((e, i) => [i, ends(e)[0] === ends(e)[1]] as const).filter(([, l]) => l).map(([i]) => pair(G, G.edges[i].id))
+    expect(loops).toEqual(['2-5'])
+    const { crossings, near } = drawn(s[3])
+    expect(near).toEqual([])
+    expect(crossings.map(c => c.split('/').map(id => pair(s[3], id)).join(' ')).sort()).toEqual(['1-2 I-O', '2-3 I-O', '3-4 I-O', '1-4 I-O', '2-5 I-I'].sort())
+  })
+  it('dual of the dual: the dual of the square has 4 faces with one corner each; the faces on the two sides of each dual edge are the ends of the side it crosses', () => {
+    const s = steps('t07-dual-of-dual')
+    expect(s.length).toBe(5)
+    const Gs = dualPart(s[0]), G = primal(s[0])
+    expect([Gs.vertices.length, Gs.edges.length]).toEqual([2, 4])
+    const fs = facesOf(Gs)
+    expect(fs.length).toBe(4)
+    const pos = new Map(G.vertices.map(v => [v.id, toScreen(v.x!, v.y!)]))
+    // the corners in each face: inside an inner face's boundary; in the outer face: inside no inner face
+    const cornersIn = fs.map((f, i) => G.vertices.filter(v => (i === 0 ? !fs.slice(1).some(h => inside(pos.get(v.id)!, h.poly)) : inside(pos.get(v.id)!, f.poly))).map(v => v.id))
+    expect(cornersIn.every(c => c.length === 1)).toBe(true)
+    expect(cornersIn.flat().sort()).toEqual(['1', '2', '3', '4'])
+    // each dual edge appears in two faces: the corners of those faces are the ends of the square side it crosses
+    const sides = Gs.edges.map(e => fs.flatMap((f, i) => (f.edges.includes(e.id) ? cornersIn[i] : [])).sort().join('-'))
+    const crossed = Gs.edges.map(e => drawn(s[0]).crossings.filter(c => c.split('/').includes(e.id)).map(c => pair(s[0], c.split('/').find(x => x !== e.id)!)))
+    expect(crossed.map(c => c.length)).toEqual([1, 1, 1, 1])
+    expect(sides).toEqual(crossed.map(c => c[0]))
+    expect(new Set(sides)).toEqual(new Set(G.edges.map(e => pair(G, e.id))))
+    // the steps: G hidden in 2, back in 4, the dual muted in 5
+    expect(drawn(s[1]).crossings).toEqual([])
+    expect(s[3].edges.filter(e => e.classes.includes('bold')).length).toBe(4)
+    expect(s[4].vertices.filter(v => v.classes.includes('muted')).map(v => v.id)).toEqual(['I', 'O'])
+  })
+  it('quizzes: the lecture graph has 7 faces, so 7 dual vertices; 9 edges give 9 dual edges', () => {
+    expect(dual(primal(fig('t07-dual-faces'))).vertices.length).toBe(7)
+    expect(dual(cycle(9)).edges.length).toBe(9)
   })
 })

@@ -59,6 +59,7 @@
   "def:flow-cut": "e684467f5b5450bed8f0033e2b2bd1ccc0c794d48d6fd2add40e24871044eeea",
   "def:flow-network": "ac8c33916d3be39a09aba09e33e6157bfb0fddd9af397df810464fcf4ca47787",
   "def:forest-tree": "b4303091d59c7641db2e58cc3e4399defe484fb3e610e41fe64385c3335f676d",
+  "def:geometric-dual": "94b223010329d9819460659d58761fea7045be2346aa002c4bb0b3c3bfb61633",
   "def:girth": "fb487ca7fd4ecf086a2ae09f4cb1172f7b6b387a1356ea92e5a7a1fa89d5de64",
   "def:global-min-cut": "b908d62cdf33e7b0b9faf2d472e9f7f2144ae8a2177033e3e32d935119789a7e",
   "def:gomory-hu-tree": "907cc09588a75e8eefe4c8ca117de079c68b9945a693af9fdee36a6141c9281d",
