@@ -304,7 +304,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | 0760fe7 |
 | T6.5 | `theory/planarity/polygonal-drawings.md`: drawings with polygonal lines, lemma and proof sketch. | writer | 2026-10-20 p2 | cf583ef |
 | T6.6 | `theory/planarity/faces.md`: faces, outer face, facial walks, equivalent drawings; a drawing as G plus its facial walks; planar and plane graphs. | writer | 2026-10-20 p3; 2026-10-27 p1 | 3e83e86 |
-| T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | |
+| T6.7 | `theory/planarity/geometric-dual.md`: the geometric dual; the exercise (G*)* = G. | writer | 2026-10-27 p1–2 | f4aaf87 |
 | T6.8 | `theory/planarity/euler-formula.md`: Euler's formula and its proof (the step "E(G) \ E(T) gives a spanning tree of G*" is stated only). | writer | 2026-10-27 p2 | |
 | T6.9 | `theory/planarity/k5-not-planar.md`: K5 is not planar, with proof; the exercise on 3n − 6 and 2n − 4. | writer | 2026-10-27 p3 | |
 | T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | |
@@ -607,6 +607,7 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 ### Needs reported by writers
 
+- T6.7 (`planarity/geometric-dual.md`): faces have no separate fills; duals of multigraphs are drawn by hand (`dual()` refuses them). Two REVIEW fixes, confirmed by the math-checker against the scan: the dual has one vertex for each face, not one per element of the set of facial walks (inside and outside of C4 share a walk); the exercise (G*)* = G needs G connected (the scan writes "connected!" on p2). Reading path 659 words (soft limit 600). T6.17 must not duplicate `exr:t07-dual-of-dual`.
 - T6.6 (`planarity/faces.md`): classes on faces have no CSS, so one face cannot be shaded differently from another; the outer face is never shaded. The "NO!" wheel drawing on 2026-10-20 p3 is unreadable and not drawn (SOURCE UNCLEAR). Walks are read up to start and direction, so mirror images are equivalent; `lectures: [t06, t07]`. Visual check passed 2026-11-16 at 390px and 1366×768.
 - T6.5 (`planarity/polygonal-drawings.md`): no disk or strip shape; disks are drawn as dashed 16-gons through hidden points, strips are not drawn. Bug: `tween.ts` drops hidden vertices mid-animation, so the circles and polylines vanish and the box rescales during each transition. The writer could not see the page (headless Chromium gave blank screenshots).
 - T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
