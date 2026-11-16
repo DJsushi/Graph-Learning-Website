@@ -14,26 +14,27 @@ The lecturer drew three small graphs next to the definition. In which of them ca
 every vertex to every other vertex, and yet never walk around in a circle?
 
 ```graph id=t03-tree-question widget=figure
-caption: Three small graphs from the board: two vertices, one edge, and a triangle. Only one of them is connected and has no cycle.
-intent: The three sketches the lecturer drew next to the definition (theory/2026-09-29 p1), with vertex names added.
+caption: Three small graphs from the board: two vertices, one edge, and a triangle with its bottom edge crossed out (drawn faint and dashed). The edge and the crossed-out triangle are connected and have no cycle.
+intent: The three sketches the lecturer drew next to the definition (theory/2026-09-29 p1), with vertex names added. The lecturer crosses out the bottom edge of the triangle; here that edge is drawn with the class rejected.
 layout: fixed
 panel: two vertices
 p @(0, 0); q @(1.2, 0)
 panel: one edge
 u @(0, 0); v @(1.2, 0)
 u -- v
-panel: triangle
+panel: triangle, one edge crossed out
 x @(0, 0); y @(0.6, 1); z @(1.2, 0)
-x -- y; y -- z; z -- x
+x -- y; y -- z; z -- x [class=rejected]
 ```
 
-Only the single edge does both. The two vertices have no edge between them, so there is no way
-from $p$ to $q$. The triangle has a way between any two vertices, but its three edges lead
-around and back to the start: they form a cycle.
+The single edge and the crossed-out triangle do both. The two vertices have no edge between them,
+so there is no way from $p$ to $q$. Without its crossed-out edge, the triangle is the path
+$x, y, z$: $y$ leads from $x$ to $z$, and two edges cannot lead around and back to the start.
+With the edge $xz$ back, the three edges would form a cycle.
 
 A graph with no cycle is a **forest**. A forest that is also connected is a **tree**. So the
-single edge is a tree, the two lonely vertices form a forest but not a tree, and the triangle
-is not even a forest.
+single edge and the path $x, y, z$ are trees, and the two lonely vertices form a forest but not
+a tree. The whole triangle, with $xz$ kept, is not even a forest.
 
 ::: definition {#def:forest-tree title="Forest, tree" defines="acyclic, forest, tree" source="theory/2026-09-29 p1"}
 A graph $G$ is **acyclic**, or a **forest**, if $G$ contains no [[def:cycle-graph|cycle]]. $G$ is a **tree** if $G$ is acyclic

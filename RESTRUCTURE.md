@@ -218,7 +218,6 @@ the rows at any time.
 | T4.29 | Every theory page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171, `basics/graphs` 306d5d9, `basics/subgraphs` 1b0c3c1, `bipartite/bipartite-graphs` 7741daf, `chordal/chordal-graphs` cfe4986, `chordal/simplicial-vertices` 5958c50, `degrees/degree-sequences` 27e341f, `hamiltonian/dirac-and-ore` db1ba44, `hamiltonian/hamiltonian-graphs` 7dad7c6, `menger/k-connectivity` d81e96d, `menger/mengers-theorem` fd0d973, `menger/paths-and-cuts` 2b9cc5d, `walks-connectivity/connected-components` 151d57e, `walks-connectivity/distance` 40e3556. | | 40e3556 |
 | T4.30 | Audit tag: a frontmatter field `audited: <date>` on concept pages, shown in the page header next to the Checked tag as "Matches the lecture notes" (validator accepts the field; test). Agent: `coder`. Added by the owner, 2026-11-13. | | 548b857 |
 | T4.31 | Audit lectures 1 to 5 against the notes, one run per lecture (t01 to t05), read-only: `general-purpose` with `model: "opus"`. Prompt: "Read-only audit of lecture <slug>. For every concept page of that lecture, compare each definition, statement and written proof with the scan page named in its `source`, under `resources/graph-theory/`. Report only mismatches, one line each: page path, line, what the site says, what the notes say. Then list the pages with no mismatch." The math-checker compares only against the page itself (§6); this audit is the check against the notes. Write the result of each lecture here. t01: 4 mismatches; t02: 1 mismatch, 5 additions; t03: 0 mismatches; t04: 1 mismatch; t05: 1 mismatch, 5 marked REVIEW (§6, Audit). | | 5e4e314 |
-| T4.32 | Resolve the audit: the owner decides each mismatch. A transcription slip the owner confirms is fixed minimally with `<!-- REVIEW: audit, what and why -->` and `scripts/lock-entries.ts --accept <key>` for that entry only. Then set `audited:` on every page that has no open mismatch. Agent: `coder`. | | deferred |
 | T4.33 | `BACKLOG.md` D1 (budget checks for taught pages), needed before the rewrites below. Agent: `coder`. Added by the owner, 2026-11-13. | | a9b449b |
 | T4.34 | Taught rewrite of `theory/basics/multigraphs-and-digraphs.md`. Rows T4.34 to T4.44: the theory pages that no writer touched (no proof in the notes, enough figures), owner 2026-11-13. Prompt §1.2 "Full rewrite", pipeline §1.4, writer Opus. | | b1c08ce |
 | T4.35 | Taught rewrite of `theory/basics/isomorphism.md` | | 961bd17 |
@@ -232,7 +231,15 @@ the rows at any time.
 | T4.42 | Taught rewrite of `theory/trees/spanning-trees.md` | | 25a2ffa |
 | T4.43 | Taught rewrite of `theory/chordal/interval-graphs.md` | | c93de33 |
 | T4.44 | Taught rewrite of `theory/menger/proving-the-edge-version.md` | | 5d16acb |
-| T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
+| T4.45 | Audit the pages of T4.34 to T4.44 against the notes, read-only, as T4.31 (same agent and prompt, but for these pages only). Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | 8171a99 |
+| T4.47 | Redraw from the scan (owner, 2026-11-15; §6 Audit T4.45): `theory/menger/proving-the-edge-version.md`, figure `t05-d-flow` from 2026-10-13 p6, and every figure, sentence and quiz that depends on it (t05 item 1). Prompt: "Redraw the lecture figures on <page> from the scans, as §6 Audit (T4.45) lists for that page, and update the text, figures and quizzes that depend on them." Writer Opus, then math-checker. Done after T5.33, before T5.34. | | 1eca68c |
+| T4.48 | Same, `theory/trees/forests-and-trees.md`, figure `t03-tree-question` (t03 item 1). | | e1b78dc |
+| T4.49 | Same, `theory/basics/cliques-and-independent-sets.md` (t02 item 1). | | 70997b8 |
+| T4.50 | Same, `theory/basics/multigraphs-and-digraphs.md`, figure `t01-mixed-multigraph` and quiz `q:t01-parallel-pairs` (t01 item 1). The writer counts the edges and loops on the scan itself. | | 5cb2dde |
+| T4.51 | Same, `theory/basics/isomorphism.md`, figure `t01-iso-multigraph` (t01 item 2). The scan's H is not isomorphic to G, so the writer keeps the corrected H and marks it `<!-- REVIEW: audit, the scan doubles 34 instead of 23; as drawn H is not isomorphic to G -->`, or, if the scan reads otherwise, follows the scan. | | |
+| T4.52 | Small fixes from the T4.45 audit (owner, 2026-11-15: correct before faithful; main agent decided). (a) `theory/trees/spanning-trees.md:13`: the triangle sits beside "K₃ ↦ 3¹ = 3" in the Cayley table, not beside the definition. (b) `theory/walks-connectivity/breadth-first-search.md:183`: the REVIEW comment names a theorem proof the page no longer has; correct or delete it. (c) `theory/menger/proving-the-edge-version.md`: keep `t05-augmenting-player` as it is; if its caption or intent calls it the lecture's graph, call it a separate example. Writer with `model: "sonnet"`, then math-checker only if a statement changes. | | |
+| T4.53 | `algorithms/global-min-cut/karger-stein.md`: in the walkthroughs (not the locked proof text), say that if C survives in a branch, the branch returns a cut of capacity at most c(C), so a minimum cut, possibly another one of the same capacity; the same for "keep the best cut" in `thm:karger-stein`. Add that the base cases (MINIMUMCUT on at most 6 vertices, about n² leaves) cost O(n²) in total, so the bound stands. Writer with `model: "sonnet"`, then math-checker. | | |
+| T4.32 | Resolve the T4.31 audit (owner, 2026-11-15: correct before faithful; main agent decided, §6). Every T4.31 item is kept as the site has it. Add the two missing marks, each a `<!-- REVIEW: audit, what and why -->` placed outside the locked entry where possible, else `scripts/lock-entries.ts --accept <key>` for that entry only: `theory/bipartite/odd-cycles.md:257–262` (the proof first reduces to a non-bipartite component; the notes run BFS from any x, which needs G connected) and `theory/hamiltonian/dirac-and-ore.md:27` (n ≥ 3 is not in the notes but is needed: K₂ satisfies Dirac and is not Hamiltonian). Then set `audited: 2026-11-15` (or the day of the run) on every concept page of t01–t05 that T4.31 or T4.45 compared with the notes; not on pages with no `source` that the audits called not comparable. Agent: `coder`. Moved here from after T4.31 so that it runs after T4.51–T4.53. | | |
 
 **Gate C.** See §6.
 
@@ -274,7 +281,7 @@ After Gate C. Same pipeline.
 | T5.30 | `algorithms/global-min-cut/stoer-wagner.md` | 3, not in the notes (03 p32 states the corollary only) | skip |
 | T5.31 | `algorithms/global-min-cut/stoer-wagner-correctness.md` | 5, 5; skip the 4 of `cor:stoer-wagner` (not argued in the notes) | 4fca56a |
 | T5.32 | `algorithms/global-min-cut/karger-success-probability.md` | 11, 2, 2; skip the 2 of `cor:number-min-cuts` (stated only, 03 p49) | ada79d0 |
-| T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | |
+| T5.33 | `algorithms/global-min-cut/karger-stein.md` | 4, 3, 10, 3, 7 | 3ca2cb2 |
 | T5.34 | Every algorithms page that `npm run validate` still lists with fewer figures than entries: `Add example figures on <page>.`, one page per run, writer then math-checker. Only for entries in the notes (Scope). Write each page and its commit here. Done: `basics/graph-families` 7b24171. | | |
 | T5.35 | Audit slides 01 to 03 against the algorithms concept pages, read-only, as T4.31: one run per slide deck (a01 to a03), `general-purpose` with `model: "opus"`, comparing with the PDFs under `resources/`. Write the mismatches in §6 for the owner. Owner, 2026-11-13: audit at the end. | | |
 
@@ -586,7 +593,11 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 
 - Visual-qa on T5.16–T5.26 (2026-11-13): passed after layout fixes (ddb8050, a2067c4, 5295677, a942c65). Left open, minor: `fig-a01-kkt-recurrence` steps 1–2 (the 12-vertex graph) render edge labels at 13.7px at 1366, below the 14px rule; two layout rounds did not fix it, the labels are legible. Writers built their own clearance scripts on the real parser and `routeEdges` (label–label, label–edge, edge–vertex); a shared check in `viewbox.ts` would save visual-qa rounds (coder task if the owner wants it).
 
+- Visual-qa on T5.33, T4.47–T4.50 (2026-11-15): passed after the layout fix f317437 (overlapping vertices in the three `t05-d-flow` figures). `t03-tree-question` shows the crossed-out edge as a dashed line, no cross mark. 390 and 1366 measured in iframes; Escape on the Enlarge dialog only with a synthetic event.
+
 ### Needs reported by writers
+
+- T4.48 (`trees/forests-and-trees.md`): no crossed-out edge style; the crossed-out edge is drawn faint and dashed (`rejected`).
 
 - T4.10: group hulls dropped from the toy figures for size; the three copies of G are told apart by colour and caption.
 
@@ -605,6 +616,10 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T4.15 (`menger/vertex-version-from-edge-version.md`): the proof is attached to `thm:menger-directed`, which lives on `menger/mengers-theorem.md`, so its three walkthroughs have no `for=` and the validator keeps warning "proof of thm:menger-directed has no walkthrough". Open: allow a cross-page `for=` (coder task), or accept the warning.
 - T4.7 (`trees/small-degree-test.md`) and T4.10: the math-checker found false sentences in the old intuition, pitfall and intro text; fixed minimally with `<!-- REVIEW -->` comments.
 
+- T5.33 (`global-min-cut/karger-stein.md`, writer): a branch "returns C" is loose, since min(C1, C2) may return another minimum cut of equal capacity; the same gap is in the "keep the best cut" step of `thm:karger-stein`. The page says "is a minimum cut"; the proof text is unchanged. The time proof does not cost the base case (MINIMUMCUT on at most 6 vertices, about n² leaves, O(n²)), so the result stands.
+
+- T4.47 (`menger/proving-the-edge-version.md`): `t05-augmenting-player` under More still uses the old 7-vertex graph (not in the audit, left). Vertex names a–i, x, y, z are the site's; the board names only s and t. Reading path 720 words (was 695, limit 600).
+
 ### Open questions for the owner
 
 
@@ -618,6 +633,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - Visual-qa on T4.11–T4.15 and the status tag (2026-11-13): passed. 1366 measured in an iframe; tags at least 5:1 contrast in light and dark, at 1366 and 390. Not repeated at 390: the sticky-figure check on all five pages (done on hamiltonian-completion only).
 
 ### Audit mismatches (T4.31), for the owner
+
+**Decided (2026-11-15, owner delegated to the main agent):** correct before faithful. Every item below is correct as the site has it and stays; the two without a REVIEW mark (t02 item 1, t04 item 1) get one in T4.32.
 
 Each line: site text against the notes. The owner decides each one (T4.32): fix to the notes,
 or keep and say so on the page. None changes a result.
@@ -651,3 +668,32 @@ or keep and say so on the page. None changes a result.
   - Hypotheses that differ from the board but carry a REVIEW comment (deliberate): `mengers-theorem.md:12` ("undirected simple graph with ≥ 2 vertices"; board: "undirected multigraph"), `:51` (A adds "no arc from s to t"); `set-version.md:12` ("at least k + 1 vertices"); `two-connected-graphs.md:13,16` ("at least 3 vertices"; in b) "no isolated vertex"); `ear-decompositions.md:12` (ears join distinct ends and have new inner vertices; board: "new paths between some two existing vertices").
   - Additions, same meaning: `k-connectivity.md:13–14`; `paths-and-cuts.md:16–17` (internally disjoint, edge-disjoint); `mengers-theorem.md:49` (k ≥ 1); `set-version.md:166` (full ⇒ argument; the board has a picture, and no ⇐); `two-connected-graphs.md:275` (details of b); the board: "Menger k=2", "Total Menger k=2"); `ear-decompositions.md:214` (case analysis for ⇐); `vertex-version-from-edge-version.md:173` (lifting and translating back; the board gives the construction and □).
   - No mismatch: `k-connectivity.md`, `paths-and-cuts.md`, `proving-the-edge-version.md`.
+
+### Audit mismatches (T4.45, taught rewrites T4.34–T4.44), for the owner
+
+**Decided (2026-11-15, owner):** redraw the four "transcription" figures (and the multigraph one) from the scans: rows T4.47–T4.51.
+
+**Decided (2026-11-15, owner):** correctness comes before matching the notes; the main agent decides the rest. Kept, because they are correct and help the reader: girth ∞ for acyclic graphs; "closed", "finitely many" and the scheduling remark on `interval-graphs`; "of a directed multigraph" in `def:d-flow` (the size = in-degree of t fact stays in the prose); "at most k − 1" in the d-flow claim (the right hypothesis; the board's "(k−1)" read literally is a different one); disjoint V and E and the third special case on `multigraphs-and-digraphs`. Fixed in T4.52: the triangle sentence on `spanning-trees`, the stale REVIEW on `breadth-first-search`, the player caption on `proving-the-edge-version`. Karger–Stein tie and base case: T4.53.
+
+Same format as T4.31. Main finding: four figures whose intent says "transcription of the
+lecture picture" differ from the scan. Fixing one means redrawing it and redoing the text and
+quizzes that use it, or relabelling it as an adapted example.
+
+- t01 (scan 2026-09-15 p1–6):
+  1. `basics/multigraphs-and-digraphs.md:23,25` (figure `t01-mixed-multigraph`, caption :17, marks :27–28, text :33–34): the site draws 3 parallel c–d edges and 1 loop at f; the auditor reads 4 c–d edges (1 blue, 3 red) and 2 loops at f. Then quiz `q:t01-parallel-pairs` (:139–145) would be 8 (6 + 1 + 1), not 4. The auditor asks for a check by eye: `/tmp/claude-1000/scan/cd.png`, `/tmp/claude-1000/scan/loop.png`.
+  2. `basics/isomorphism.md:166–168` (figure `t01-iso-multigraph`, panel H): the site doubles 23 and 45; the scan (p4) doubles 34 and 45, and as drawn H is not isomorphic to G (degree sequences differ). The site's version is a correction without a REVIEW mark (already `BACKLOG.md:217`, old path). Caption :160 and quiz `q:t01-iso-multigraph-edge-maps` (:188–200) depend on it.
+  - Additions, same meaning: `multigraphs-and-digraphs.md:47–48` (disjoint V, E; named loop, arc, parallel edges), `:107–108` (third special case; T4.31 t01 items 1–2 again).
+  - No mismatch: `degrees/havel-hakimi-test.md`.
+- t02 (scan 2026-09-22 p3–5):
+  1. `basics/cliques-and-independent-sets.md:13–14,18,23` (figure intent "Transcription of the lecture picture"): the notes draw K4 with four isolated dots below it; the site puts the dots beside it and adds edges c–r, b–p, d–r, c–s. Text :32 and the pitfall :84–85 use those edges; quiz :92 says "the lecture's figure" (its answer 5 also holds for the notes' figure).
+  - No mismatch: `walks-connectivity/walks-and-paths.md`, `walks-connectivity/breadth-first-search.md`. Side note: the `<!-- REVIEW -->` at `breadth-first-search.md:183` refers to "the theorem proof below", which the page no longer has.
+- t03 (scan 2026-09-29 p1, p6, p8):
+  1. `trees/forests-and-trees.md:13–36` (figure `t03-tree-question`, caption :17–18, prose :30–36): the third board sketch is a triangle with its bottom edge crossed out (a path, so a tree); the site draws an intact triangle, "only one of them is connected and has no cycle", "not even a forest". Line :52 mentions the crossing-out.
+  2. `degrees/girth-and-regular-graphs.md:39` (`def:girth`): the site adds "($\infty$ if $G$ is acyclic)" inside the definition; the notes do not.
+  3. `trees/spanning-trees.md:13`: "Next to the definition, the lecturer drew a triangle"; on p6 it sits beside the line "K₃ ↦ 3¹ = 3" of the Cayley table (the intent at :18 says so correctly).
+- t04 (scan 2026-10-06 p1):
+  1. `chordal/interval-graphs.md:41–43` (`ex:interval-graphs`): "finitely many closed intervals", "model, e.g., scheduling" are added; the notes have only the heading and a sketch. The closed-interval pitfall (:94–98) rests on "closed".
+- t05 (scan 2026-10-13 p6):
+  1. `menger/proving-the-edge-version.md:13–33` (figure `t05-d-flow`, intent "Transcription of the lecture example"): the site's d-flow has 7 vertices, 9 flow arcs and 3 muted non-flow arcs; the board's has 11 connected vertices plus 3 isolated dots, 14 arcs, all in F, two vertices with 2 in / 2 out. Text :13, :51, :116, :120, :152 and ":163–164 has 9 arcs" call it the lecturer's. Figures `t05-d-flow-check`, `t05-d-flow-paths` and the quizzes :169–197 depend on it. Auditor's crop: `/tmp/claude-1000/-home-djsushi-School-graph-learning-website/eebb11e1-0d67-4eb0-a42c-e8f2e47eaf59/scratchpad/t05z-6.png`.
+  2. `proving-the-edge-version.md:41–43` (`def:d-flow`): adds "of a directed multigraph" and drops the notes' "(= indeg. of t)" (given in prose at :102–105, :207).
+  3. `proving-the-edge-version.md:150–151`: "of size at most k − 1"; the notes: "of size (k−1)".
