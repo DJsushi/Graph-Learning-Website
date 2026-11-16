@@ -314,7 +314,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.14 | `theory/colouring/three-colouring-and-sat.md`: "3-COL solves SAT", construction and both directions. | writer | 2026-11-03 p2–4 | |
 | T6.15 | `theory/colouring/chromatic-bounds.md`: cliques give a lower bound, small degrees an upper bound (proof of b), χ(K_{m,n}) = 2. | writer | 2026-11-03 p5 | |
 | T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | |
-| T6.17 | Lecture pages t06 to t08: intro, summary, and the exercises the notes give. Only text from the notes. | writer | all three | |
+| T6.17 | Lecture pages t06 to t08: intro, summary, and the exercises the notes give. Only text from the notes. | writer | all three | 93a9ae8 (t06, t07; t08 open) |
 | T6.18 | Check the pages of T6.4 to T6.17 at 390px and 1366×768. | visual-qa | | |
 
 ### Phase 7: algorithms lecture 4 (matchings in general graphs)
@@ -614,6 +614,8 @@ whether to merge `restructure` into `main` now, so their friends can use it befo
 - T6.10 (d7cdfcf): lecture t07. Sonnet writer. The board proves only the first part (degree ≤ 5); the writer had proved the bipartite part (≤ 3) itself, removed per Scope as in T6.8: it is stated without proof, the cube stays as its example. The math check failed once (the proof block's title claimed the whole corollary); retitled "Proof of the first part", re-check passed. "Take a component" is the writer's addition. Visual check open (T6.18).
 
 - T6.11 (e1bafcb): lecture t07. Opus writer. Math check: round 1 four findings (case split in the proof, the 2+2 split's reason, "may no longer be subgraphs", G0 on at most 2 vertices; two REVIEW comments, on the writer's own proof text), round 2 one finding (the rewrite dropped the S-paths of the K3,3), round 3 (owner-approved) one finding ("$K_{3,3}$ has maximum degree 4"), fixed by the main agent on the owner's choice as "have degrees ≤ 4" (60-word limit), confirmed by the checker. Used without proof: any face can be made outer; faces of 2-connected plane graphs are cycles (checker: true). "Contains" read as "has as a subgraph". Reading path 1269 words (over the 600-word warning). Visual check open (T6.18).
+
+- T6.17 (93a9ae8), t06 and t07 only (t08 waits for colouring): Sonnet writer. Lecture pages have no proofs but restate results, so both got a math check: t06 failed once (planar drawing missing two conditions; "each face bounded by a closed walk"), t07 failed once (dual vertex per face, not per walk; hypotheses missing on (G*)* = G and the edge bounds; small-degree proof covers only the first part). Fixed, both re-checks passed. t06's notes have no exercise, so it has no Exercises section (CC §1); t07's two exercises are links to the concept pages. Lint is checked only in Summary and Exercises. Visual check open (T6.18).
 
 ### Needs reported by writers
 
