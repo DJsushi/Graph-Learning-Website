@@ -32,6 +32,7 @@
   "cor:mst-verification": "cde69073907c28ac6de0a267e40b14f50dff9f1b61cecce2c5a94e9de2f3970c",
   "cor:mst-verification#proof1": "6eaedaeb4bf1a86ca007cfb9c54843a3e758c20d14ace6c5fbcee887709db865",
   "cor:number-min-cuts": "b90a6c8ad53553db0aacd65fc76849044fb6e8157718d2654d49385ea31f4a83",
+  "cor:planar-small-degree": "b608dcec49d53186f4b0b7f31d55953ee02bf290c5f89e52907a3a2e4455ef6c",
   "cor:stoer-wagner": "b5a9c5c1c84ff4b477a90ea56a2396361b9a22a1828a3fc6df1b1bbc9259f653",
   "cor:tree-leaf": "e3e25599ba446ed18a162e7889c8535ee50cf313bbbfea4469268218458c16ce",
   "cor:tree-unique-path": "082b267ebf12760142d268f001fc28c8e14a31fff8d46ab0e71b9ecec104eb69",

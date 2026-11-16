@@ -4319,3 +4319,58 @@ describe('k5-not-planar page (t07)', () => {
     expect(3 * 5 - 6).toBe(9)
   })
 })
+
+describe('small-degree page (t07)', () => {
+  type P = { x: number; y: number }
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const deg = (g: GraphData, v: string) => g.edges.filter(e => ends(e).includes(v)).length
+  const pos = (g: GraphData, id: string): P => { const v = g.vertices.find(x => x.id === id)!; return { x: v.x!, y: v.y! } }
+  const segHit = (p: P, q: P, r: P, s: P) => {
+    const d = (q.x - p.x) * (s.y - r.y) - (q.y - p.y) * (s.x - r.x)
+    if (Math.abs(d) < 1e-12) return false
+    const t = ((r.x - p.x) * (s.y - r.y) - (r.y - p.y) * (s.x - r.x)) / d, u = ((r.x - p.x) * (q.y - p.y) - (r.y - p.y) * (q.x - p.x)) / d
+    return t > 1e-9 && t < 1 - 1e-9 && u > 1e-9 && u < 1 - 1e-9
+  }
+  const crossFree = (g: GraphData) => g.edges.every((a, i) => g.edges.slice(i + 1).every(b => !segHit(pos(g, ends(a)[0]), pos(g, ends(a)[1]), pos(g, ends(b)[0]), pos(g, ends(b)[1]))))
+  const faceLengths = (g: GraphData) => { const e = embed(g, false); if (typeof e === 'string') throw new Error(e); return e.faces.map(f => f.length).sort() }
+  const hasFace = (g: GraphData, walk: string[]) => { const e = embed(g, false); if (typeof e === 'string') throw new Error(e); return e.faces.some(f => f.length === walk.length && walk.every(v => f.includes(v))) }
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+
+  it('opening figure: octahedron has 6 vertices, 12 edges, all degrees 4; cube has 8 vertices, 12 edges, all degrees 3', () => {
+    const [oct, cube] = [fig('t07-small-degree-board', 0), fig('t07-small-degree-board', 1)]
+    expect([oct.vertices.length, oct.edges.length]).toEqual([6, 12])
+    expect(oct.vertices.map(v => deg(oct, v.id))).toEqual(Array(6).fill(4))
+    expect([cube.vertices.length, cube.edges.length]).toEqual([8, 12])
+    expect(cube.vertices.map(v => deg(cube, v.id))).toEqual(Array(8).fill(3))
+  })
+
+  it('first walkthrough: octahedron (all degrees 4, sum 24 = 2 * 12, 12 = 3 * 6 - 6, at least 3 * 6 = 18 edges would be needed) plus the separate edge 7 8; face 1 4 6 has length 3; all 8 faces have length 3; crossing-free; fits the box', () => {
+    const s = steps('t07-small-degree-planar')
+    expect(s.length).toBe(6)
+    const g = s[0]
+    const H: GraphData = { ...g, vertices: g.vertices.filter(v => !['7', '8'].includes(v.id)), edges: g.edges.filter(e => !ends(e).some(v => ['7', '8'].includes(v))), faces: [] }
+    expect(g.edges.filter(e => ends(e).some(v => ['7', '8'].includes(v))).map(key)).toEqual(['78'])
+    expect([H.vertices.length, H.edges.length]).toEqual([6, 12])
+    expect(H.vertices.map(v => deg(H, v.id))).toEqual(Array(6).fill(4))
+    expect(H.vertices.reduce((z, v) => z + deg(H, v.id), 0)).toBe(24)
+    expect(2 * H.edges.length).toBe(24)
+    expect(3 * H.vertices.length - 6).toBe(12)
+    expect(3 * H.vertices.length).toBe(18)
+    expect(isPlanar(H)).toBe(true)
+    expect(crossFree(g)).toBe(true)
+    expect(faceLengths(H)).toEqual(Array(8).fill(3))
+    expect(hasFace(H, ['1', '4', '6'])).toBe(true)
+    expect(new Set(H.edges.map(key))).toEqual(new Set(fig('t07-small-degree-board', 0).edges.map(key)))
+    s.forEach(fits)
+  })
+
+  it('quiz: 12 vertices with degrees at least 5 give at least 5 * 12 / 2 = 30 edges, and 3 * 12 - 6 = 30; pitfall: 6 parallel edges give both vertices degree 6 and 3 * 2 - 6 = 0 < 6', () => {
+    expect(5 * 12 / 2).toBe(30)
+    expect(3 * 12 - 6).toBe(30)
+    expect(3 * 2 - 6).toBe(0)
+  })
+})
