@@ -7,7 +7,7 @@ lectures: [t06]
 goal: Say when a drawing of a graph in the plane is planar, and when a graph is planar.
 needs: [theory/basics/multigraphs-and-digraphs, theory/basics/graph-families]
 stage: taught
-status: draft
+status: reviewed
 ---
 
 The lecture drew the graph below on the board. Some edges are curves, and two edges join the
@@ -31,14 +31,14 @@ meet only at their ends.
 
 A planar drawing puts every vertex at its own point of the plane and every edge on its own
 curve. The curve joins the two ends of the edge, avoids every other vertex and touches no other
-curve. A graph is planar when it has at least one such drawing.
+curve except at a common end. A graph is planar when it has at least one such drawing.
 
 ## Drawing a graph
 
 The curves of a drawing are open arcs. The lecture drew two of them.
 
 ```graph id=t06-open-arcs widget=figure
-caption: An open arc $\alpha$ from $u = \alpha(0)$ to $v = \alpha(1)$, and the arc of a loop, whose two ends are the same point: $\alpha(0) = \alpha(1) = u$. The ends are not part of the open arc.
+caption: An open arc $\alpha$ from $u = \alpha(0)$ to $v = \alpha(1)$, and the arc of a loop, whose two ends are the same point: $\alpha(0) = \alpha(1) = u$. In a planar drawing the ends are vertices and the arc avoids every vertex, so the ends are not on the arc.
 intent: From the lecture (theory/2026-10-20 p1, the two small drawings under the graph). The arc of an edge uv and of a loop, with the ends marked as vertices.
 layout: fixed
 panel: an arc
@@ -71,8 +71,8 @@ never passes a point twice; a loop ends where it starts. A curve touches vertice
 ends. Two curves never meet, except at a common end.
 :::
 
-In the definition, $u$ and $v$ stand for the points the vertices go to. The arc is open, so its
-ends are not on it. That is why two edges with a common end can have disjoint arcs: in the
+In the definition, $u$ and $v$ stand for the points the vertices go to. The arc is disjoint from
+all vertices of $G$, its own ends included, so $u$ and $v$ are not on it. That is why two edges with a common end can have disjoint arcs: in the
 first picture, five edges leave 1.
 
 The figure below breaks the rule "disjoint from all vertices", and then keeps it.
@@ -144,8 +144,8 @@ allow: move add-edge delete-edge
 ```
 
 ::: pitfall
-"Disjoint arcs" does not forbid edges with a common end. The arcs are open, so the shared
-vertex is on neither of them. The definition forbids two curves that meet at a point that is
+"Disjoint arcs" does not forbid edges with a common end. Each arc is disjoint from all
+vertices, its own ends included, so the shared vertex is on neither of them. The definition forbids two curves that meet at a point that is
 not a vertex, and a curve that runs through a vertex that is not one of its ends.
 :::
 
@@ -175,7 +175,7 @@ Which of these breaks the definition of a planar drawing?
 
 ::: explanation
 An arc may be any continuous curve that does not pass a point twice, so a wavy curve is fine.
-The arcs are open, so common ends are not on them: parallel edges as in the lecture's drawing
+Each arc is disjoint from all vertices, its own ends included, so common ends are not on the arcs: parallel edges as in the lecture's drawing
 are allowed. A loop's arc has $\alpha(0) = \alpha(1)$, which the definition allows. But the arc
 of every edge must be disjoint from all vertices of $G$.
 :::
