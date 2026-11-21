@@ -163,6 +163,8 @@
   "prop:mpm-time#proof1": "f16bd87295baed1d97cebc7eedde908c8b516f661ebd1560ef169f388fc33141",
   "prop:stoer-wagner-time": "658d240be9b25b7fa5d199edffc8a07e16178c13862190c387ed3819c1144f65",
   "prop:stoer-wagner-time#proof1": "c4e9f1c7fd16e63a4123290b7c3ea426f87cc2cfd101911ad2d07fa7f4e4dc2e",
+  "prop:two-colourable": "c48f148b24ca473b7ca761260b228f2b42560554e7be98ba3d4f0d062d63a238",
+  "prop:two-colourable#proof1": "32e0d7134adbdee354efd8b216e125eed8cba971a9167c4ad1fd0ce67e069c84",
   "thm:bipartite-odd-cycle": "e5fbfce18bbe2ad86112d8437ef51630f601bfe616ea40764cd332d41e9cdbf1",
   "thm:bipartite-odd-cycle#proof1": "56ee91e1903305f62f5135c1d0add0c5f00ebd917664803692dee700706468ad",
   "thm:cayley": "3a8a3df81b47181b09c29286393f6a4386ca587763e05395f1d85e6e1e951270",

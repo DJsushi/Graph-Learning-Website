@@ -4624,3 +4624,92 @@ describe('colourings page (t08)', () => {
     expect(proper(board, 4)).toBe(true)
   })
 })
+
+describe('two-colourable page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const cycleLengths = (g: GraphData) => {
+    const out: number[] = []
+    for (let m = 1; m < 1 << g.edges.length; m++) {
+      const s = new Set(g.edges.filter((_, i) => m & (1 << i)).map(e => e.id))
+      if (A.isCycleEdgeSet(g, s)) out.push(s.size)
+    }
+    return out.sort()
+  }
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const hexEdges = ['pq', 'ps', 'pu', 'qr', 'rs', 'st', 'tu']
+
+  it('opening figure: "two colours" is the hexagon with chord p s, colour 1 on p r t and colour 2 on q s u is proper, cycles 4, 4, 6, chi = 2; "the lecture\'s graph" is t08-board-colouring with the triangle a b c, chi = 3', () => {
+    const [h, l] = [fig('t08-two-or-three', 0), fig('t08-two-or-three', 1)]
+    expect(h.edges.map(key).sort()).toEqual(hexEdges)
+    expect(proper(h, 2)).toBe(true)
+    expect(['p', 'r', 't'].map(v => colourOf(h, v))).toEqual(['color1', 'color1', 'color1'])
+    expect(['q', 's', 'u'].map(v => colourOf(h, v))).toEqual(['color2', 'color2', 'color2'])
+    expect(cycleLengths(h)).toEqual([4, 4, 6])
+    expect(chi(h)).toBe(2)
+    const board = fig('t08-board-colouring')
+    expect(new Set(l.edges.map(key))).toEqual(new Set(board.edges.map(key)))
+    expect(l.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(l.edges.filter(e => e.classes.includes('cycle')).map(key).sort()).toEqual(['ab', 'ac', 'bc'])
+    expect(chi(l)).toBe(3)
+  })
+
+  it('odd-five stepper: C5 without a triangle; colours alternate on the path a b c d; e sees colour 1 at a and colour 2 at d; chi = 3; fits the box', () => {
+    const s = steps('t08-odd-five')
+    expect(s.length).toBe(3)
+    const g = s[0]
+    expect(g.edges.map(key).sort()).toEqual(['ab', 'ae', 'bc', 'cd', 'de'])
+    expect(cycleLengths(g)).toEqual([5])
+    expect(['a', 'b', 'c', 'd'].map(v => colourOf(s[1], v))).toEqual(['color1', 'color2', 'color1', 'color2'])
+    expect(s[2].edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['ae', 'de'])
+    expect(chi(g)).toBe(3)
+    s.forEach(fits)
+  })
+
+  for (const id of ['t08-two-colour-forward', 't08-two-colour-backward']) {
+    it(`${id}: same graph as the opening, 7 edges, cycles 4 (p q r s and p s t u) and 6; rows A = p r t on top and B = q s u below; every edge joins the rows; final colouring proper with colours 1 and 2; fits the box`, () => {
+      const s = steps(id)
+      expect(s.length).toBe(4)
+      expect(s[0].edges.map(key).sort()).toEqual(hexEdges)
+      expect(s[0].edges.length).toBe(7)
+      const g = s[0]
+      const ids = (ks: string[]) => new Set(g.edges.filter(e => ks.includes(key(e))).map(e => e.id))
+      expect(A.isCycleEdgeSet(g, ids(['pq', 'qr', 'rs', 'ps']))).toBe(true)
+      expect(A.isCycleEdgeSet(g, ids(['ps', 'st', 'tu', 'pu']))).toBe(true)
+      expect(A.isCycleEdgeSet(g, ids(['pq', 'qr', 'rs', 'st', 'tu', 'pu']))).toBe(true)
+      expect(cycleLengths(g)).toEqual([4, 4, 6])
+      const rows = s[1]
+      const y = (v: string) => rows.vertices.find(x => x.id === v)!.y
+      expect(['p', 'r', 't'].map(y)).toEqual([1.3, 1.3, 1.3])
+      expect(['q', 's', 'u'].map(y)).toEqual([0, 0, 0])
+      expect(rows.edges.every(e => y(ends(e)[0]) !== y(ends(e)[1]))).toBe(true)
+      const last = s[3]
+      expect(proper(last, 2)).toBe(true)
+      expect(['p', 'r', 't'].map(v => colourOf(last, v))).toEqual(['color1', 'color1', 'color1'])
+      expect(['q', 's', 'u'].map(v => colourOf(last, v))).toEqual(['color2', 'color2', 'color2'])
+      s.forEach(fits)
+    })
+  }
+
+  it('cube exercise: the solution (colour 1 on 1 3 6 8, colour 2 on 2 4 5 7) is proper, no odd cycle, chi = 2; pitfall: K4 has a triangle and chi = 4; quiz: K7 has a 7-cycle and chi = 7', () => {
+    const g = fig('t08-ex-two-colour-cube')
+    const sol: Record<string, string> = { 1: 'color1', 3: 'color1', 6: 'color1', 8: 'color1', 2: 'color2', 4: 'color2', 5: 'color2', 7: 'color2' }
+    expect(proper({ ...g, vertices: g.vertices.map(v => ({ ...v, classes: [sol[v.id]] })) }, 2)).toBe(true)
+    expect(cycleLengths(g).every(n => n % 2 === 0)).toBe(true)
+    expect(chi(g)).toBe(2)
+    const k4 = complete(4)
+    expect(cycleLengths(k4)).toContain(3)
+    expect(chi(k4)).toBe(4)
+    const k7 = complete(7)
+    const c7 = new Set(k7.edges.filter(e => { const [a, b] = ends(e).map(Number); return Math.abs(a - b) === 1 || Math.abs(a - b) === 6 }).map(e => e.id))
+    expect(c7.size).toBe(7)
+    expect(A.isCycleEdgeSet(k7, c7)).toBe(true)
+    expect(chi(k7)).toBe(7)
+  })
+})
