@@ -22,7 +22,7 @@ a graph can be split into two independent sets exactly when it has no cycle of o
 - [[def:walk|Walks]] may repeat vertices and edges; a shortest walk is a [[def:path-graph|path]] ([[claim:shortest-walk-path]]).
 - Components are the classes of "connected by a walk" ([[def:component]]); distance is the length
   of a shortest walk ([[def:distance]]) and is computed by BFS ([[alg:bfs]]).
-- $G$ is [[def:bipartite|bipartite]] iff $G$ is isomorphic to a subgraph of some $K_{m,n}$ ([[prop:bipartite-subgraph-kmn]]) iff $G$ has no odd [[def:cycle-graph|cycle]]
+- $G$ is [[def:bipartite|bipartite]] iff $G$ is [[def:isomorphism|isomorphic]] to a subgraph of some $K_{m,n}$ ([[prop:bipartite-subgraph-kmn]]) iff $G$ has no odd [[def:cycle-graph|cycle]]
   ([[thm:bipartite-odd-cycle]]).
 
 ## Exercises
@@ -75,7 +75,7 @@ in $\ol{G}$.
 ::::
 
 :::: exercise {#exr:t02-closed-odd-walk title="Odd closed walks" difficulty=2}
-Show that every [[def:walk|closed walk]] of odd length contains (the vertices and edges of) an odd [[def:cycle-graph|cycle]]. Conclude
+Show that every [[def:walk|closed walk]] of odd [[def:path-graph|length]] contains (the vertices and edges of) an odd [[def:cycle-graph|cycle]]. Conclude
 that a graph is [[def:bipartite|bipartite]] iff it has no closed walk of odd length.
 
 ::: hint
