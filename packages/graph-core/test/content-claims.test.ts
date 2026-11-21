@@ -4920,3 +4920,117 @@ describe('chromatic-bounds page (t08)', () => {
     expect(chi(cycle(5))).toBe(3)
   })
 })
+
+describe('mycielski page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('-')
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const triangleFree = (g: GraphData) => A.girth(new GraphIndex(g)) > 3
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const visible = (g: GraphData): GraphData => ({ ...g, vertices: g.vertices.filter(v => !v.classes.includes('hidden')), edges: g.edges.filter(e => !e.classes.includes('hidden')) })
+  // the lecture's construction: v -> v0, v1, plus m; edges u0v0, u1v0, u0v1 for uv in E, and m v1
+  const mycielski = (g: GraphData): string[] => {
+    const es: string[][] = []
+    for (const e of g.edges) { const [u, v] = ends(e); es.push([u + '0', v + '0'], [u + '1', v + '0'], [u + '0', v + '1']) }
+    for (const v of g.vertices) es.push(['m', v.id + '1'])
+    return es.map(p => p.slice().sort().join('-')).sort()
+  }
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const shortLabels = (g: GraphData) => { for (const v of g.vertices) { const sp = labelToSpans(v.label ?? v.id); expect(sp).toBeDefined(); expect(spansWidth(sp!)).toBeLessThanOrEqual(2.3) } }
+  const c5 = cycle(5) // vertices 1..5
+  const c5named = { ...c5, vertices: c5.vertices.map(v => ({ ...v, id: 'abcde'[+v.id - 1] })), edges: c5.edges.map(e => ({ ...e, tail: ['abcde'[+e.tail[0] - 1]], head: ['abcde'[+e.head[0] - 1]] })) } as GraphData
+  const p3 = pathGraph(2) // P_n has n edges: vertices 0, 1, 2
+  const p3named = { ...p3, vertices: p3.vertices.map(v => ({ ...v, id: 'aub'[+v.id] })), edges: p3.edges.map(e => ({ ...e, tail: ['aub'[+e.tail[0]]], head: ['aub'[+e.head[0]]] })) } as GraphData
+
+  it('generators used below: cycle(5) is numbered from 1, path(2) from 0, in order', () => {
+    expect(c5.vertices.map(v => v.id)).toEqual(['1', '2', '3', '4', '5'])
+    expect(c5.edges.map(key).sort()).toEqual(['1-2', '1-5', '2-3', '3-4', '4-5'])
+    expect(p3.edges.map(key).sort()).toEqual(['0-1', '1-2'])
+  })
+
+  it('opening figure G4: the construction on C5 with outer ring a..e; 11 vertices, 20 edges, no triangle, chi = 4; a1 is joined to b0 and e0; m to the inner ring', () => {
+    const g = fig('t08-myc-grotzsch')
+    expect(g.vertices.length).toBe(11)
+    expect(g.edges.length).toBe(20)
+    expect(g.edges.map(key).sort()).toEqual(mycielski(c5named))
+    expect(triangleFree(g)).toBe(true)
+    expect(chi(g)).toBe(4)
+    expect(g.edges.filter(e => ends(e).includes('a1')).map(e => ends(e).find(x => x !== 'a1')).sort()).toEqual(['b0', 'e0', 'm'])
+    shortLabels(g)
+  })
+
+  it('quiz: G4 from C5 has 2*5+1 = 11 vertices and 5+10+5 = 20 edges', () => {
+    expect(new Set(mycielski(c5named).flatMap(k => k.split('-'))).size).toBe(11)
+    expect(mycielski(c5named).length).toBe(20)
+  })
+
+  it('base stepper: C5 with the names and positions of t08-odd-five; no triangle; b, e are the neighbours of a and not adjacent; 1,2,1,2,3 is proper; chi = 3; fits', () => {
+    const s = steps('t08-myc-base')
+    expect(s.length).toBe(3)
+    const odd = fig('t08-odd-five')
+    expect(s[0].vertices.map(v => [v.id, v.x, v.y])).toEqual(odd.vertices.map(v => [v.id, v.x, v.y]))
+    expect(s[0].edges.map(key).sort()).toEqual(c5named.edges.map(key).sort())
+    expect(triangleFree(s[0])).toBe(true)
+    const nb = s[0].edges.filter(e => ends(e).includes('a')).map(e => ends(e).find(x => x !== 'a')).sort()
+    expect(nb).toEqual(['b', 'e'])
+    expect(s[0].edges.map(key)).not.toContain('b-e')
+    expect(['a', 'b', 'c', 'd', 'e'].map(v => colourOf(s[2], v))).toEqual(['color1', 'color2', 'color1', 'color2', 'color3'])
+    expect(proper(s[2], 3)).toBe(true)
+    expect(chi(s[0])).toBe(3)
+    expect([0, 1, 2].map(k => chi(complete(k)))).toEqual([0, 1, 2])
+    expect([0, 1, 2].map(k => complete(k).edges.length <= 1)).toEqual([true, true, true])
+    s.forEach(fits)
+  })
+
+  it('construction stepper: G_k = path a u b (chi 2, no triangle); final graph is the construction: 7 vertices, 9 edges (2 + 4 + 3), no triangle, chi = 3; fits', () => {
+    const s = steps('t08-myc-construction')
+    expect(s.length).toBe(5)
+    const g0 = visible(s[0])
+    expect(g0.vertices.map(v => v.id)).toEqual(['a0', 'u0', 'b0'])
+    expect(chi(g0)).toBe(2)
+    expect(triangleFree(g0)).toBe(true)
+    expect(visible(s[1]).vertices.length).toBe(7)
+    expect(visible(s[1]).edges.length).toBe(2)
+    expect(visible(s[3]).edges.length - visible(s[2]).edges.length).toBe(4)
+    const g = visible(s[4])
+    expect(g.edges.length).toBe(9)
+    expect(g.edges.map(key).sort()).toEqual(mycielski(p3named))
+    expect(triangleFree(g)).toBe(true)
+    expect(chi(g)).toBe(3)
+    s.forEach(fits)
+    s.forEach(shortLabels)
+  })
+
+  it('no-triangle, upper and lower steppers use the same graph; u1 has row-0 neighbours a0, b0, not adjacent; upper colouring proper with 3 colours, m colour 3; lower: only u0, u1 coloured in step 4 (not adjacent), last step proper 3-colouring; fits', () => {
+    const final = visible(steps('t08-myc-construction')[4])
+    for (const id of ['t08-myc-no-triangle', 't08-myc-upper', 't08-myc-lower']) {
+      const s = steps(id)
+      expect(s[0].vertices.map(v => [v.id, v.x, v.y])).toEqual(final.vertices.map(v => [v.id, v.x, v.y]))
+      expect(s[0].edges.map(key).sort()).toEqual(final.edges.map(key).sort())
+      s.forEach(fits)
+    }
+    const g = final
+    const n = (v: string) => g.edges.filter(e => ends(e).includes(v)).map(e => ends(e).find(x => x !== v)!).sort()
+    expect(n('u1')).toEqual(['a0', 'b0', 'm'])
+    expect(g.edges.map(key)).not.toContain('a0-b0')
+    expect(n('m')).toEqual(['a1', 'b1', 'u1'])
+    expect(g.edges.filter(e => ends(e).every(x => x.endsWith('1')))).toEqual([])
+    expect(g.edges.map(key)).not.toContain('u0-u1')
+    const up = steps('t08-myc-upper')
+    expect(steps('t08-myc-no-triangle').length).toBe(4)
+    expect(up.length).toBe(3)
+    expect(proper(up[2], 3)).toBe(true)
+    expect(colourOf(up[2], 'm')).toBe('color3')
+    expect(['a0', 'b0', 'a1', 'b1'].map(v => colourOf(up[0], v) ?? colourOf(up[2], v))).toEqual(Array(4).fill('color1'))
+    expect(['u0', 'u1'].map(v => colourOf(up[2], v))).toEqual(['color2', 'color2'])
+    const lo = steps('t08-myc-lower')
+    expect(lo.length).toBe(6)
+    expect(lo[3].vertices.filter(v => colourOf(lo[3], v.id)).map(v => v.id).sort()).toEqual(['u0', 'u1'])
+    expect(lo[3].edges.filter(e => { const [x, y] = ends(e).map(v => colourOf(lo[3], v)); return x && x === y })).toEqual([])
+    expect(proper(lo[5], 3)).toBe(true)
+  })
+})
