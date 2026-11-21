@@ -4560,3 +4560,67 @@ describe('kuratowski page (t07)', () => {
     expect([k.vertices.length + k.edges.length, 2 * k.edges.length]).toEqual([15, 20])
   })
 })
+
+describe('colourings page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const colours = (g: GraphData) => new Set(g.vertices.map(v => v.classes.find(c => /^color\d$/.test(c))))
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const board = fig('t08-board-colouring')
+
+  it('board graph: 5 vertices, 7 edges, the lecture colouring is proper with 3 colours, labels match the colours, a b c pairwise adjacent, chi = 3', () => {
+    expect([board.vertices.length, board.edges.length]).toEqual([5, 7])
+    expect(proper(board, 3)).toBe(true)
+    expect(colours(board).size).toBe(3)
+    for (const v of board.vertices) expect(v.classes).toContain(`color${v.label}`)
+    const ks = new Set(board.edges.map(key))
+    expect(['ab', 'ac', 'bc'].every(x => ks.has(x))).toBe(true)
+    expect(chi(board)).toBe(3)
+  })
+
+  it('proper-or-not: same graph; "proper" is the lecture colouring; "not proper" uses 2 colours and clashes exactly on bc and ce', () => {
+    const [p, q] = [fig('t08-proper-or-not', 0), fig('t08-proper-or-not', 1)]
+    for (const g of [p, q]) expect(new Set(g.edges.map(key))).toEqual(new Set(board.edges.map(key)))
+    expect(proper(p, 3)).toBe(true)
+    expect(p.vertices.map(v => v.classes.find(c => /^color/.test(c)))).toEqual(board.vertices.map(v => v.classes.find(c => /^color/.test(c))))
+    expect(proper(q)).toBe(false)
+    expect(colours(q).size).toBe(2)
+    const col = new Map(q.vertices.map(v => [v.id, v.classes.find(c => /^color/.test(c))]))
+    expect(q.edges.filter(e => col.get(ends(e)[0]) === col.get(ends(e)[1])).map(key).sort()).toEqual(['bc', 'ce'])
+    expect(q.edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['bc', 'ce'])
+  })
+
+  it('chromatic-three stepper: 4 steps, 5 vertices and 7 edges; one colour makes all 7 edges bad; a b c pairwise adjacent; last step is the lecture colouring', () => {
+    const s = steps('t08-chromatic-three')
+    expect(s.length).toBe(4)
+    expect([s[0].vertices.length, s[0].edges.length]).toEqual([5, 7])
+    expect(proper(s[1])).toBe(false)
+    expect(s[1].edges.filter(e => e.classes.includes('rejected')).length).toBe(7)
+    expect(s[2].edges.filter(e => e.classes.includes('highlight')).map(key).sort()).toEqual(['ab', 'ac', 'bc'])
+    expect(proper(s[3], 3)).toBe(true)
+    expect(chi(s[3])).toBe(3)
+    expect(s[3].vertices.map(v => v.classes.find(c => /^color/.test(c)))).toEqual(board.vertices.map(v => v.classes.find(c => /^color/.test(c))))
+  })
+
+  it('loop-and-edgeless: loop gives no proper colouring (chi undefined); 4 isolated vertices all colour 1, chi = 1; one edge pq, chi = 2', () => {
+    const [l, n, o] = [0, 1, 2].map(i => fig('t08-loop-and-edgeless', i))
+    expect(chi(l)).toBeUndefined()
+    expect(proper(l)).toBe(false)
+    expect([n.vertices.length, n.edges.length]).toEqual([4, 0])
+    expect(proper(n, 1)).toBe(true)
+    expect(chi(n)).toBe(1)
+    expect(o.edges.map(key)).toEqual(['pq'])
+    expect(proper(o, 2)).toBe(true)
+    expect(chi(o)).toBe(2)
+    expect(chi({ vertices: [], edges: [], faces: [] } as any)).toBe(0)
+  })
+
+  it('prism exercise: solution colouring is proper with 3 colours, chi = 3; lecture graph has a proper 4-colouring and chi = 3', () => {
+    const g = fig('t08-ex-colour-prism')
+    expect(chi(g)).toBe(3)
+    const sol: Record<string, string> = { 1: 'color1', 6: 'color1', 2: 'color2', 4: 'color2', 3: 'color3', 5: 'color3' }
+    expect(proper({ ...g, vertices: g.vertices.map(v => ({ ...v, classes: [sol[v.id]] })) }, 3)).toBe(true)
+    expect(proper(board, 4)).toBe(true)
+  })
+})
