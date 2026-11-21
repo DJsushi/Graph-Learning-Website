@@ -11,6 +11,7 @@ import { dual, embed, interiorPoint, isPlanar } from '../src/planar'
 import { cycle, completeBipartite, complete, path as pathGraph, wheel } from '../src/dsl/generators'
 import { computeBox } from '../../graph-vue/src/viewbox'
 import { centerline, defaultBends, facePolygon, R, toScreen } from '../../graph-vue/src/geometry'
+import { labelToSpans, spansWidth } from '../../graph-vue/src/texsvg'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -4711,5 +4712,123 @@ describe('two-colourable page (t08)', () => {
     expect(c7.size).toBe(7)
     expect(A.isCycleEdgeSet(k7, c7)).toBe(true)
     expect(chi(k7)).toBe(7)
+  })
+})
+
+describe('3-colouring and SAT page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('-')
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const proper = (g: GraphData, k: number) => PREDICATES['is-proper-coloring']({ graph: g, args: { k: String(k) } } as any).ok
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  // all proper colourings with colours 1..k that extend `fixed`, by backtracking
+  const extensions = (g: GraphData, fixed: Record<string, number>, k = 3) => {
+    const vs = g.vertices.map(v => v.id), nb = new Map(vs.map(v => [v, [] as string[]]))
+    for (const e of g.edges) { const [a, b] = ends(e); nb.get(a)!.push(b); nb.get(b)!.push(a) }
+    const col: Record<string, number> = { ...fixed }, out: Record<string, number>[] = []
+    for (const v of Object.keys(fixed)) if (nb.get(v)!.some(u => col[u] === col[v])) return out
+    const free = vs.filter(v => !(v in fixed))
+    const go = (i: number) => {
+      if (i === free.length) { out.push({ ...col }); return }
+      const v = free[i]
+      for (let c = 1; c <= k; c++) if (!nb.get(v)!.some(u => col[u] === c)) { col[v] = c; go(i + 1); delete col[v] }
+    }
+    go(0)
+    return out
+  }
+  // G_Phi of the lecture's construction; literal k > 0 is x_k, k < 0 its negation
+  const gPhi = (n: number, clauses: number[][]) => {
+    const E: string[][] = [['s', 'f'], ['f', 't'], ['s', 't']]
+    const lit = (k: number) => (k > 0 ? `x${k}` : `n${-k}`)
+    for (let k = 1; k <= n; k++) E.push(['s', `x${k}`], ['s', `n${k}`], [`x${k}`, `n${k}`])
+    clauses.forEach((cl, i) => {
+      const a = (j: number) => `a${i + 1}_${j}`, b = (j: number) => `b${i + 1}_${j}`
+      E.push([b(1), b(2)], [b(2), b(3)], [b(1), b(3)])
+      for (let j = 1; j <= 3; j++) E.push([a(j), b(j)], [a(j), 't'], [a(j), lit(cl[j - 1])])
+    })
+    return E
+  }
+  const S = 1, F = 2, T = 3
+
+  it('opening figure: with t = T and the literals F F F no proper completion exists, the a are forced to S; "one T" is proper; in general a completion exists iff some literal is T', () => {
+    const [none, one] = [fig('t08-clause-gadget', 0), fig('t08-clause-gadget', 1)]
+    expect(extensions(none, { t: T, l1: F, l2: F, l3: F })).toEqual([])
+    expect(['a1', 'a2', 'a3'].map(v => colourOf(none, v))).toEqual(['color1', 'color1', 'color1'])
+    expect(none.edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['b1-b2', 'b1-b3', 'b2-b3'])
+    expect(proper(one, 3)).toBe(true)
+    expect(['l1', 'a1', 'b1'].map(v => colourOf(one, v))).toEqual(['color3', 'color2', 'color1'])
+    for (const ls of [[F, F, F], [T, F, F], [F, T, F], [F, F, T], [T, T, F], [T, F, T], [F, T, T], [T, T, T]]) {
+      const ex = extensions(one, { t: T, l1: ls[0], l2: ls[1], l3: ls[2] })
+      expect(ex.length > 0).toBe(ls.includes(T))
+      if (!ls.includes(T)) continue
+      expect(ex.every(c => ['a1', 'a2', 'a3'].every(a => c[a] !== T))).toBe(true)
+    }
+  })
+
+  const ids = ['t08-g-phi', 't08-g-phi-build', 't08-g-phi-forward', 't08-g-phi-backward']
+  const map: Record<string, string> = { x8: 'x3', n8: 'n3', a1: 'a1_1', a2: 'a1_2', a3: 'a1_3', b1: 'b1_1', b2: 'b1_2', b3: 'b1_3' }
+  const lecture = gPhi(3, [[-1, 2, 3]]) // x_8 renamed x3
+
+  it('G_Phi figures: the construction for (not x1 or x2 or x8), 15 vertices and 24 edges, same positions in all four figures, chi = 3, every step fits the walkthrough box', () => {
+    for (const id of ids) {
+      const g = id === 't08-g-phi' ? fig(id) : steps(id)[0]
+      expect(g.vertices.length).toBe(15)
+      expect(g.edges.length).toBe(24)
+      expect(g.edges.map(e => ends(e).map(v => map[v] ?? v).sort().join('-')).sort()).toEqual(lecture.map(p => p.slice().sort().join('-')).sort())
+      expect(g.vertices.map(v => [v.id, v.x, v.y])).toEqual(fig('t08-g-phi').vertices.map(v => [v.id, v.x, v.y]))
+      if (id !== 't08-g-phi') steps(id).forEach(fits)
+      else fits(g)
+      // labels render inside 26px circles: SVG spans exist and are at most 2.3 em wide
+      for (const v of g.vertices) { const sp = labelToSpans(v.label ?? v.id); expect(sp).toBeDefined(); expect(spansWidth(sp!)).toBeLessThanOrEqual(2.3) }
+    }
+    // chi = 3: no proper 2-colouring (the triangle s f t), and a proper 3-colouring exists
+    expect(extensions(fig('t08-g-phi'), {}, 2)).toEqual([])
+    expect(extensions(fig('t08-g-phi'), { s: S, f: F, t: T }).length).toBeGreaterThan(0)
+  })
+
+  it('build stepper: 5 steps; the parts appear in order (3, then 9, then 15 vertices), all visible at the end', () => {
+    const s = steps('t08-g-phi-build')
+    expect(s.length).toBe(5)
+    const shown = (g: GraphData) => g.vertices.filter(v => !v.classes.includes('hidden')).length
+    const shownE = (g: GraphData) => g.edges.filter(e => !e.classes.includes('hidden')).length
+    expect(s.map(shown)).toEqual([3, 9, 15, 15, 15])
+    expect(s.map(shownE)).toEqual([3, 12, 18, 21, 24])
+  })
+
+  it('forward stepper: nu gives F to x1 x2 x8, the clause is true at j = 1, the final colouring is proper with 3 colours and matches the text', () => {
+    const s = steps('t08-g-phi-forward')
+    expect(s.length).toBe(6)
+    const last = s[5]
+    expect(proper(last, 3)).toBe(true)
+    const want: Record<string, string> = { s: 'color1', f: 'color2', t: 'color3', x1: 'color2', x2: 'color2', x8: 'color2', n1: 'color3', n2: 'color3', n8: 'color3', a1: 'color2', b1: 'color1', a2: 'color1', a3: 'color1', b2: 'color3', b3: 'color2' }
+    for (const [v, c] of Object.entries(want)) expect(colourOf(last, v)).toBe(c)
+  })
+
+  it('backward stepper: x1 T and x2, x8 F (clause false) cannot be completed; the a are forced to S; every proper 3-colouring of G_Phi gives a satisfying valuation; 7 of the 8 valuations extend', () => {
+    const s = steps('t08-g-phi-backward')
+    expect(s.length).toBe(6)
+    const g = s[0]
+    const partial = { s: S, f: F, t: T, x1: T, n1: F, x2: F, n2: T, x8: F, n8: T }
+    for (const [v, c] of Object.entries(partial)) expect(colourOf(s[2], v)).toBe(`color${c}`)
+    expect(extensions(g, partial)).toEqual([])
+    expect(['a1', 'a2', 'a3'].map(v => colourOf(s[4], v))).toEqual(['color1', 'color1', 'color1'])
+    const all = extensions(g, { s: S, f: F, t: T })
+    expect(all.length).toBeGreaterThan(0)
+    for (const c of all) expect(c.n1 === T || c.x2 === T || c.x8 === T).toBe(true)
+    let ok = 0
+    for (const v1 of [T, F]) for (const v2 of [T, F]) for (const v8 of [T, F]) {
+      const ex = extensions(g, { s: S, f: F, t: T, x1: v1, n1: 5 - v1, x2: v2, n2: 5 - v2, x8: v8, n8: 5 - v8 })
+      expect(ex.length > 0).toBe(v1 === F || v2 === T || v8 === T)
+      if (ex.length) ok++
+    }
+    expect(ok).toBe(7)
+  })
+
+  it('quiz: 4 variables and 5 clauses give 3 + 8 + 30 = 41 vertices', () => {
+    const E = gPhi(4, [[1, 2, 3], [-1, 2, 4], [1, -3, -4], [2, 3, 4], [-1, -2, -3]])
+    expect(new Set(E.flat()).size).toBe(41)
   })
 })

@@ -72,7 +72,7 @@
   course: theory
   title: Graph colouring
   intro: Proper colourings and the chromatic number, two-colourable graphs, 3-colouring and SAT, bounds and Mycielski graphs.
-  ids: [def:colouring, def:chromatic-number, obs:chromatic-number-facts, prop:two-colourable]
+  ids: [def:colouring, def:chromatic-number, obs:chromatic-number-facts, prop:two-colourable, thm:three-colouring-sat]
 - slug: flows
   course: algorithms
   title: Flows and cuts

@@ -220,6 +220,8 @@
   "thm:regular-large-girth": "1d97554e0b67e03cf368bdd52f0a4d56bc488a6d784b71795ab33fe351ff7f42",
   "thm:regular-large-girth#proof1": "ad6b0c7b102ace1afbe01a858aecf1f3dee07521b1e1fbd239707ea73617ef82",
   "thm:strong-cut-cycle": "5988f267ebfd1f2e2bd3f717e9cd748e9733ee17a74a5b29dde18a38cf05ee57",
+  "thm:three-colouring-sat": "9ef4397ef7b50d6d3360b1d13938163cda7b471a750556222356cf052bf17b9d",
+  "thm:three-colouring-sat#proof1": "c3365e923d131e246192bef973d117c6c0b0b1eeec34a7392da3dea2a520ee18",
   "thm:total-menger": "af352d2218af819cd2201f0ab213886b1e0e2cc2f9d33c0fba6f463e9f2ec895",
   "thm:total-menger#proof1": "631e77b1a45569c9a46410d147b25776bdeda4b83e333ae9ea90e8b860b59a39",
   "thm:two-connected-cycles": "fe3a513b6cd6bd85c3e9bb948c78701c0fa37aeda0feade6dd04e22f2b6b9713",
