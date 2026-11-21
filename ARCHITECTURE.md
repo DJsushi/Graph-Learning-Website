@@ -89,7 +89,7 @@ scripts/validate-content.ts      content validator
 4. Widgets: `figure` (static, panels side by side), `stepper` (authored steps), `player`
    (an algorithm from the registry: all steps are computed at mount; pseudocode line, state
    and extra panels per step), `editable` (sandbox with live properties), `exercise`
-   (select, build, simulate or answer; checked by predicates).
+   (select, colour, build, simulate or answer; checked by predicates).
 5. Steppers and players animate between states with `tween.ts`.
 
 ## Registries

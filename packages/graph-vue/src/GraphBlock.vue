@@ -53,7 +53,7 @@ function enlarge() {
 }
 const playgroundHref = computed(() => {
   // strip widget directives so that the playground gets a plain graph
-  const plain = payload.value.source.split('\n').filter(l => !/^\s*(caption|intent|prompt|check|hint|solution|answer|task|reveal|algo|params|show|live|allow|step|tolerance):/.test(l)).join('\n')
+  const plain = payload.value.source.split('\n').filter(l => !/^\s*(caption|intent|prompt|check|hint|solution|answer|task|reveal|algo|params|show|live|allow|step|tolerance|colors):/.test(l)).join('\n')
   return withBase(`/playground#g=${encodeShare(plain)}`)
 })
 </script>

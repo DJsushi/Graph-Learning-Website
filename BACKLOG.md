@@ -67,7 +67,7 @@ Measure before optimising, except FP1.
 | FS8 | `PlayerWidget.vue` | `editable: true` on a player is ignored. | Later | no |
 | FS9 | `GraphView.vue` | `directed-style` is ignored on loops. | Later | no |
 | FS10 | `GraphView.vue` | No `hover` event and no arrow-key navigation along adjacency, both promised by the first plan. | Later | no |
-| FS11 | `graph-core/src/predicates.ts` | Predicates the first plan listed that do not exist: `is-vertex-cover`, `is-proper-coloring`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. | Each before the chapter that needs it | partly |
+| FS11 | `graph-core/src/predicates.ts` | Predicates the first plan listed that do not exist: `is-vertex-cover`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. | Each before the chapter that needs it | partly |
 | FS12 | `graph-core/src/properties.ts` | Properties the first plan listed that do not exist: `planar`, `radius`. | Before planarity | no | 75f9a06
 
 ## 4. Framework: drawing quality

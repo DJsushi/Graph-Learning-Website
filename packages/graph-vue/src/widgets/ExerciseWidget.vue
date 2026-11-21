@@ -18,7 +18,7 @@ const graph = ref<GraphData>(cloneGraph(original.value))
 watch(original, g => { graph.value = cloneGraph(g) })
 
 const selection = ref<{ vertices: Id[]; edges: Id[] }>({ vertices: [], edges: [] })
-const selectable = computed(() => (task.value === 'select-vertices' ? 'vertices' : task.value === 'select-edges' ? 'edges' : task.value === 'select-elements' ? 'both' : 'none'))
+const selectable = computed(() => (task.value === 'select-vertices' || task.value === 'color-vertices' ? 'vertices' : task.value === 'select-edges' ? 'edges' : task.value === 'select-elements' ? 'both' : 'none'))
 const feedback = ref<{ ok: boolean; text: string } | null>(null)
 const hintsShown = ref(0)
 const solutionShown = ref(false)
@@ -27,8 +27,21 @@ const solved = ref(false)
 
 onMounted(() => { loadProgress(); solved.value = !!progress.solved[props.figId] })
 
+// color-vertices: a click cycles a vertex through color1..colorN and back to uncoloured.
+const palette = computed(() => Math.min(8, Math.max(1, Number(d.value.colors?.[0] ?? 3) || 3)))
+function cycleColor(id: Id) {
+  const v = graph.value.vertices.find(x => x.id === id)
+  if (!v) return
+  const cur = v.classes.find(c => /^color[1-8]$/.test(c))
+  const next = cur ? Number(cur.slice(5)) + 1 : 1
+  v.classes = v.classes.filter(c => c !== cur)
+  if (next <= palette.value) v.classes.push(`color${next}`)
+  feedback.value = null
+}
+
 function toggle(kind: 'vertex' | 'edge', id: Id) {
   if (task.value === 'simulate') return simulateClick(kind, id)
+  if (task.value === 'color-vertices') return kind === 'vertex' ? cycleColor(id) : undefined
   const list = kind === 'vertex' ? selection.value.vertices : selection.value.edges
   const i = list.indexOf(id)
   if (i >= 0) list.splice(i, 1)
@@ -60,6 +73,7 @@ function finish(ok: boolean, text: string) {
   if (ok) { solved.value = true; markSolved(props.figId) }
 }
 function clearSel() {
+  if (task.value === 'color-vertices') graph.value = cloneGraph(original.value)
   selection.value = { vertices: [], edges: [] }
   feedback.value = null
 }
@@ -131,7 +145,7 @@ const hints = computed(() => d.value.hint ?? [])
       </template>
       <template v-else>
         <button type="button" class="ga-btn ga-btn-primary" @click="check">Check</button>
-        <button v-if="task !== 'build'" type="button" class="ga-btn" @click="clearSel">Clear selection</button>
+        <button v-if="task !== 'build'" type="button" class="ga-btn" @click="clearSel">{{ task === 'color-vertices' ? 'Clear colours' : 'Clear selection' }}</button>
       </template>
       <button v-if="hintsShown < hints.length" type="button" class="ga-btn" @click="hintsShown++">{{ hintsShown ? 'Another hint' : 'Hint' }}</button>
       <button v-if="d.solution && !solutionShown" type="button" class="ga-btn ga-btn-quiet" @click="solutionShown = true">Show solution</button>
