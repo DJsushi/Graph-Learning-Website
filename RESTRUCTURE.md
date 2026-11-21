@@ -310,7 +310,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.10 | `theory/planarity/small-degree.md`: planar graphs have a vertex of degree ≤ 5, bipartite planar ≤ 3, with proof. | writer | 2026-10-27 p4 | d7cdfcf |
 | T6.11 | `theory/planarity/kuratowski.md`: subdivisions, Kuratowski's theorem and its proof sketch (THM2 on contractible edges is stated only, "see Diestel"). | writer | 2026-10-27 p5–6 | e1bafcb |
 | T6.12 | `theory/colouring/colourings.md`: k-colouring, proper colouring, chromatic number, the two facts. | writer | 2026-11-03 p1 | e2f8cff |
-| T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | |
+| T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | c0d66eb |
 | T6.14 | `theory/colouring/three-colouring-and-sat.md`: "3-COL solves SAT", construction and both directions. | writer | 2026-11-03 p2–4 | |
 | T6.15 | `theory/colouring/chromatic-bounds.md`: cliques give a lower bound, small degrees an upper bound (proof of b), χ(K_{m,n}) = 2. | writer | 2026-11-03 p5 | |
 | T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | |
