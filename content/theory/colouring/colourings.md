@@ -160,7 +160,7 @@ check: is-proper-coloring k=3
 hint: The triangle $1\,2\,3$ needs all three colours. Then look at each vertex of the other triangle.
 solution: For example colour 1 on 1 and 6, colour 2 on 2 and 4, colour 3 on 3 and 5. Each triangle needs three colours, so 3 is also the least number: $\chi = 3$.
 layout: fixed
-1 @(0, 0); 2 @(1.5, 1.3); 3 @(3, 0); 4 @(0.75, 0.3); 5 @(1.5, 0.85); 6 @(2.25, 0.3)
+1 @(0, 0); 2 @(2.1, 2.6); 3 @(4.2, 0); 4 @(1.16, 0.48); 5 @(2.1, 1.65); 6 @(3.04, 0.48)
 1 -- 2 -- 3 -- 1
 4 -- 5 -- 6 -- 4
 1 -- 4; 2 -- 5; 3 -- 6
