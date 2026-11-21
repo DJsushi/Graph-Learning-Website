@@ -8,7 +8,7 @@ prerequisites: []
 sources:
   - resources/graph-theory/2026-09-15-09_45_32-join.pdf
   - resources/graph-theory/2026-09-22-13_38_58-join.pdf (pp. 1–2, proof of Havel–Hakimi)
-status: draft
+status: reviewed
 ---
 
 Graphs are the mathematical model of anything made of *objects* and *connections between
@@ -28,10 +28,10 @@ degrees of its vertices.
   "graph" usually means an isomorphism class. Equal vertex counts, edge counts and degree
   sequences are necessary for isomorphism, but not sufficient.
 - The [[def:degree|degree]] sum is $\sum_v d(v) = 2\abs{E}$ ([[lem:handshake]]).
-- Havel–Hakimi: $(d_1, \dots, d_n)$ is graphic iff the sequence obtained by deleting $d_1$ and
+- Havel–Hakimi: a non-increasing $(d_1, \dots, d_n)$ with $d_1 \le n-1$ is graphic iff the sequence obtained by deleting $d_1$ and
   decreasing the next $d_1$ entries is graphic ([[thm:havel-hakimi]]). The proof uses 2-switches.
-- Erdős–Gallai: graphic iff the sum is even and
-  $\sum_{i \le k} d_i \le k(k-1) + \sum_{i > k}\min(d_i, k)$ for all $k$ ([[thm:erdos-gallai]]).
+- Erdős–Gallai: a non-increasing sequence is graphic iff the sum is even and
+  $\sum_{i \le k} d_i \le k(k-1) + \sum_{i > k}\min(d_i, k)$ for all $k = 1, \dots, n$ ([[thm:erdos-gallai]]).
 
 ## Exercises
 

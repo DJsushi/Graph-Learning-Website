@@ -7,7 +7,7 @@ summary: Chordal graphs, simplicial vertices, minimal separators, simplicial dec
 prerequisites: [theory/03-trees]
 sources:
   - resources/graph-theory/2026-10-06-13_41_19-join.pdf
-status: draft
+status: reviewed
 ---
 
 This lesson studies two classes of graphs defined by their cycles. **Chordal graphs** are graphs in

@@ -7,7 +7,7 @@ summary: Forests and trees, leaves, closed walks and cycles, unique paths in tre
 prerequisites: [theory/02-walks-connectivity-bipartite]
 sources:
   - resources/graph-theory/2026-09-29-13_47_15-join.pdf
-status: draft
+status: reviewed
 ---
 
 Trees are the simplest connected graphs: connected, but with no redundancy at all. They are
@@ -19,7 +19,7 @@ a surprising existence theorem about graphs without short cycles.
 ## Summary
 
 - Forests are acyclic graphs, trees are [[def:component|connected]] forests ([[def:forest-tree]]). Every acyclic graph on
-  $\ge 2$ vertices has two vertices of [[def:degree|degree]] $\le 1$ ([[thm:two-leaves]]); trees have [[def:leaf|leaves]] ([[cor:tree-leaf]]).
+  $\ge 2$ vertices has two vertices of [[def:degree|degree]] $\le 1$ ([[thm:two-leaves]]); trees on at least 2 vertices have [[def:leaf|leaves]] ([[cor:tree-leaf]]).
 - A [[def:walk|closed walk]] contains a [[def:cycle-graph|cycle]] or traverses every edge an even number of times
   ([[lem:closed-walk-cycle]]); hence [[def:path-graph|paths]] in trees are unique ([[cor:tree-unique-path]]).
 - A [[def:spanning-tree|spanning tree]] is the starting point
