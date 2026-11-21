@@ -4832,3 +4832,91 @@ describe('3-colouring and SAT page (t08)', () => {
     expect(new Set(E.flat()).size).toBe(41)
   })
 })
+
+describe('chromatic-bounds page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const nbrs = (g: GraphData, v: string) => g.edges.filter(e => ends(e).includes(v)).map(e => ends(e).find(x => x !== v)!).sort()
+  // every non-empty subgraph has a vertex of degree <= k; induced subgraphs suffice, since deleting edges only lowers degrees
+  const smallDegree = (g: GraphData, k: number) => {
+    const vs = g.vertices.map(v => v.id)
+    for (let m = 1; m < 1 << vs.length; m++) {
+      const S = new Set(vs.filter((_, i) => m >> i & 1))
+      const es = g.edges.filter(e => ends(e).every(x => S.has(x)))
+      if (![...S].some(v => es.filter(e => ends(e).includes(v)).length <= k)) return false
+    }
+    return true
+  }
+  const without = (g: GraphData, v: string): GraphData => ({ ...g, vertices: g.vertices.filter(x => x.id !== v), edges: g.edges.filter(e => !ends(e).includes(v)) })
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const board = fig('t08-board-colouring')
+
+  it('opening: the lecture graph with its positions; a b c pairwise adjacent; a has neighbours b, c; k = 2 holds; chi = 3', () => {
+    const g = fig('t08-bounds-board')
+    expect(g.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(g.edges.map(key).sort()).toEqual(board.edges.map(key).sort())
+    expect(['ab', 'ac', 'bc'].every(x => g.edges.map(key).includes(x))).toBe(true)
+    expect(nbrs(g, 'a')).toEqual(['b', 'c'])
+    expect(smallDegree(g, 2)).toBe(true)
+    expect(chi(g)).toBe(3)
+  })
+
+  it('every-subgraph: "holds" is the lecture graph and satisfies k = 2; "fails": t has 1 neighbour, K4 on p q r s has all degrees 3, k = 2 fails, chi = 4', () => {
+    const [h, f] = [fig('t08-every-subgraph', 0), fig('t08-every-subgraph', 1)]
+    expect(h.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(h.edges.map(key).sort()).toEqual(board.edges.map(key).sort())
+    expect(smallDegree(h, 2)).toBe(true)
+    expect(nbrs(f, 't')).toEqual(['q'])
+    const k4 = without(f, 't')
+    expect(k4.edges.length).toBe(6)
+    expect(k4.vertices.map(v => nbrs(k4, v.id).length)).toEqual([3, 3, 3, 3])
+    expect(smallDegree(f, 2)).toBe(false)
+    expect(chi(f)).toBe(4)
+  })
+
+  it('kmm figure: K_{3,3}, all degrees 3, (b) fails for k = 2 and holds for k = 3, the row colouring is proper, chi = 2', () => {
+    const g = fig('t08-kmm-bound')
+    expect(g.edges.map(key).sort()).toEqual(completeBipartite(3, 3).edges.map(key).sort())
+    expect(g.vertices.map(v => nbrs(g, v.id).length)).toEqual(Array(6).fill(3))
+    expect([smallDegree(g, 2), smallDegree(g, 3)]).toEqual([false, true])
+    expect(proper(g, 2)).toBe(true)
+    expect(chi(g)).toBe(2)
+  })
+
+  it('induction stepper: 7 steps, the lecture graph with a renamed v; v has neighbours b, c; G - v satisfies k = 2; colouring of G - v proper with 3 colours, N(v) carries 2 and 3; v gets 1; the final colouring is the lecture one; every step fits', () => {
+    const s = steps('t08-degree-induction')
+    expect(s.length).toBe(7)
+    const g = s[0]
+    expect(g.edges.map(e => ends(e).map(x => x === 'v' ? 'a' : x).sort().join('')).sort()).toEqual(board.edges.map(key).sort())
+    expect(smallDegree(g, 2)).toBe(true)
+    expect(nbrs(g, 'v')).toEqual(['b', 'c'])
+    const gp = without(s[3], 'v')
+    expect(gp.vertices.length).toBe(4)
+    expect(smallDegree(gp, 2)).toBe(true)
+    expect(proper(gp, 3)).toBe(true)
+    expect(new Set(['b', 'c'].map(v => colourOf(s[4], v)))).toEqual(new Set(['color2', 'color3']))
+    expect(colourOf(s[5], 'v')).toBe('color1')
+    expect(proper(s[6], 3)).toBe(true)
+    for (const v of ['b', 'c', 'd', 'e']) expect(colourOf(s[6], v)).toBe(board.vertices.find(x => x.id === v)!.classes.find(c => /^color/.test(c)))
+    expect(colourOf(s[6], 'v')).toBe(colourOf(board, 'a'))
+    s.forEach(fits)
+  })
+
+  it('quizzes: K_{3,3} satisfies (b) with k = 3 and chi = 2; K5 satisfies (b) with k = 4 and chi = 5', () => {
+    expect(smallDegree(completeBipartite(3, 3), 3)).toBe(true)
+    expect(chi(completeBipartite(3, 3))).toBe(2)
+    expect(smallDegree(complete(5), 4)).toBe(true)
+    expect(chi(complete(5))).toBe(5)
+  })
+
+  it('pitfall: the 5-cycle has no triangle (girth 5) and chi = 3', () => {
+    expect(A.girth(new GraphIndex(cycle(5)))).toBe(5)
+    expect(chi(cycle(5))).toBe(3)
+  })
+})
