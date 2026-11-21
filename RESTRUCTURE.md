@@ -299,7 +299,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | ID | Task | Agent | Notes | Done |
 |----|------|-------|-------|------|
 | T6.1 | Planarity in the framework: `BACKLOG.md` FS1, FS2, FS12, FL7, FL8, C12. | coder (opus) | | 75f9a06 |
-| T6.2 | Colouring in the framework: `BACKLOG.md` C13 and `is-proper-coloring` (FS11). | coder | | |
+| T6.2 | Colouring in the framework: `BACKLOG.md` C13 and `is-proper-coloring` (FS11). | coder | | 2588d13 |
 | T6.3 | Lecture files `content/theory/06-planarity.md`, `07-planarity-combinatorial.md`, `08-colouring.md` (lectures 6 to 8, slugs t06 to t08, their `sources`), chapters `planarity` and `colouring` in `content/topics.yaml`, sidebar. Frontmatter and empty sections only; no lesson text. | coder | | ce8a665 |
 | T6.4 | `theory/planarity/planar-drawings.md`: planar drawing, planar graph. | writer | 2026-10-20 p1 | 0760fe7 |
 | T6.5 | `theory/planarity/polygonal-drawings.md`: drawings with polygonal lines, lemma and proof sketch. | writer | 2026-10-20 p2 | cf583ef |
