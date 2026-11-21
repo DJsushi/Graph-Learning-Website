@@ -313,7 +313,7 @@ contain no proof skips the math-checker unless it has a quiz or numbers. Notes: 
 | T6.13 | `theory/colouring/two-colourable.md`: χ(G) ≤ 2 iff no odd cycle, with proof. | writer | 2026-11-03 p2 | c0d66eb |
 | T6.14 | `theory/colouring/three-colouring-and-sat.md`: "3-COL solves SAT", construction and both directions. | writer | 2026-11-03 p2–4 | d8e2fb0 |
 | T6.15 | `theory/colouring/chromatic-bounds.md`: cliques give a lower bound, small degrees an upper bound (proof of b), χ(K_{m,n}) = 2. | writer | 2026-11-03 p5 | fda4bcd |
-| T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | |
+| T6.16 | `theory/colouring/mycielski.md`: Mycielski graphs, theorem and proof. | writer | 2026-11-03 p6 | 6a9c89b |
 | T6.17 | Lecture pages t06 to t08: intro, summary, and the exercises the notes give. Only text from the notes. | writer | all three | 93a9ae8 (t06, t07; t08 open) |
 | T6.18 | Check the pages of T6.4 to T6.17 at 390px and 1366×768. | visual-qa | | b931dc5 (planarity; colouring pages and t08 open) |
 
