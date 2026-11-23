@@ -740,3 +740,20 @@ select:not([multiple]):hover { border-color: var(--vp-c-text-3); }
 .vp-doc .ga-wt-step.ga-wt-active { border-left-color: var(--gv-accent); background: var(--gv-accent-soft); }
 .vp-doc .ga-wt-step:focus-visible { outline: 2px solid var(--vp-c-brand-1); outline-offset: 2px; }
 .vp-doc .ga-wt-uses { margin: -0.6em 0 1.2em; font-size: 0.9em; color: var(--vp-c-text-2); }
+
+/* ---- midterm cheat sheet (site/exam/cheat-sheet.md): dense two columns, like the A4 side it is copied to ---- */
+.cs-star { color: var(--vp-c-brand-1); }
+.cs-dag { color: var(--vp-c-warning-1); font-weight: 700; }
+.vp-doc .cs-sheet { column-count: 2; column-gap: 28px; column-rule: 1px solid var(--vp-c-divider); font-size: 14px; line-height: 1.45; }
+.vp-doc .cs-sheet h2 { margin: 18px 0 6px; padding-top: 0; border-top: none; font-size: 17px; break-after: avoid; }
+.vp-doc .cs-sheet h2:first-child { margin-top: 0; }
+.vp-doc .cs-sheet ul { margin: 4px 0; padding-left: 16px; }
+.vp-doc .cs-sheet li + li { margin-top: 3px; }
+.vp-doc .cs-sheet p { margin: 6px 0; }
+.vp-doc .cs-box { background: var(--vp-c-bg-soft); border-radius: 6px; padding: 2px 10px; margin: 8px 0; break-inside: avoid; }
+.cs-figs { display: flex; justify-content: space-between; gap: 6px; margin: 8px 0; break-inside: avoid; }
+.cs-figs figure { margin: 0; text-align: center; font-size: 12px; color: var(--vp-c-text-2); }
+.cs-figs svg { width: 64px; height: 64px; display: block; margin: 0 auto 2px; }
+.cs-figs .e { stroke: var(--vp-c-text-1); stroke-width: 1.4; fill: none; }
+.cs-figs .v { fill: var(--vp-c-text-1); }
+@media (max-width: 760px) { .vp-doc .cs-sheet { column-count: 1; } }
