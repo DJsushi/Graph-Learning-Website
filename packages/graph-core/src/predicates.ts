@@ -52,6 +52,23 @@ const preds: Record<string, Predicate> = {
   },
   'vertex-count': ({ graph, args }) => (graph.vertices.length === Number(args.n) ? ok() : no(`The graph should have ${args.n} vertices.`)),
   'edge-count': ({ graph, args }) => (graph.edges.length === Number(args.m) ? ok() : no(`The graph should have ${args.m} edges.`)),
+  // Reads the colours from the `color1`..`color8` classes the colouring exercise puts on the vertices.
+  // `k`: at most this many different colours.
+  'is-proper-coloring': ({ graph, args }) => {
+    const col = new Map<Id, string>()
+    for (const v of graph.vertices) {
+      const c = v.classes.find(x => /^color[1-8]$/.test(x))
+      if (!c) return no(`Vertex ${v.id} has no colour yet.`)
+      col.set(v.id, c)
+    }
+    for (const e of graph.edges) {
+      const [a, b] = ends(e)
+      if (col.get(a) === col.get(b)) return no(a === b ? `The loop at ${a} cannot be properly coloured.` : `${a} and ${b} are adjacent and have the same colour.`)
+    }
+    const used = new Set(col.values()).size
+    if (args.k !== undefined && used > Number(args.k)) return no(`You used ${used} colours; ${args.k} are enough.`)
+    return ok()
+  },
   'is-spanning-tree': spanningTreeCheck,
   'is-mst': ctx => {
     const r = spanningTreeCheck(ctx)

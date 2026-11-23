@@ -102,6 +102,7 @@
 .vp-doc .ga-algorithm { border-left-color: var(--ga-alg); }
 .vp-doc .ga-algorithm .ga-box-kind { color: var(--ga-alg); }
 .vp-doc .ga-example, .vp-doc .ga-exercise { border-left-color: var(--ga-ex); background: transparent; border: 1px solid var(--vp-c-divider); border-left: 3px solid var(--ga-ex); }
+.vp-doc div.ga-exercise:not(.ga-box) { padding: 0.8em 1em; }
 .vp-doc .ga-example .ga-box-kind, .vp-doc .ga-exercise .ga-box-kind { color: var(--ga-ex); }
 .vp-doc .ga-intuition { border-left-color: var(--ga-ex); background: transparent; }
 .vp-doc .ga-intuition .ga-box-kind { color: var(--ga-ex); }

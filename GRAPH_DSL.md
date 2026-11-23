@@ -349,9 +349,10 @@ The reader can drag, add and delete vertices and edges; selected properties upda
 
 | Directive | Meaning |
 |-----------|---------|
-| `task` | `select-vertices`, `select-edges`, `select-elements` (both), `build` (reader edits the graph), `simulate` (reader performs algorithm steps), `answer` (numeric/text answer about the figure). |
+| `task` | `select-vertices`, `select-edges`, `select-elements` (both), `build` (reader edits the graph), `color-vertices` (a click cycles a vertex through `color1`…`colorN` and back to uncoloured; check with `is-proper-coloring`), `simulate` (reader performs algorithm steps), `answer` (numeric/text answer about the figure). |
 | `prompt` | Text shown to the reader (`$math$` allowed). |
-| `check` | Predicate call that decides correctness, from the registry in `packages/graph-core/src/predicates.ts`: `check: is-mst`, `check: is-path from=s to=t`, `check: degree-sequence seq="3,3,2,2,2"`. Several `check:` lines must all hold. |
+| `check` | Predicate call that decides correctness, from the registry in `packages/graph-core/src/predicates.ts`: `check: is-mst`, `check: is-path from=s to=t`, `check: degree-sequence seq="3,3,2,2,2"`, `check: is-proper-coloring k=3` (every vertex has a `colorN` class, adjacent vertices differ, at most `k` colours). Several `check:` lines must all hold. |
+| `colors` | For `task: color-vertices`: how many colours the reader may use, 1 to 8 (default 3). |
 | `answer` | For `task: answer`: the expected value (`answer: 23`), compared numerically with tolerance or as trimmed string. |
 | `algo`, `params` | For `task: simulate`: the algorithm whose steps the reader reproduces. |
 | `hint` | Optional; may appear multiple times; revealed one at a time. |
@@ -656,5 +657,5 @@ From the code review of 2026-11-10 (`BACKLOG.md` §3), not all checked again by 
 | `editable: true` on a player | §9.2 | Ignored. |
 | `reset: false` | §9.3 | Ignored. |
 | `directed-style` on loops | §4 | Ignored. |
-| `check:` predicates | §9.4 | Missing: `is-vertex-cover`, `is-proper-coloring`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. |
+| `check:` predicates | §9.4 | Missing: `is-vertex-cover`, `isomorphic-to`, `is-euler-trail`, `is-perfect-matching`, `is-cut`, `is-augmenting-path`. |
 | `task: simulate` | §9.4 | Works only for `bfs`, `kruskal` and `jarnik`. |

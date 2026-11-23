@@ -7,7 +7,7 @@ summary: k-connected and k-edge-connected graphs, s–t cuts, Menger's theorem i
 prerequisites: [theory/04-chordal-hamiltonian]
 sources:
   - resources/graph-theory/2026-10-13-13_44_03-join.pdf
-status: draft
+status: reviewed
 ---
 
 A connected graph can be fragile: deleting a single vertex or edge may disconnect it. Networks that must
@@ -18,17 +18,17 @@ also the combinatorial heart of the [[thm:maxflow-mincut|max-flow min-cut theore
 
 ## Summary
 
-- $k$-connected: removing $< k$ vertices keeps $G$ [[def:component|connected]]; $k$-edge-connected: removing $< k$ edges does
+- $k$-connected: removing $< k$ vertices keeps $G$ [[def:component|connected]] and $G$ has at least $k+1$ vertices (except $K_1$, $k=1$); $k$-edge-connected: removing $< k$ edges does
   ([[def:k-connected]]).
 - Menger: maximum number of [[def:st-cut|internally disjoint]] (edge-disjoint) $s$–$t$ [[def:path-graph|paths]] $=$ minimum size of an
-  $s$–$t$ cut (edge cut) ([[thm:menger-directed]]); globally, $k$-connected iff $k$ internally disjoint paths between every two
-  vertices ([[thm:menger]]).
+  $s$–$t$ cut (edge cut), for non-adjacent $s, t$ in the vertex version ([[thm:menger-directed]]); globally, a simple graph on at least $2$
+  vertices is $k$-connected iff $k$ internally disjoint paths join every two vertices ([[thm:menger]]).
 - Proof strategy: vertex version via vertex splitting; edge version via [[def:d-flow|d-flows]]
   ([[claim:d-flow-paths]]).
-- In flow terms: Menger B is max-flow min-cut with unit capacities ([[thm:maxflow-mincut]]), and A follows by
+- In flow terms: Menger B is max-flow min-cut with integer capacities (parallel [[def:mixed-multigraph|arcs]] merged) ([[thm:maxflow-mincut]]), and A follows by
   splitting vertices ([[exr:a02-vertex-capacities]]).
 - Set version: $k$ disjoint paths between any two $k$-sets ([[thm:total-menger]]).
-- $2$-connected iff every two vertices (edges) lie on a common [[def:cycle-graph|cycle]] ([[thm:two-connected-cycles]]) iff it has an ear decomposition
+- A graph on at least $3$ vertices is $2$-connected iff every two vertices (edges; no [[def:degree|isolated]] vertex) lie on a common [[def:cycle-graph|cycle]] ([[thm:two-connected-cycles]]) iff it has an ear decomposition
   ([[thm:ear-decomposition]]).
 
 ## Exercises

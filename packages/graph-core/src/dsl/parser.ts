@@ -34,7 +34,7 @@ export interface GraphDoc {
 export const TEXT_DIRECTIVES = new Set(['caption', 'intent', 'prompt', 'hint', 'solution', 'step', 'panel'])
 export const KNOWN_DIRECTIVES = new Set([
   ...TEXT_DIRECTIVES, 'type', 'simple', 'use', 'layout', 'vertex-label', 'edge-label', 'directed-style', 'interactive',
-  'algo', 'params', 'show', 'start', 'editable', 'live', 'allow', 'reset', 'task', 'check', 'answer', 'tolerance',
+  'algo', 'params', 'show', 'start', 'editable', 'live', 'allow', 'reset', 'task', 'check', 'answer', 'tolerance', 'colors',
   'reveal', 'layout-sync', 'height',
 ])
 /** Directives that affect only the graph of the current panel. */

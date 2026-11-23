@@ -11,6 +11,7 @@ import { dual, embed, interiorPoint, isPlanar } from '../src/planar'
 import { cycle, completeBipartite, complete, path as pathGraph, wheel } from '../src/dsl/generators'
 import { computeBox } from '../../graph-vue/src/viewbox'
 import { centerline, defaultBends, facePolygon, R, toScreen } from '../../graph-vue/src/geometry'
+import { labelToSpans, spansWidth } from '../../graph-vue/src/texsvg'
 
 const index = loadContent(path.resolve(__dirname, '../../..'))
 const fig = (id: string, panel = 0): GraphData => {
@@ -4558,5 +4559,478 @@ describe('kuratowski page (t07)', () => {
   it('quiz: K5 with every edge subdivided once has 5 + 10 = 15 vertices and 20 edges', () => {
     const k = complete(5)
     expect([k.vertices.length + k.edges.length, 2 * k.edges.length]).toEqual([15, 20])
+  })
+})
+
+describe('colourings page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const colours = (g: GraphData) => new Set(g.vertices.map(v => v.classes.find(c => /^color\d$/.test(c))))
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const board = fig('t08-board-colouring')
+
+  it('board graph: 5 vertices, 7 edges, the lecture colouring is proper with 3 colours, labels match the colours, a b c pairwise adjacent, chi = 3', () => {
+    expect([board.vertices.length, board.edges.length]).toEqual([5, 7])
+    expect(proper(board, 3)).toBe(true)
+    expect(colours(board).size).toBe(3)
+    for (const v of board.vertices) expect(v.classes).toContain(`color${v.label}`)
+    const ks = new Set(board.edges.map(key))
+    expect(['ab', 'ac', 'bc'].every(x => ks.has(x))).toBe(true)
+    expect(chi(board)).toBe(3)
+  })
+
+  it('proper-or-not: same graph; "proper" is the lecture colouring; "not proper" uses 2 colours and clashes exactly on bc and ce', () => {
+    const [p, q] = [fig('t08-proper-or-not', 0), fig('t08-proper-or-not', 1)]
+    for (const g of [p, q]) expect(new Set(g.edges.map(key))).toEqual(new Set(board.edges.map(key)))
+    expect(proper(p, 3)).toBe(true)
+    expect(p.vertices.map(v => v.classes.find(c => /^color/.test(c)))).toEqual(board.vertices.map(v => v.classes.find(c => /^color/.test(c))))
+    expect(proper(q)).toBe(false)
+    expect(colours(q).size).toBe(2)
+    const col = new Map(q.vertices.map(v => [v.id, v.classes.find(c => /^color/.test(c))]))
+    expect(q.edges.filter(e => col.get(ends(e)[0]) === col.get(ends(e)[1])).map(key).sort()).toEqual(['bc', 'ce'])
+    expect(q.edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['bc', 'ce'])
+  })
+
+  it('chromatic-three stepper: 4 steps, 5 vertices and 7 edges; one colour makes all 7 edges bad; a b c pairwise adjacent; last step is the lecture colouring', () => {
+    const s = steps('t08-chromatic-three')
+    expect(s.length).toBe(4)
+    expect([s[0].vertices.length, s[0].edges.length]).toEqual([5, 7])
+    expect(proper(s[1])).toBe(false)
+    expect(s[1].edges.filter(e => e.classes.includes('rejected')).length).toBe(7)
+    expect(s[2].edges.filter(e => e.classes.includes('highlight')).map(key).sort()).toEqual(['ab', 'ac', 'bc'])
+    expect(proper(s[3], 3)).toBe(true)
+    expect(chi(s[3])).toBe(3)
+    expect(s[3].vertices.map(v => v.classes.find(c => /^color/.test(c)))).toEqual(board.vertices.map(v => v.classes.find(c => /^color/.test(c))))
+  })
+
+  it('loop-and-edgeless: loop gives no proper colouring (chi undefined); 4 isolated vertices all colour 1, chi = 1; one edge pq, chi = 2', () => {
+    const [l, n, o] = [0, 1, 2].map(i => fig('t08-loop-and-edgeless', i))
+    expect(chi(l)).toBeUndefined()
+    expect(proper(l)).toBe(false)
+    expect([n.vertices.length, n.edges.length]).toEqual([4, 0])
+    expect(proper(n, 1)).toBe(true)
+    expect(chi(n)).toBe(1)
+    expect(o.edges.map(key)).toEqual(['pq'])
+    expect(proper(o, 2)).toBe(true)
+    expect(chi(o)).toBe(2)
+    expect(chi({ vertices: [], edges: [], faces: [] } as any)).toBe(0)
+  })
+
+  it('prism exercise: solution colouring is proper with 3 colours, chi = 3; lecture graph has a proper 4-colouring and chi = 3', () => {
+    const g = fig('t08-ex-colour-prism')
+    expect(chi(g)).toBe(3)
+    const sol: Record<string, string> = { 1: 'color1', 6: 'color1', 2: 'color2', 4: 'color2', 3: 'color3', 5: 'color3' }
+    expect(proper({ ...g, vertices: g.vertices.map(v => ({ ...v, classes: [sol[v.id]] })) }, 3)).toBe(true)
+    expect(proper(board, 4)).toBe(true)
+  })
+})
+
+describe('two-colourable page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const cycleLengths = (g: GraphData) => {
+    const out: number[] = []
+    for (let m = 1; m < 1 << g.edges.length; m++) {
+      const s = new Set(g.edges.filter((_, i) => m & (1 << i)).map(e => e.id))
+      if (A.isCycleEdgeSet(g, s)) out.push(s.size)
+    }
+    return out.sort()
+  }
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const hexEdges = ['pq', 'ps', 'pu', 'qr', 'rs', 'st', 'tu']
+
+  it('opening figure: "two colours" is the hexagon with chord p s, colour 1 on p r t and colour 2 on q s u is proper, cycles 4, 4, 6, chi = 2; "the lecture\'s graph" is t08-board-colouring with the triangle a b c, chi = 3', () => {
+    const [h, l] = [fig('t08-two-or-three', 0), fig('t08-two-or-three', 1)]
+    expect(h.edges.map(key).sort()).toEqual(hexEdges)
+    expect(proper(h, 2)).toBe(true)
+    expect(['p', 'r', 't'].map(v => colourOf(h, v))).toEqual(['color1', 'color1', 'color1'])
+    expect(['q', 's', 'u'].map(v => colourOf(h, v))).toEqual(['color2', 'color2', 'color2'])
+    expect(cycleLengths(h)).toEqual([4, 4, 6])
+    expect(chi(h)).toBe(2)
+    const board = fig('t08-board-colouring')
+    expect(new Set(l.edges.map(key))).toEqual(new Set(board.edges.map(key)))
+    expect(l.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(l.edges.filter(e => e.classes.includes('cycle')).map(key).sort()).toEqual(['ab', 'ac', 'bc'])
+    expect(chi(l)).toBe(3)
+  })
+
+  it('odd-five stepper: C5 without a triangle; colours alternate on the path a b c d; e sees colour 1 at a and colour 2 at d; chi = 3; fits the box', () => {
+    const s = steps('t08-odd-five')
+    expect(s.length).toBe(3)
+    const g = s[0]
+    expect(g.edges.map(key).sort()).toEqual(['ab', 'ae', 'bc', 'cd', 'de'])
+    expect(cycleLengths(g)).toEqual([5])
+    expect(['a', 'b', 'c', 'd'].map(v => colourOf(s[1], v))).toEqual(['color1', 'color2', 'color1', 'color2'])
+    expect(s[2].edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['ae', 'de'])
+    expect(chi(g)).toBe(3)
+    s.forEach(fits)
+  })
+
+  for (const id of ['t08-two-colour-forward', 't08-two-colour-backward']) {
+    it(`${id}: same graph as the opening, 7 edges, cycles 4 (p q r s and p s t u) and 6; rows A = p r t on top and B = q s u below; every edge joins the rows; final colouring proper with colours 1 and 2; fits the box`, () => {
+      const s = steps(id)
+      expect(s.length).toBe(4)
+      expect(s[0].edges.map(key).sort()).toEqual(hexEdges)
+      expect(s[0].edges.length).toBe(7)
+      const g = s[0]
+      const ids = (ks: string[]) => new Set(g.edges.filter(e => ks.includes(key(e))).map(e => e.id))
+      expect(A.isCycleEdgeSet(g, ids(['pq', 'qr', 'rs', 'ps']))).toBe(true)
+      expect(A.isCycleEdgeSet(g, ids(['ps', 'st', 'tu', 'pu']))).toBe(true)
+      expect(A.isCycleEdgeSet(g, ids(['pq', 'qr', 'rs', 'st', 'tu', 'pu']))).toBe(true)
+      expect(cycleLengths(g)).toEqual([4, 4, 6])
+      const rows = s[1]
+      const y = (v: string) => rows.vertices.find(x => x.id === v)!.y
+      expect(['p', 'r', 't'].map(y)).toEqual([1.3, 1.3, 1.3])
+      expect(['q', 's', 'u'].map(y)).toEqual([0, 0, 0])
+      expect(rows.edges.every(e => y(ends(e)[0]) !== y(ends(e)[1]))).toBe(true)
+      const last = s[3]
+      expect(proper(last, 2)).toBe(true)
+      expect(['p', 'r', 't'].map(v => colourOf(last, v))).toEqual(['color1', 'color1', 'color1'])
+      expect(['q', 's', 'u'].map(v => colourOf(last, v))).toEqual(['color2', 'color2', 'color2'])
+      s.forEach(fits)
+    })
+  }
+
+  it('cube exercise: the solution (colour 1 on 1 3 6 8, colour 2 on 2 4 5 7) is proper, no odd cycle, chi = 2; pitfall: K4 has a triangle and chi = 4; quiz: K7 has a 7-cycle and chi = 7', () => {
+    const g = fig('t08-ex-two-colour-cube')
+    const sol: Record<string, string> = { 1: 'color1', 3: 'color1', 6: 'color1', 8: 'color1', 2: 'color2', 4: 'color2', 5: 'color2', 7: 'color2' }
+    expect(proper({ ...g, vertices: g.vertices.map(v => ({ ...v, classes: [sol[v.id]] })) }, 2)).toBe(true)
+    expect(cycleLengths(g).every(n => n % 2 === 0)).toBe(true)
+    expect(chi(g)).toBe(2)
+    const k4 = complete(4)
+    expect(cycleLengths(k4)).toContain(3)
+    expect(chi(k4)).toBe(4)
+    const k7 = complete(7)
+    const c7 = new Set(k7.edges.filter(e => { const [a, b] = ends(e).map(Number); return Math.abs(a - b) === 1 || Math.abs(a - b) === 6 }).map(e => e.id))
+    expect(c7.size).toBe(7)
+    expect(A.isCycleEdgeSet(k7, c7)).toBe(true)
+    expect(chi(k7)).toBe(7)
+  })
+})
+
+describe('3-colouring and SAT page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('-')
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const proper = (g: GraphData, k: number) => PREDICATES['is-proper-coloring']({ graph: g, args: { k: String(k) } } as any).ok
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  // all proper colourings with colours 1..k that extend `fixed`, by backtracking
+  const extensions = (g: GraphData, fixed: Record<string, number>, k = 3) => {
+    const vs = g.vertices.map(v => v.id), nb = new Map(vs.map(v => [v, [] as string[]]))
+    for (const e of g.edges) { const [a, b] = ends(e); nb.get(a)!.push(b); nb.get(b)!.push(a) }
+    const col: Record<string, number> = { ...fixed }, out: Record<string, number>[] = []
+    for (const v of Object.keys(fixed)) if (nb.get(v)!.some(u => col[u] === col[v])) return out
+    const free = vs.filter(v => !(v in fixed))
+    const go = (i: number) => {
+      if (i === free.length) { out.push({ ...col }); return }
+      const v = free[i]
+      for (let c = 1; c <= k; c++) if (!nb.get(v)!.some(u => col[u] === c)) { col[v] = c; go(i + 1); delete col[v] }
+    }
+    go(0)
+    return out
+  }
+  // G_Phi of the lecture's construction; literal k > 0 is x_k, k < 0 its negation
+  const gPhi = (n: number, clauses: number[][]) => {
+    const E: string[][] = [['s', 'f'], ['f', 't'], ['s', 't']]
+    const lit = (k: number) => (k > 0 ? `x${k}` : `n${-k}`)
+    for (let k = 1; k <= n; k++) E.push(['s', `x${k}`], ['s', `n${k}`], [`x${k}`, `n${k}`])
+    clauses.forEach((cl, i) => {
+      const a = (j: number) => `a${i + 1}_${j}`, b = (j: number) => `b${i + 1}_${j}`
+      E.push([b(1), b(2)], [b(2), b(3)], [b(1), b(3)])
+      for (let j = 1; j <= 3; j++) E.push([a(j), b(j)], [a(j), 't'], [a(j), lit(cl[j - 1])])
+    })
+    return E
+  }
+  const S = 1, F = 2, T = 3
+
+  it('opening figure: with t = T and the literals F F F no proper completion exists, the a are forced to S; "one T" is proper; in general a completion exists iff some literal is T', () => {
+    const [none, one] = [fig('t08-clause-gadget', 0), fig('t08-clause-gadget', 1)]
+    expect(extensions(none, { t: T, l1: F, l2: F, l3: F })).toEqual([])
+    expect(['a1', 'a2', 'a3'].map(v => colourOf(none, v))).toEqual(['color1', 'color1', 'color1'])
+    expect(none.edges.filter(e => e.classes.includes('rejected')).map(key).sort()).toEqual(['b1-b2', 'b1-b3', 'b2-b3'])
+    expect(proper(one, 3)).toBe(true)
+    expect(['l1', 'a1', 'b1'].map(v => colourOf(one, v))).toEqual(['color3', 'color2', 'color1'])
+    for (const ls of [[F, F, F], [T, F, F], [F, T, F], [F, F, T], [T, T, F], [T, F, T], [F, T, T], [T, T, T]]) {
+      const ex = extensions(one, { t: T, l1: ls[0], l2: ls[1], l3: ls[2] })
+      expect(ex.length > 0).toBe(ls.includes(T))
+      if (!ls.includes(T)) continue
+      expect(ex.every(c => ['a1', 'a2', 'a3'].every(a => c[a] !== T))).toBe(true)
+    }
+  })
+
+  const ids = ['t08-g-phi', 't08-g-phi-build', 't08-g-phi-forward', 't08-g-phi-backward']
+  const map: Record<string, string> = { x8: 'x3', n8: 'n3', a1: 'a1_1', a2: 'a1_2', a3: 'a1_3', b1: 'b1_1', b2: 'b1_2', b3: 'b1_3' }
+  const lecture = gPhi(3, [[-1, 2, 3]]) // x_8 renamed x3
+
+  it('G_Phi figures: the construction for (not x1 or x2 or x8), 15 vertices and 24 edges, same positions in all four figures, chi = 3, every step fits the walkthrough box', () => {
+    for (const id of ids) {
+      const g = id === 't08-g-phi' ? fig(id) : steps(id)[0]
+      expect(g.vertices.length).toBe(15)
+      expect(g.edges.length).toBe(24)
+      expect(g.edges.map(e => ends(e).map(v => map[v] ?? v).sort().join('-')).sort()).toEqual(lecture.map(p => p.slice().sort().join('-')).sort())
+      expect(g.vertices.map(v => [v.id, v.x, v.y])).toEqual(fig('t08-g-phi').vertices.map(v => [v.id, v.x, v.y]))
+      if (id !== 't08-g-phi') steps(id).forEach(fits)
+      else fits(g)
+      // labels render inside 26px circles: SVG spans exist and are at most 2.3 em wide
+      for (const v of g.vertices) { const sp = labelToSpans(v.label ?? v.id); expect(sp).toBeDefined(); expect(spansWidth(sp!)).toBeLessThanOrEqual(2.3) }
+    }
+    // chi = 3: no proper 2-colouring (the triangle s f t), and a proper 3-colouring exists
+    expect(extensions(fig('t08-g-phi'), {}, 2)).toEqual([])
+    expect(extensions(fig('t08-g-phi'), { s: S, f: F, t: T }).length).toBeGreaterThan(0)
+  })
+
+  it('build stepper: 5 steps; the parts appear in order (3, then 9, then 15 vertices), all visible at the end', () => {
+    const s = steps('t08-g-phi-build')
+    expect(s.length).toBe(5)
+    const shown = (g: GraphData) => g.vertices.filter(v => !v.classes.includes('hidden')).length
+    const shownE = (g: GraphData) => g.edges.filter(e => !e.classes.includes('hidden')).length
+    expect(s.map(shown)).toEqual([3, 9, 15, 15, 15])
+    expect(s.map(shownE)).toEqual([3, 12, 18, 21, 24])
+  })
+
+  it('forward stepper: nu gives F to x1 x2 x8, the clause is true at j = 1, the final colouring is proper with 3 colours and matches the text', () => {
+    const s = steps('t08-g-phi-forward')
+    expect(s.length).toBe(6)
+    const last = s[5]
+    expect(proper(last, 3)).toBe(true)
+    const want: Record<string, string> = { s: 'color1', f: 'color2', t: 'color3', x1: 'color2', x2: 'color2', x8: 'color2', n1: 'color3', n2: 'color3', n8: 'color3', a1: 'color2', b1: 'color1', a2: 'color1', a3: 'color1', b2: 'color3', b3: 'color2' }
+    for (const [v, c] of Object.entries(want)) expect(colourOf(last, v)).toBe(c)
+  })
+
+  it('backward stepper: x1 T and x2, x8 F (clause false) cannot be completed; the a are forced to S; every proper 3-colouring of G_Phi gives a satisfying valuation; 7 of the 8 valuations extend', () => {
+    const s = steps('t08-g-phi-backward')
+    expect(s.length).toBe(6)
+    const g = s[0]
+    const partial = { s: S, f: F, t: T, x1: T, n1: F, x2: F, n2: T, x8: F, n8: T }
+    for (const [v, c] of Object.entries(partial)) expect(colourOf(s[2], v)).toBe(`color${c}`)
+    expect(extensions(g, partial)).toEqual([])
+    expect(['a1', 'a2', 'a3'].map(v => colourOf(s[4], v))).toEqual(['color1', 'color1', 'color1'])
+    const all = extensions(g, { s: S, f: F, t: T })
+    expect(all.length).toBeGreaterThan(0)
+    for (const c of all) expect(c.n1 === T || c.x2 === T || c.x8 === T).toBe(true)
+    let ok = 0
+    for (const v1 of [T, F]) for (const v2 of [T, F]) for (const v8 of [T, F]) {
+      const ex = extensions(g, { s: S, f: F, t: T, x1: v1, n1: 5 - v1, x2: v2, n2: 5 - v2, x8: v8, n8: 5 - v8 })
+      expect(ex.length > 0).toBe(v1 === F || v2 === T || v8 === T)
+      if (ex.length) ok++
+    }
+    expect(ok).toBe(7)
+  })
+
+  it('quiz: 4 variables and 5 clauses give 3 + 8 + 30 = 41 vertices', () => {
+    const E = gPhi(4, [[1, 2, 3], [-1, 2, 4], [1, -3, -4], [2, 3, 4], [-1, -2, -3]])
+    expect(new Set(E.flat()).size).toBe(41)
+  })
+})
+
+describe('chromatic-bounds page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('')
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const nbrs = (g: GraphData, v: string) => g.edges.filter(e => ends(e).includes(v)).map(e => ends(e).find(x => x !== v)!).sort()
+  // every non-empty subgraph has a vertex of degree <= k; induced subgraphs suffice, since deleting edges only lowers degrees
+  const smallDegree = (g: GraphData, k: number) => {
+    const vs = g.vertices.map(v => v.id)
+    for (let m = 1; m < 1 << vs.length; m++) {
+      const S = new Set(vs.filter((_, i) => m >> i & 1))
+      const es = g.edges.filter(e => ends(e).every(x => S.has(x)))
+      if (![...S].some(v => es.filter(e => ends(e).includes(v)).length <= k)) return false
+    }
+    return true
+  }
+  const without = (g: GraphData, v: string): GraphData => ({ ...g, vertices: g.vertices.filter(x => x.id !== v), edges: g.edges.filter(e => !ends(e).includes(v)) })
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const board = fig('t08-board-colouring')
+
+  it('opening: the lecture graph with its positions; a b c pairwise adjacent; a has neighbours b, c; k = 2 holds; chi = 3', () => {
+    const g = fig('t08-bounds-board')
+    expect(g.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(g.edges.map(key).sort()).toEqual(board.edges.map(key).sort())
+    expect(['ab', 'ac', 'bc'].every(x => g.edges.map(key).includes(x))).toBe(true)
+    expect(nbrs(g, 'a')).toEqual(['b', 'c'])
+    expect(smallDegree(g, 2)).toBe(true)
+    expect(chi(g)).toBe(3)
+  })
+
+  it('every-subgraph: "holds" is the lecture graph and satisfies k = 2; "fails": t has 1 neighbour, K4 on p q r s has all degrees 3, k = 2 fails, chi = 4', () => {
+    const [h, f] = [fig('t08-every-subgraph', 0), fig('t08-every-subgraph', 1)]
+    expect(h.vertices.map(v => [v.id, v.x, v.y])).toEqual(board.vertices.map(v => [v.id, v.x, v.y]))
+    expect(h.edges.map(key).sort()).toEqual(board.edges.map(key).sort())
+    expect(smallDegree(h, 2)).toBe(true)
+    expect(nbrs(f, 't')).toEqual(['q'])
+    const k4 = without(f, 't')
+    expect(k4.edges.length).toBe(6)
+    expect(k4.vertices.map(v => nbrs(k4, v.id).length)).toEqual([3, 3, 3, 3])
+    expect(smallDegree(f, 2)).toBe(false)
+    expect(chi(f)).toBe(4)
+  })
+
+  it('kmm figure: K_{3,3}, all degrees 3, (b) fails for k = 2 and holds for k = 3, the row colouring is proper, chi = 2', () => {
+    const g = fig('t08-kmm-bound')
+    expect(g.edges.map(key).sort()).toEqual(completeBipartite(3, 3).edges.map(key).sort())
+    expect(g.vertices.map(v => nbrs(g, v.id).length)).toEqual(Array(6).fill(3))
+    expect([smallDegree(g, 2), smallDegree(g, 3)]).toEqual([false, true])
+    expect(proper(g, 2)).toBe(true)
+    expect(chi(g)).toBe(2)
+  })
+
+  it('induction stepper: 7 steps, the lecture graph with a renamed v; v has neighbours b, c; G - v satisfies k = 2; colouring of G - v proper with 3 colours, N(v) carries 2 and 3; v gets 1; the final colouring is the lecture one; every step fits', () => {
+    const s = steps('t08-degree-induction')
+    expect(s.length).toBe(7)
+    const g = s[0]
+    expect(g.edges.map(e => ends(e).map(x => x === 'v' ? 'a' : x).sort().join('')).sort()).toEqual(board.edges.map(key).sort())
+    expect(smallDegree(g, 2)).toBe(true)
+    expect(nbrs(g, 'v')).toEqual(['b', 'c'])
+    const gp = without(s[3], 'v')
+    expect(gp.vertices.length).toBe(4)
+    expect(smallDegree(gp, 2)).toBe(true)
+    expect(proper(gp, 3)).toBe(true)
+    expect(new Set(['b', 'c'].map(v => colourOf(s[4], v)))).toEqual(new Set(['color2', 'color3']))
+    expect(colourOf(s[5], 'v')).toBe('color1')
+    expect(proper(s[6], 3)).toBe(true)
+    for (const v of ['b', 'c', 'd', 'e']) expect(colourOf(s[6], v)).toBe(board.vertices.find(x => x.id === v)!.classes.find(c => /^color/.test(c)))
+    expect(colourOf(s[6], 'v')).toBe(colourOf(board, 'a'))
+    s.forEach(fits)
+  })
+
+  it('quizzes: K_{3,3} satisfies (b) with k = 3 and chi = 2; K5 satisfies (b) with k = 4 and chi = 5', () => {
+    expect(smallDegree(completeBipartite(3, 3), 3)).toBe(true)
+    expect(chi(completeBipartite(3, 3))).toBe(2)
+    expect(smallDegree(complete(5), 4)).toBe(true)
+    expect(chi(complete(5))).toBe(5)
+  })
+
+  it('pitfall: the 5-cycle has no triangle (girth 5) and chi = 3', () => {
+    expect(A.girth(new GraphIndex(cycle(5)))).toBe(5)
+    expect(chi(cycle(5))).toBe(3)
+  })
+})
+
+describe('mycielski page (t08)', () => {
+  const steps = (id: string) => { const f = index.figureById.get(id)!; const d = parseGraph(f.source, f.info); expect(d.errors).toEqual([]); return d.panels[0].steps.map(s => s.graph) }
+  const key = (e: GraphData['edges'][number]) => ends(e).slice().sort().join('-')
+  const chi = (g: GraphData) => A.chromaticNumber(new GraphIndex(g))
+  const proper = (g: GraphData, k?: number) => PREDICATES['is-proper-coloring']({ graph: g, args: k === undefined ? {} : { k: String(k) } } as any).ok
+  const triangleFree = (g: GraphData) => A.girth(new GraphIndex(g)) > 3
+  const colourOf = (g: GraphData, v: string) => g.vertices.find(x => x.id === v)!.classes.find(c => /^color\d$/.test(c))
+  const visible = (g: GraphData): GraphData => ({ ...g, vertices: g.vertices.filter(v => !v.classes.includes('hidden')), edges: g.edges.filter(e => !e.classes.includes('hidden')) })
+  // the lecture's construction: v -> v0, v1, plus m; edges u0v0, u1v0, u0v1 for uv in E, and m v1
+  const mycielski = (g: GraphData): string[] => {
+    const es: string[][] = []
+    for (const e of g.edges) { const [u, v] = ends(e); es.push([u + '0', v + '0'], [u + '1', v + '0'], [u + '0', v + '1']) }
+    for (const v of g.vertices) es.push(['m', v.id + '1'])
+    return es.map(p => p.slice().sort().join('-')).sort()
+  }
+  const fits = (g: GraphData) => {
+    const b = computeBox(g.vertices.map(v => toScreen(v.x!, v.y!)), { hasVertices: true, labelsInside: true, hasLoops: false, hasGroups: false, hasBadges: false })
+    expect(Math.min(314 / b.w, 195 / b.h)).toBeGreaterThanOrEqual(1)
+  }
+  const shortLabels = (g: GraphData) => { for (const v of g.vertices) { const sp = labelToSpans(v.label ?? v.id); expect(sp).toBeDefined(); expect(spansWidth(sp!)).toBeLessThanOrEqual(2.3) } }
+  const c5 = cycle(5) // vertices 1..5
+  const c5named = { ...c5, vertices: c5.vertices.map(v => ({ ...v, id: 'abcde'[+v.id - 1] })), edges: c5.edges.map(e => ({ ...e, tail: ['abcde'[+e.tail[0] - 1]], head: ['abcde'[+e.head[0] - 1]] })) } as GraphData
+  const p3 = pathGraph(2) // P_n has n edges: vertices 0, 1, 2
+  const p3named = { ...p3, vertices: p3.vertices.map(v => ({ ...v, id: 'aub'[+v.id] })), edges: p3.edges.map(e => ({ ...e, tail: ['aub'[+e.tail[0]]], head: ['aub'[+e.head[0]]] })) } as GraphData
+
+  it('generators used below: cycle(5) is numbered from 1, path(2) from 0, in order', () => {
+    expect(c5.vertices.map(v => v.id)).toEqual(['1', '2', '3', '4', '5'])
+    expect(c5.edges.map(key).sort()).toEqual(['1-2', '1-5', '2-3', '3-4', '4-5'])
+    expect(p3.edges.map(key).sort()).toEqual(['0-1', '1-2'])
+  })
+
+  it('opening figure G4: the construction on C5 with outer ring a..e; 11 vertices, 20 edges, no triangle, chi = 4; a1 is joined to b0 and e0; m to the inner ring', () => {
+    const g = fig('t08-myc-grotzsch')
+    expect(g.vertices.length).toBe(11)
+    expect(g.edges.length).toBe(20)
+    expect(g.edges.map(key).sort()).toEqual(mycielski(c5named))
+    expect(triangleFree(g)).toBe(true)
+    expect(chi(g)).toBe(4)
+    expect(g.edges.filter(e => ends(e).includes('a1')).map(e => ends(e).find(x => x !== 'a1')).sort()).toEqual(['b0', 'e0', 'm'])
+    shortLabels(g)
+  })
+
+  it('quiz: G4 from C5 has 2*5+1 = 11 vertices and 5+10+5 = 20 edges', () => {
+    expect(new Set(mycielski(c5named).flatMap(k => k.split('-'))).size).toBe(11)
+    expect(mycielski(c5named).length).toBe(20)
+  })
+
+  it('base stepper: C5 with the names and positions of t08-odd-five; no triangle; b, e are the neighbours of a and not adjacent; 1,2,1,2,3 is proper; chi = 3; fits', () => {
+    const s = steps('t08-myc-base')
+    expect(s.length).toBe(3)
+    const odd = fig('t08-odd-five')
+    expect(s[0].vertices.map(v => [v.id, v.x, v.y])).toEqual(odd.vertices.map(v => [v.id, v.x, v.y]))
+    expect(s[0].edges.map(key).sort()).toEqual(c5named.edges.map(key).sort())
+    expect(triangleFree(s[0])).toBe(true)
+    const nb = s[0].edges.filter(e => ends(e).includes('a')).map(e => ends(e).find(x => x !== 'a')).sort()
+    expect(nb).toEqual(['b', 'e'])
+    expect(s[0].edges.map(key)).not.toContain('b-e')
+    expect(['a', 'b', 'c', 'd', 'e'].map(v => colourOf(s[2], v))).toEqual(['color1', 'color2', 'color1', 'color2', 'color3'])
+    expect(proper(s[2], 3)).toBe(true)
+    expect(chi(s[0])).toBe(3)
+    expect([0, 1, 2].map(k => chi(complete(k)))).toEqual([0, 1, 2])
+    expect([0, 1, 2].map(k => complete(k).edges.length <= 1)).toEqual([true, true, true])
+    s.forEach(fits)
+  })
+
+  it('construction stepper: G_k = path a u b (chi 2, no triangle); final graph is the construction: 7 vertices, 9 edges (2 + 4 + 3), no triangle, chi = 3; fits', () => {
+    const s = steps('t08-myc-construction')
+    expect(s.length).toBe(5)
+    const g0 = visible(s[0])
+    expect(g0.vertices.map(v => v.id)).toEqual(['a0', 'u0', 'b0'])
+    expect(chi(g0)).toBe(2)
+    expect(triangleFree(g0)).toBe(true)
+    expect(visible(s[1]).vertices.length).toBe(7)
+    expect(visible(s[1]).edges.length).toBe(2)
+    expect(visible(s[3]).edges.length - visible(s[2]).edges.length).toBe(4)
+    const g = visible(s[4])
+    expect(g.edges.length).toBe(9)
+    expect(g.edges.map(key).sort()).toEqual(mycielski(p3named))
+    expect(triangleFree(g)).toBe(true)
+    expect(chi(g)).toBe(3)
+    s.forEach(fits)
+    s.forEach(shortLabels)
+  })
+
+  it('no-triangle, upper and lower steppers use the same graph; u1 has row-0 neighbours a0, b0, not adjacent; upper colouring proper with 3 colours, m colour 3; lower: only u0, u1 coloured in step 4 (not adjacent), last step proper 3-colouring; fits', () => {
+    const final = visible(steps('t08-myc-construction')[4])
+    for (const id of ['t08-myc-no-triangle', 't08-myc-upper', 't08-myc-lower']) {
+      const s = steps(id)
+      expect(s[0].vertices.map(v => [v.id, v.x, v.y])).toEqual(final.vertices.map(v => [v.id, v.x, v.y]))
+      expect(s[0].edges.map(key).sort()).toEqual(final.edges.map(key).sort())
+      s.forEach(fits)
+    }
+    const g = final
+    const n = (v: string) => g.edges.filter(e => ends(e).includes(v)).map(e => ends(e).find(x => x !== v)!).sort()
+    expect(n('u1')).toEqual(['a0', 'b0', 'm'])
+    expect(g.edges.map(key)).not.toContain('a0-b0')
+    expect(n('m')).toEqual(['a1', 'b1', 'u1'])
+    expect(g.edges.filter(e => ends(e).every(x => x.endsWith('1')))).toEqual([])
+    expect(g.edges.map(key)).not.toContain('u0-u1')
+    const up = steps('t08-myc-upper')
+    expect(steps('t08-myc-no-triangle').length).toBe(4)
+    expect(up.length).toBe(3)
+    expect(proper(up[2], 3)).toBe(true)
+    expect(colourOf(up[2], 'm')).toBe('color3')
+    expect(['a0', 'b0', 'a1', 'b1'].map(v => colourOf(up[0], v) ?? colourOf(up[2], v))).toEqual(Array(4).fill('color1'))
+    expect(['u0', 'u1'].map(v => colourOf(up[2], v))).toEqual(['color2', 'color2'])
+    const lo = steps('t08-myc-lower')
+    expect(lo.length).toBe(6)
+    expect(lo[3].vertices.filter(v => colourOf(lo[3], v.id)).map(v => v.id).sort()).toEqual(['u0', 'u1'])
+    expect(lo[3].edges.filter(e => { const [x, y] = ends(e).map(v => colourOf(lo[3], v)); return x && x === y })).toEqual([])
+    expect(proper(lo[5], 3)).toBe(true)
   })
 })

@@ -7,13 +7,13 @@ summary: Subgraphs and induced subgraphs, cliques and independent sets, walks an
 prerequisites: [theory/01-basic-notions]
 sources:
   - resources/graph-theory/2026-09-22-13_38_58-join.pdf (pp. 3–5)
-status: draft
+status: reviewed
 ---
 
 In this lesson we start looking *inside* graphs: at smaller graphs contained in them, and at
 ways of moving through them along edges. Moving along edges leads to the notions of
 connectivity and distance. As a first real structural theorem, we characterise bipartite graphs:
-a graph can be split into two independent halves exactly when it has no cycle of odd length.
+a graph can be split into two independent sets exactly when it has no cycle of odd length.
 
 ## Summary
 
@@ -22,7 +22,7 @@ a graph can be split into two independent halves exactly when it has no cycle of
 - [[def:walk|Walks]] may repeat vertices and edges; a shortest walk is a [[def:path-graph|path]] ([[claim:shortest-walk-path]]).
 - Components are the classes of "connected by a walk" ([[def:component]]); distance is the length
   of a shortest walk ([[def:distance]]) and is computed by BFS ([[alg:bfs]]).
-- $G$ is [[def:bipartite|bipartite]] iff $G \subseteq K_{m,n}$ ([[prop:bipartite-subgraph-kmn]]) iff $G$ has no odd [[def:cycle-graph|cycle]]
+- $G$ is [[def:bipartite|bipartite]] iff $G$ is [[def:isomorphism|isomorphic]] to a subgraph of some $K_{m,n}$ ([[prop:bipartite-subgraph-kmn]]) iff $G$ has no odd [[def:cycle-graph|cycle]]
   ([[thm:bipartite-odd-cycle]]).
 
 ## Exercises
@@ -69,13 +69,13 @@ component of $G$.
 Assume $G$ is disconnected; we show $\ol{G}$ is connected. Let $u, v$ be vertices. If $u, v$ are in
 different components of $G$, they are not adjacent in $G$, so $uv \in E(\ol{G})$. If they are in the same
 component, pick a vertex $w$ in another component (it exists since $G$ is disconnected). Then $uw$ and
-$wv$ are non-edges of $G$, so $(u, w, v)$ is a walk, indeed a [[def:path-graph|path]], in $\ol{G}$. In both cases $u$ and $v$ are connected
+$wv$ are non-edges of $G$, so $(u, w, v)$ is a walk in $\ol{G}$. In both cases $u$ and $v$ are connected
 in $\ol{G}$.
 :::
 ::::
 
 :::: exercise {#exr:t02-closed-odd-walk title="Odd closed walks" difficulty=2}
-Show that every [[def:walk|closed walk]] of odd length contains (the vertices and edges of) an odd [[def:cycle-graph|cycle]]. Conclude
+Show that every [[def:walk|closed walk]] of odd [[def:path-graph|length]] contains (the vertices and edges of) an odd [[def:cycle-graph|cycle]]. Conclude
 that a graph is [[def:bipartite|bipartite]] iff it has no closed walk of odd length.
 
 ::: hint
