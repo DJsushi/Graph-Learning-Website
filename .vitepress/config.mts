@@ -104,7 +104,7 @@ export default defineConfig({
         },
       ],
       '/exam/': [
-        { text: 'Exam prep', items: [{ text: 'Overview', link: '/exam/' }, { text: 'Flashcards', link: '/exam/flashcards' }, { text: 'Mixed self-test', link: '/exam/self-test' }] },
+        { text: 'Exam prep', items: [{ text: 'Overview', link: '/exam/' }, { text: 'Flashcards', link: '/exam/flashcards' }, { text: 'Mixed self-test', link: '/exam/self-test' }, { text: 'Midterm cheat sheet', link: '/exam/cheat-sheet' }] },
       ],
       '/practice/': [
         { text: 'Practice', items: [{ text: 'Overview', link: '/practice/' }, { text: 'Random drills', link: '/practice/drills' }] },
